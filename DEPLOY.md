@@ -1,0 +1,172 @@
+# Инструкция по развертыванию
+
+## Требования
+
+- Node.js 18+ 
+- PostgreSQL 12+
+- Telegram Bot Token
+
+## Локальная разработка
+
+1. Клонируйте репозиторий
+2. Установите зависимости:
+```bash
+npm install
+```
+
+3. Создайте файл `.env`:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/todo_app
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+NODE_ENV=development
+```
+
+4. Запустите PostgreSQL и создайте базу данных:
+```sql
+CREATE DATABASE todo_app;
+```
+
+5. Запустите приложение:
+```bash
+npm run dev
+```
+
+База данных будет инициализирована автоматически при первом запуске.
+
+## Развертывание в продакшене
+
+### Вариант 1: Vercel / Netlify
+
+1. Подключите репозиторий к Vercel/Netlify
+2. Добавьте переменные окружения:
+   - `DATABASE_URL` - строка подключения к PostgreSQL
+   - `TELEGRAM_BOT_TOKEN` - токен Telegram бота
+   - `NODE_ENV=production`
+
+3. Деплой будет выполнен автоматически
+
+### Вариант 2: Docker
+
+Создайте `Dockerfile`:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]
+```
+
+Создайте `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/todo_app
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - NODE_ENV=production
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=todo_app
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+Запустите:
+```bash
+docker-compose up -d
+```
+
+### Вариант 3: VPS сервер
+
+1. Установите Node.js и PostgreSQL на сервере
+2. Клонируйте репозиторий
+3. Установите зависимости: `npm install`
+4. Настройте переменные окружения
+5. Соберите приложение: `npm run build`
+6. Запустите с помощью PM2:
+```bash
+pm2 start .output/server/index.mjs --name todo-app
+```
+
+## Настройка Telegram Bot
+
+1. Создайте бота через [@BotFather](https://t.me/botfather)
+2. Получите токен бота
+3. Создайте Mini App:
+   - Отправьте `/newapp` BotFather
+   - Выберите вашего бота
+   - Укажите название и описание
+   - Укажите URL вашего приложения (должен быть HTTPS)
+   - Добавьте иконку (опционально)
+
+4. Настройте команды бота:
+   - `/setcommands`
+   - Выберите вашего бота
+   - Добавьте команды (опционально)
+
+## Настройка уведомлений
+
+Для ежедневных уведомлений настройте cron job:
+
+```bash
+# Добавьте в crontab
+0 9 * * * curl -X POST https://your-domain.com/api/notifications/daily
+```
+
+Или используйте сервисы:
+- [Cron-job.org](https://cron-job.org)
+- [EasyCron](https://www.easycron.com)
+- [Zapier](https://zapier.com)
+
+## Проверка работы
+
+1. Откройте вашего бота в Telegram
+2. Нажмите на кнопку Mini App (если настроена)
+3. Или перейдите по прямой ссылке: `https://t.me/your_bot/app_name`
+
+Приложение должно загрузиться и показать интерфейс управления задачами.
+
+## Troubleshooting
+
+### Ошибка подключения к базе данных
+
+- Проверьте, что PostgreSQL запущен
+- Проверьте строку подключения в `.env`
+- Убедитесь, что база данных создана
+
+### Telegram Web App не загружается
+
+- Убедитесь, что приложение доступно по HTTPS
+- Проверьте настройки бота в BotFather
+- Проверьте консоль браузера на ошибки
+
+### Уведомления не отправляются
+
+- Проверьте токен бота
+- Убедитесь, что пользователь начал диалог с ботом
+- Проверьте логи сервера
+
