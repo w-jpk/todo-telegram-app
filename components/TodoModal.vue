@@ -73,6 +73,7 @@
                 v-model="formData.projectId"
                 :projects="projects"
                 class="w-full"
+                @project-created="handleProjectCreated"
               />
             </div>
 
@@ -129,6 +130,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   save: [data: CreateTodoDto | UpdateTodoDto]
+  'project-created': [project: Project]
 }>()
 
 const titleInput = ref<HTMLInputElement | null>(null)
@@ -178,6 +180,10 @@ const handleClose = () => {
   if (!saving.value) {
     emit('close')
   }
+}
+
+const handleProjectCreated = (project: Project) => {
+  emit('project-created', project)
 }
 
 const handleSave = () => {

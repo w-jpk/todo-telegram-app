@@ -97,6 +97,7 @@
         :projects="projects as readonly Project[]"
         @close="closeModal"
         @save="handleSaveTodo"
+        @project-created="handleProjectCreated"
       />
   </div>
 </template>
@@ -194,6 +195,11 @@ const handleClearCompleted = () => {
   if (process.client && (window as any).Telegram?.WebApp) {
     (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
   }
+}
+
+const handleProjectCreated = async (project: Project) => {
+  // Refresh projects list to include the newly created project
+  await fetchProjects()
 }
 
 onMounted(async () => {

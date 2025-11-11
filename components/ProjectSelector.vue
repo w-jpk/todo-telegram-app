@@ -43,15 +43,32 @@
           />
           <span class="text-telegram-text">{{ project.name }}</span>
         </button>
+        <div class="border-t border-telegram-secondary-bg/50 my-1" />
+        <button
+          @click="openCreateModal"
+          class="w-full px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2 text-telegram-link"
+        >
+          <Plus :size="18" />
+          <span>Создать проект</span>
+        </button>
       </div>
     </Transition>
+
+    <!-- Project Modal -->
+    <ProjectModal
+      :is-open="isProjectModalOpen"
+      :project="null"
+      @close="closeProjectModal"
+      @save="handleCreateProject"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ChevronDown } from 'lucide-vue-next'
-import type { Project } from '~/types/todo'
+import { ChevronDown, Plus } from 'lucide-vue-next'
+import type { Project, CreateProjectDto } from '~/types/todo'
+import ProjectModal from './ProjectModal.vue'
 
 interface Props {
   modelValue?: string
@@ -62,9 +79,13 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value?: string]
+  'project-created': [project: Project]
 }>()
 
 const isOpen = ref(false)
+const isProjectModalOpen = ref(false)
+
+const { createProject } = useProjects()
 
 const selectedProject = computed(() => {
   if (!props.modelValue) return null
@@ -74,6 +95,39 @@ const selectedProject = computed(() => {
 const selectProject = (projectId?: string) => {
   emit('update:modelValue', projectId)
   isOpen.value = false
+}
+
+const openCreateModal = () => {
+  isOpen.value = false
+  isProjectModalOpen.value = true
+  
+  // Haptic feedback
+  if (process.client && (window as any).Telegram?.WebApp) {
+    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  }
+}
+
+const closeProjectModal = () => {
+  isProjectModalOpen.value = false
+}
+
+const handleCreateProject = async (data: CreateProjectDto) => {
+  const newProject = await createProject(data)
+  
+  if (newProject) {
+    // Select the newly created project
+    selectProject(newProject.id)
+    
+    // Emit event to parent to refresh projects list
+    emit('project-created', newProject)
+    
+    // Haptic feedback
+    if (process.client && (window as any).Telegram?.WebApp) {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    }
+  }
+  
+  closeProjectModal()
 }
 
 const handleClickOutside = (event: MouseEvent) => {
