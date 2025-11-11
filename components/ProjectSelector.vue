@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ChevronDown, Plus } from 'lucide-vue-next'
-import type { Project, CreateProjectDto } from '~/types/todo'
+import type { Project, CreateProjectDto, UpdateProjectDto } from '~/types/todo'
 import ProjectModal from './ProjectModal.vue'
 
 interface Props {
@@ -111,8 +111,15 @@ const closeProjectModal = () => {
   isProjectModalOpen.value = false
 }
 
-const handleCreateProject = async (data: CreateProjectDto) => {
-  const newProject = await createProject(data)
+const handleCreateProject = async (data: CreateProjectDto | UpdateProjectDto) => {
+  // Since we're always creating a new project (project is always null),
+  // we can safely cast to CreateProjectDto
+  if (!data.name) {
+    console.error('Project name is required')
+    return
+  }
+  
+  const newProject = await createProject(data as CreateProjectDto)
   
   if (newProject) {
     // Select the newly created project
