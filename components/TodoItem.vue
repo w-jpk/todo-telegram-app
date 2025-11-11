@@ -114,7 +114,7 @@ const { updateTodo } = useTodos()
 const toggleComplete = async () => {
   const newCompleted = !props.todo.completed
   await updateTodo(props.todo.id, { completed: newCompleted })
-  emit('update', props.todo.id, newCompleted)
+  // emit('update', props.todo.id, newCompleted)
 }
 
 const handleOpenModal = () => {

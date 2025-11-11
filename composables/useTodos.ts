@@ -188,7 +188,7 @@ export const useTodos = () => {
   }
 
   return {
-    todos: readonly(todos),
+    todos,
     filter: readonly(filter),
     loading: readonly(loading),
     error: readonly(error),
