@@ -1,23 +1,33 @@
 <template>
   <div
-    class="flex items-start gap-3 p-4 bg-telegram-section-bg rounded-xl shadow-sm border border-telegram-secondary-bg/50 hover:shadow-md active:scale-[0.98] transition-all touch-manipulation cursor-pointer"
-    :class="{ 'opacity-60': todo.completed }"
+    class="bg-white dark:bg-telegram-section-bg border border-gray-100 dark:border-telegram-secondary-bg/50 rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all touch-manipulation"
     @click="handleOpenModal"
   >
-    <input
-      type="checkbox"
-      :checked="todo.completed"
-      @change.stop="toggleComplete"
-      class="w-6 h-6 mt-0.5 text-telegram-button rounded focus:ring-2 focus:ring-telegram-button cursor-pointer touch-manipulation shrink-0"
-    />
-    
-    <div class="flex-1 min-w-0 flex items-start justify-between gap-3">
+    <div class="flex items-center gap-4">
+      <!-- Checkbox -->
+      <button
+        @click.stop="toggleComplete"
+        :class="{
+          'text-blue-500 bg-blue-50 dark:bg-blue-500/20': todo.completed,
+          'text-gray-300 dark:text-gray-600 bg-gray-50 dark:bg-telegram-secondary-bg': !todo.completed
+        }"
+        class="w-6 h-6 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0"
+      >
+        <svg v-if="todo.completed" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      
+      <!-- Content -->
       <div class="flex-1 min-w-0">
         <!-- Title with Priority -->
         <div class="flex items-start gap-2 mb-1">
           <p
-            class="text-telegram-text break-words text-base font-medium leading-relaxed flex-1"
-            :class="{ 'line-through text-telegram-hint': todo.completed }"
+            class="text-base font-medium break-words flex-1"
+            :class="{
+              'line-through text-gray-400 dark:text-gray-500': todo.completed,
+              'text-gray-900 dark:text-telegram-text': !todo.completed
+            }"
           >
             {{ todo.text }}
           </p>
@@ -34,8 +44,11 @@
         <!-- Description -->
         <p
           v-if="todo.description"
-          class="text-sm text-telegram-subtitle-text mt-1 line-clamp-2"
-          :class="{ 'line-through': todo.completed }"
+          class="text-sm mt-1"
+          :class="{
+            'text-gray-300 dark:text-gray-600': todo.completed,
+            'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed
+          }"
         >
           {{ todo.description }}
         </p>
@@ -49,17 +62,31 @@
             class="w-2.5 h-2.5 rounded-full shrink-0"
             :style="{ backgroundColor: todo.project.color }"
           />
-          <span class="text-xs text-telegram-subtitle-text">{{ todo.project.name }}</span>
+          <span 
+            class="text-xs"
+            :class="{
+              'text-gray-300 dark:text-gray-600': todo.completed,
+              'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed
+            }"
+          >
+            {{ todo.project.name }}
+          </span>
         </div>
       </div>
       
       <!-- Due Date (right side) -->
-      <div
-        v-if="todo.dueDate"
-        class="text-sm text-telegram-subtitle-text shrink-0"
-        :class="isOverdue && !todo.completed ? 'text-red-500' : ''"
-      >
-        {{ formatDateShort(todo.dueDate) }}
+      <div class="text-right shrink-0">
+        <p
+          v-if="todo.dueDate"
+          class="text-sm font-medium"
+          :class="{
+            'text-gray-300 dark:text-gray-600': todo.completed,
+            'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed && !isOverdue,
+            'text-red-500': isOverdue && !todo.completed
+          }"
+        >
+          {{ formatDateShort(todo.dueDate) }}
+        </p>
       </div>
     </div>
   </div>

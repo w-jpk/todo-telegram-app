@@ -1,16 +1,16 @@
 <template>
-  <div class="space-y-3">
+  <div class="space-y-6">
     <!-- Status Filters -->
-    <div class="flex gap-2 overflow-x-auto scrollbar-hide">
+    <div class="flex bg-gray-100 dark:bg-telegram-secondary-bg rounded-xl p-1">
       <button
         v-for="filterOption in filters"
         :key="filterOption.value"
         @click="setFilter(filterOption.value)"
-        class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all touch-manipulation min-h-[44px] whitespace-nowrap shrink-0"
+        class="flex-1 py-2 px-1 rounded-xl text-sm font-medium transition-all touch-manipulation cursor-pointer"
         :class="
           currentFilter === filterOption.value
-            ? 'bg-telegram-button text-telegram-button-text shadow-sm active:scale-95'
-            : 'bg-telegram-secondary-bg text-telegram-text active:bg-telegram-secondary-bg/80 active:scale-95'
+            ? 'bg-white dark:bg-telegram-section-bg shadow-sm text-blue-500 dark:text-telegram-button'
+            : 'text-gray-600 dark:text-telegram-hint'
         "
       >
         {{ filterOption.label }}
@@ -19,29 +19,29 @@
 
     <!-- Date Filter -->
     <div>
-      <label class="block text-sm font-medium text-telegram-text mb-2">
+      <h3 class="text-sm font-medium text-gray-700 dark:text-telegram-text mb-3">
         Фильтр по датам
-      </label>
-      <div class="grid grid-cols-2 gap-2">
+      </h3>
+      <div class="grid grid-cols-2 gap-4">
         <div class="relative">
+          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-telegram-hint pointer-events-none" />
           <input
             :value="formatDateInput(dateFrom)"
             @change="handleDateFromChange"
             type="date"
-            class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text text-sm touch-manipulation min-h-[44px]"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-telegram-secondary-bg/50 rounded-xl bg-white dark:bg-telegram-secondary-bg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-telegram-button text-gray-900 dark:text-telegram-text touch-manipulation"
             placeholder="От"
           />
-          <Calendar :size="18" class="absolute right-3 top-1/2 -translate-y-1/2 text-telegram-hint pointer-events-none" />
         </div>
         <div class="relative">
+          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-telegram-hint pointer-events-none" />
           <input
             :value="formatDateInput(dateTo)"
             @change="handleDateToChange"
             type="date"
-            class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text text-sm touch-manipulation min-h-[44px]"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-telegram-secondary-bg/50 rounded-xl bg-white dark:bg-telegram-secondary-bg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-telegram-button text-gray-900 dark:text-telegram-text touch-manipulation"
             placeholder="До"
           />
-          <Calendar :size="18" class="absolute right-3 top-1/2 -translate-y-1/2 text-telegram-hint pointer-events-none" />
         </div>
       </div>
     </div>
@@ -56,6 +56,15 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 </style>
 

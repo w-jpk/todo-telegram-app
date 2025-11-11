@@ -1,22 +1,22 @@
 <template>
-  <div class="min-h-screen-safe bg-telegram-bg pb-safe-bottom">
+  <div class="min-h-screen-safe bg-white dark:bg-telegram-bg pb-safe-bottom">
     <!-- Header -->
-    <header class="sticky top-0 z-10 bg-telegram-header-bg backdrop-blur-sm border-b border-telegram-secondary-bg/50 shadow-sm safe-top">
-      <div class="container mx-auto px-4 py-4">
-        <h1 class="text-2xl font-bold text-telegram-text text-center">
-          To-Do | w-jpk
+    <header class="w-full bg-white dark:bg-telegram-header-bg px-6 py-4 shadow-sm">
+      <div class="container">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-telegram-text text-center">
+          ToDo
         </h1>
       </div>
     </header>
 
-    <div class="container mx-auto px-4 py-4 space-y-4">
+    <div class="pb-6 px-6 space-y-6">
       <!-- Add Todo Button -->
       <button
         @click="openModal"
-        class="w-full px-6 py-4 bg-telegram-button text-telegram-button-text rounded-xl font-medium active:opacity-80 transition-opacity flex items-center justify-center gap-2 min-h-[52px] touch-manipulation shadow-sm hover:shadow-md"
+        class="w-full px-6 py-4 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-all flex items-center justify-center gap-3 min-h-[52px] touch-manipulation hover:bg-blue-600 cursor-pointer"
       >
         <Plus :size="20" />
-        <span>Создать задачу</span>
+        <span class="text-lg">Создать задачу</span>
       </button>
 
       <!-- Filters -->
