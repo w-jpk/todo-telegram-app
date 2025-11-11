@@ -1,4 +1,5 @@
 import type { Todo, CreateTodoDto, UpdateTodoDto, TodoFilter } from '~/types/todo'
+import { triggerRef } from 'vue'
 
 export const useTodos = () => {
   const todos = ref<Todo[]>([])
@@ -122,6 +123,7 @@ export const useTodos = () => {
       const index = todos.value.findIndex(t => t.id === id)
       if (index !== -1) {
         todos.value[index] = updatedTodo
+        triggerRef(todos)
       }
       
       return updatedTodo
@@ -188,7 +190,7 @@ export const useTodos = () => {
   }
 
   return {
-    todos,
+    todos: readonly(todos),
     filter: readonly(filter),
     loading: readonly(loading),
     error: readonly(error),
