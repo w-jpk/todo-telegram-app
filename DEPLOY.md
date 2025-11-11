@@ -19,6 +19,7 @@ npm install
 DATABASE_URL=postgresql://user:password@localhost:5432/todo_app
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 NODE_ENV=development
+PORT=3002
 ```
 
 4. Запустите PostgreSQL и создайте базу данных:
@@ -42,6 +43,7 @@ npm run dev
    - `DATABASE_URL` - строка подключения к PostgreSQL
    - `TELEGRAM_BOT_TOKEN` - токен Telegram бота
    - `NODE_ENV=production`
+   - `PORT=3002` - порт для запуска приложения (опционально, по умолчанию 3002)
 
 3. Деплой будет выполнен автоматически
 
@@ -60,7 +62,7 @@ RUN npm ci --only=production
 COPY . .
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["node", ".output/server/index.mjs"]
 ```
@@ -74,11 +76,12 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "3002:3002"
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/todo_app
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - NODE_ENV=production
+      - PORT=3002
     depends_on:
       - db
 
@@ -105,11 +108,17 @@ docker-compose up -d
 1. Установите Node.js и PostgreSQL на сервере
 2. Клонируйте репозиторий
 3. Установите зависимости: `npm install`
-4. Настройте переменные окружения
+4. Настройте переменные окружения (создайте `.env` файл):
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/todo_app
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+NODE_ENV=production
+PORT=3002
+```
 5. Соберите приложение: `npm run build`
 6. Запустите с помощью PM2:
 ```bash
-pm2 start .output/server/index.mjs --name todo-app
+PORT=3002 pm2 start .output/server/index.mjs --name todo-app
 ```
 
 ## Настройка Telegram Bot
