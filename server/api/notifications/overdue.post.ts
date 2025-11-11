@@ -15,23 +15,20 @@ export default defineEventHandler(async (event) => {
     const pool = getDbPool()
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
     
-    // Get all active todos due today with user settings
+    // Get all overdue todos with user settings
     const result = await pool.query(
-      `SELECT t.*, u.id as user_id, s.notifications_enabled, s.daily_notifications, s.daily_notification_time, s.timezone
+      `SELECT t.*, u.id as user_id, s.notify_on_overdue, s.notifications_enabled
        FROM todos t
        JOIN users u ON t.user_id = u.id
        LEFT JOIN user_settings s ON u.id = s.user_id
-       WHERE t.completed = false 
+       WHERE t.completed = false
        AND t.due_date IS NOT NULL
-       AND t.due_date >= $1
-       AND t.due_date < $2
+       AND t.due_date < $1
        AND (s.notifications_enabled IS NULL OR s.notifications_enabled = TRUE)
-       AND (s.daily_notifications IS NULL OR s.daily_notifications = TRUE)
+       AND (s.notify_on_overdue IS NULL OR s.notify_on_overdue = TRUE)
        ORDER BY t.due_date ASC`,
-      [today, tomorrow]
+      [today]
     )
     
     // Group todos by user
@@ -54,14 +51,16 @@ export default defineEventHandler(async (event) => {
       const todoList = todos
         .map((todo, index) => {
           const priorityEmoji = todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : todo.priority === 'low' ? '🔵' : ''
-          return `${index + 1}. ${priorityEmoji} ${todo.text}`
+          const dueDate = new Date(todo.due_date).toLocaleDateString('ru-RU')
+          const daysOverdue = Math.floor((today.getTime() - new Date(todo.due_date).getTime()) / (1000 * 60 * 60 * 24))
+          return `${index + 1}. ${priorityEmoji} ${todo.text}\n   📅 ${dueDate} (${daysOverdue} дн. назад)`
         })
-        .join('\n')
+        .join('\n\n')
       
-      const message = `📋 <b>Задачи на сегодня:</b>\n\n${todoList}\n\n<i>Всего задач: ${todos.length}</i>`
+      const message = `⚠️ <b>Просроченные задачи:</b>\n\n${todoList}\n\n<i>Всего просрочено: ${todos.length}</i>`
       
       try {
-        const response = await $fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        await $fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: 'POST',
           body: {
             chat_id: userId,
@@ -76,7 +75,7 @@ export default defineEventHandler(async (event) => {
           todosCount: todos.length
         })
       } catch (error: any) {
-        console.error(`Error sending notification to user ${userId}:`, error)
+        console.error(`Error sending overdue notification to user ${userId}:`, error)
         notifications.push({
           userId,
           success: false,
@@ -92,10 +91,10 @@ export default defineEventHandler(async (event) => {
       successfulNotifications: notifications.filter(n => n.success).length
     }
   } catch (error: any) {
-    console.error('Error sending daily notifications:', error)
+    console.error('Error sending overdue notifications:', error)
     throw createError({
       statusCode: 500,
-      message: error.message || 'Failed to send daily notifications'
+      message: error.message || 'Failed to send overdue notifications'
     })
   }
 })

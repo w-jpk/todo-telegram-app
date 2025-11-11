@@ -130,14 +130,44 @@ pm2 start .output/server/index.mjs --name todo-app
 
 ## Настройка уведомлений
 
-Для ежедневных уведомлений настройте cron job:
+### ✅ Встроенный планировщик (Рекомендуется)
+
+**Приложение включает встроенный планировщик задач, который автоматически запускается при старте сервера.**
+
+Просто запустите приложение на VPS - уведомления будут работать автоматически:
+```bash
+pm2 start .output/server/index.mjs --name todo-app
+```
+
+Планировщик автоматически:
+- Отправляет ежедневные уведомления в 9:00 UTC
+- Отправляет напоминания в 9:00 UTC
+- Отправляет уведомления о просроченных задачах в 9:00 UTC
+
+**Настройка времени:**
+Измените расписание в `server/plugins/scheduler.ts`:
+```typescript
+// Например, для 10:00 по Москве (UTC+3 = 7:00 UTC)
+cron.schedule('0 7 * * *', async () => {
+  // ...
+}, { timezone: 'Europe/Moscow' })
+```
+
+### Альтернатива: Внешний cron job
+
+Если хотите использовать внешний cron вместо встроенного планировщика:
 
 ```bash
 # Добавьте в crontab
 0 9 * * * curl -X POST https://your-domain.com/api/notifications/daily
+0 9 * * * curl -X POST https://your-domain.com/api/notifications/reminders
+0 9 * * * curl -X POST https://your-domain.com/api/notifications/overdue
 ```
 
-Или используйте сервисы:
+**Примечание:** Если используете внешний cron, отключите встроенный планировщик, удалив или переименовав файл `server/plugins/scheduler.ts`.
+
+### Внешние сервисы
+
 - [Cron-job.org](https://cron-job.org)
 - [EasyCron](https://www.easycron.com)
 - [Zapier](https://zapier.com)

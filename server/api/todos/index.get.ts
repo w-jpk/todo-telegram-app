@@ -14,15 +14,38 @@ export default defineEventHandler(async (event) => {
   try {
     const pool = getDbPool()
     const result = await pool.query(
-      'SELECT * FROM todos WHERE user_id = $1 ORDER BY created_at DESC',
+      `SELECT t.*, p.id as project_id_full, p.name as project_name, p.color as project_color
+       FROM todos t
+       LEFT JOIN projects p ON t.project_id = p.id
+       WHERE t.user_id = $1
+       ORDER BY 
+         CASE t.priority
+           WHEN 'high' THEN 1
+           WHEN 'medium' THEN 2
+           WHEN 'low' THEN 3
+           ELSE 4
+         END,
+         t.due_date NULLS LAST,
+         t.created_at DESC`,
       [userId]
     )
     
     const todos: Todo[] = result.rows.map(row => ({
       id: row.id,
       text: row.text,
+      description: row.description || undefined,
       completed: row.completed,
+      priority: row.priority || 'none',
       userId: parseInt(row.user_id),
+      projectId: row.project_id || undefined,
+      project: row.project_id_full ? {
+        id: row.project_id_full,
+        name: row.project_name,
+        color: row.project_color,
+        userId: parseInt(row.user_id),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } : undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       dueDate: row.due_date || undefined

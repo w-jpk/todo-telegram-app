@@ -66,23 +66,101 @@ export default defineEventHandler(async (event) => {
       )
     }
     
+    // Get or create default project if projectId not provided
+    let projectId = body.projectId || null
+    if (!projectId) {
+      const defaultProject = await pool.query(
+        'SELECT id FROM projects WHERE user_id = $1 AND name = $2',
+        [userId, 'Inbox']
+      )
+      if (defaultProject.rows.length > 0) {
+        projectId = defaultProject.rows[0].id
+      }
+    }
+    
     // Create todo
     const result = await pool.query(
-      `INSERT INTO todos (user_id, text, completed, due_date, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `INSERT INTO todos (user_id, project_id, text, description, completed, priority, due_date, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
-      [userId, body.text.trim(), false, body.dueDate || null]
+      [
+        userId,
+        projectId,
+        body.text.trim(),
+        body.description?.trim() || null,
+        false,
+        body.priority || 'none',
+        body.dueDate || null
+      ]
     )
+    
+    // Get project info if exists
+    let project = null
+    if (projectId) {
+      const projectResult = await pool.query(
+        'SELECT * FROM projects WHERE id = $1',
+        [projectId]
+      )
+      if (projectResult.rows.length > 0) {
+        const p = projectResult.rows[0]
+        project = {
+          id: p.id,
+          name: p.name,
+          color: p.color,
+          userId: parseInt(p.user_id),
+          createdAt: p.created_at,
+          updatedAt: p.updated_at
+        }
+      }
+    }
     
     const row = result.rows[0]
     const todo: Todo = {
       id: row.id,
       text: row.text,
+      description: row.description || undefined,
       completed: row.completed,
+      priority: row.priority || 'none',
       userId: parseInt(row.user_id),
+      projectId: row.project_id || undefined,
+      project: project || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       dueDate: row.due_date || undefined
+    }
+    
+    // Send notification if enabled
+    try {
+      const settingsResult = await pool.query(
+        'SELECT notify_on_create, notifications_enabled FROM user_settings WHERE user_id = $1',
+        [userId]
+      )
+      
+      if (settingsResult.rows.length > 0) {
+        const settings = settingsResult.rows[0]
+        if (settings.notifications_enabled && settings.notify_on_create) {
+          const config = useRuntimeConfig()
+          const botToken = config.telegramBotToken
+          
+          if (botToken) {
+            const notificationText = `✅ <b>Создана новая задача:</b>\n\n${todo.text}${todo.dueDate ? `\n📅 Срок: ${new Date(todo.dueDate).toLocaleDateString('ru-RU')}` : ''}`
+            
+            await $fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+              method: 'POST',
+              body: {
+                chat_id: userId,
+                text: notificationText,
+                parse_mode: 'HTML'
+              }
+            }).catch((err) => {
+              console.error('Error sending create notification:', err)
+            })
+          }
+        }
+      }
+    } catch (notifError) {
+      // Don't fail todo creation if notification fails
+      console.error('Error sending notification:', notifError)
     }
     
     return {
