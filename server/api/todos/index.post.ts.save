@@ -28,8 +28,8 @@ export default defineEventHandler(async (event) => {
     let userData = null
     if (userDataHeader) {
       try {
-        const decoded = decodeURIComponent(userDataHeader)
-      userData = JSON.parse(decoded)
+        const decoded = 
+        userData = JSON.parse(userDataHeader)
       } catch (e) {
         // Ignore parsing errors
       }

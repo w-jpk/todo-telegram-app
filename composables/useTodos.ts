@@ -28,17 +28,17 @@ export const useTodos = () => {
 
   // Get headers for API requests
   const getHeaders = () => {
-    const headers: Record<string, string> = {
-      'x-telegram-user-id': userId.value?.toString() || ''
-    }
-    
-    // Add user data if available
-    if ($telegram?.user) {
-      headers['x-telegram-user-data'] = JSON.stringify($telegram.user)
-    }
-    
-    return headers
+  const headers: Record<string, string> = {
+    'x-telegram-user-id': userId.value?.toString() || ''
   }
+
+  // Закодируй JSON, если есть данные
+  if ($telegram?.user) {
+    headers['x-telegram-user-data'] = encodeURIComponent(JSON.stringify($telegram.user))
+  }
+
+  return headers
+}
 
   // Fetch todos
   const fetchTodos = async () => {
