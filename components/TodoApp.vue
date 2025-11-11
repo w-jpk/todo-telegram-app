@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen-safe bg-white dark:bg-telegram-bg pb-safe-bottom">
     <!-- Header -->
-    <header class="w-full bg-white dark:bg-telegram-header-bg px-6 py-4 shadow-sm">
+    <header class="w-full bg-white dark:bg-telegram-header-bg py-4 shadow-sm">
       <div class="container">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-telegram-text text-center">
-          ToDo
+          ToDo | {{ userName }}
         </h1>
       </div>
     </header>
 
-    <div class="pb-6 px-6 space-y-6">
+    <div class="pb-6 space-y-6">
       <!-- Add Todo Button -->
       <button
         @click="openModal"
@@ -149,6 +149,7 @@ const {
 
 const { $telegram } = useNuxtApp()
 const userId = computed(() => $telegram?.user?.id || null)
+const userName = computed(() => $telegram?.user?.username || null)
 
 const isModalOpen = ref(false)
 const selectedTodo = ref<Todo | null>(null)
