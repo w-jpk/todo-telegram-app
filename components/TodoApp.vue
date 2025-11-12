@@ -233,6 +233,42 @@ const handleProjectCreated = async (project: Project) => {
 onMounted(async () => {
   const { $telegram } = useNuxtApp()
   
+  // Wait for Telegram SDK to be ready
+  const waitForTelegram = (): Promise<void> => {
+    return new Promise((resolve) => {
+      if ($telegram?.isReady && $telegram?.user) {
+        resolve()
+        return
+      }
+      
+      // Check if Telegram SDK loads
+      const checkInterval = setInterval(() => {
+        if ((window as any).Telegram?.WebApp) {
+          const tg = (window as any).Telegram.WebApp
+          if (tg.initDataUnsafe?.user) {
+            // Update telegram state
+            if ($telegram) {
+              $telegram.user = tg.initDataUnsafe.user
+              $telegram.initData = tg.initData || ''
+              $telegram.initDataUnsafe = tg.initDataUnsafe || {}
+              $telegram.isReady = true
+            }
+            clearInterval(checkInterval)
+            resolve()
+          }
+        }
+      }, 100)
+      
+      // Timeout after 3 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        resolve()
+      }, 3000)
+    })
+  }
+  
+  await waitForTelegram()
+  
   // Auto-authenticate user if available from Telegram
   if ($telegram?.user) {
     try {
