@@ -2,7 +2,6 @@
   <div
     ref="todoCard"
     class="group relative bg-telegram-section-bg border border-white/10 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all touch-manipulation overflow-hidden"
-    :style="{ transform: `translateX(${swipeOffset}px)`, transition: isSwiping ? 'none' : 'transform 0.3s ease-out' }"
     @click="handleCardClick"
     @mouseenter="showDeleteButton = true"
     @mouseleave="showDeleteButton = false"
@@ -10,16 +9,32 @@
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
   >
-    <!-- Delete Action Background (visible when swiping) -->
+    <!-- Delete Action Background (visible when swiping) - behind content -->
     <div
-      class="absolute inset-y-0 right-0 bg-telegram-destructive-text flex items-center justify-center px-6 z-0"
-      :style="{ width: `${Math.abs(swipeOffset)}px`, opacity: Math.min(Math.abs(swipeOffset) / 80, 1) }"
+      class="absolute inset-y-0 right-0 bg-red-600 flex items-center justify-center z-10 rounded-r-xl"
+      :style="{ 
+        width: `${Math.max(Math.abs(swipeOffset), 0)}px`, 
+        opacity: Math.abs(swipeOffset) > 10 ? 1 : 0,
+        transition: isSwiping ? 'none' : 'width 0.3s ease-out, opacity 0.3s ease-out'
+      }"
     >
-      <Trash2 :size="24" class="text-white" />
+      <Trash2 
+        :size="32" 
+        class="text-white drop-shadow-lg"
+        :style="{ 
+          opacity: Math.abs(swipeOffset) > 20 ? 1 : Math.abs(swipeOffset) / 20 
+        }"
+      />
     </div>
 
-    <!-- Content Wrapper -->
-    <div class="relative z-10 flex items-start gap-4 p-4 pointer-events-auto" :class="{ 'pr-8': !isSwiping }">
+    <!-- Content Wrapper - slides left on swipe -->
+    <div 
+      class="relative z-20 flex items-start gap-4 p-4 pointer-events-auto bg-telegram-section-bg rounded-xl"
+      :style="{ 
+        transform: `translateX(${swipeOffset}px)`, 
+        transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+      }"
+    >
       <!-- Checkbox -->
       <button
         @click.stop="toggleComplete"
@@ -103,19 +118,27 @@
       </div>
     </div>
 
-    <!-- Priority Flag (top right corner) -->
+    <!-- Priority Flag (top right corner) - moves with content -->
     <div
       v-if="todo.priority && todo.priority !== 'none'"
-      class="absolute top-3 right-10 z-20 pointer-events-none"
+      class="absolute top-3 right-10 z-30 pointer-events-none"
+      :style="{ 
+        transform: `translateX(${swipeOffset}px)`, 
+        transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+      }"
       :class="getPriorityClass(todo.priority)"
     >
       <Flag :size="14" />
     </div>
 
-    <!-- Delete Button (top right, visible on hover/desktop) -->
+    <!-- Delete Button (top right, visible on hover/desktop) - moves with content -->
     <button
       @click.stop="handleDelete"
-      class="absolute top-3 right-3 transition-opacity p-1.5 text-telegram-destructive-text hover:bg-telegram-secondary-bg rounded-lg touch-manipulation z-20 hidden sm:block"
+      class="absolute top-3 right-3 transition-opacity p-1.5 text-telegram-destructive-text hover:bg-telegram-secondary-bg rounded-lg touch-manipulation z-30 hidden sm:block"
+      :style="{ 
+        transform: `translateX(${swipeOffset}px)`, 
+        transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+      }"
       :class="showDeleteButton ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
     >
       <Trash2 :size="16" />
