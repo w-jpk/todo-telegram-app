@@ -1,12 +1,53 @@
 import type { Project, CreateProjectDto, UpdateProjectDto } from '~/types/todo'
 
+const generateDevId = () => `dev-${Math.random().toString(36).slice(2, 10)}`
+
 export const useProjects = () => {
-  const projects = ref<Project[]>([])
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const projects = useState<Project[]>('projects:list', () => [])
+  const loading = useState<boolean>('projects:loading', () => false)
+  const error = useState<string | null>('projects:error', () => null)
+  const devInitialized = useState<boolean>('projects:dev-initialized', () => false)
 
   const { $telegram } = useNuxtApp()
   const userId = computed(() => $telegram?.user?.id || null)
+
+  const initializeDevProjects = () => {
+    if (!process.dev || devInitialized.value) {
+      return
+    }
+
+    const now = new Date()
+    projects.value = [
+      {
+        id: 'dev-project-inbox',
+        name: 'Inbox',
+        color: '#3b82f6',
+        userId: 0,
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'dev-project-work',
+        name: 'Work',
+        color: '#f59e0b',
+        userId: 0,
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'dev-project-personal',
+        name: 'Personal',
+        color: '#22c55e',
+        userId: 0,
+        createdAt: now,
+        updatedAt: now
+      }
+    ]
+
+    devInitialized.value = true
+  }
+
+  const useDevFallback = () => !userId.value && process.dev
 
   // Get headers for API requests
   const getHeaders = () => {
@@ -23,6 +64,11 @@ export const useProjects = () => {
 
   // Fetch projects
   const fetchProjects = async () => {
+    if (useDevFallback()) {
+      initializeDevProjects()
+      return
+    }
+
     if (!userId.value) return
     
     loading.value = true
@@ -48,6 +94,21 @@ export const useProjects = () => {
 
   // Create project
   const createProject = async (projectData: CreateProjectDto) => {
+    if (useDevFallback()) {
+      const now = new Date()
+      const newProject: Project = {
+        id: generateDevId(),
+        name: projectData.name,
+        color: projectData.color || '#3b82f6',
+        userId: 0,
+        createdAt: now,
+        updatedAt: now
+      }
+
+      projects.value = [...projects.value, newProject]
+      return newProject
+    }
+
     if (!userId.value) return null
     
     loading.value = true
@@ -79,6 +140,24 @@ export const useProjects = () => {
 
   // Update project
   const updateProject = async (id: string, projectData: UpdateProjectDto) => {
+    if (useDevFallback()) {
+      const index = projects.value.findIndex(p => p.id === id)
+      if (index === -1) return null
+
+      const existing = projects.value[index]
+      const updated: Project = {
+        ...existing,
+        name: projectData.name ?? existing.name,
+        color: projectData.color ?? existing.color,
+        updatedAt: new Date()
+      }
+
+      const next = [...projects.value]
+      next[index] = updated
+      projects.value = next
+      return updated
+    }
+
     if (!userId.value) return null
     
     loading.value = true
@@ -99,7 +178,9 @@ export const useProjects = () => {
       
       const index = projects.value.findIndex(p => p.id === id)
       if (index !== -1) {
-        projects.value[index] = updatedProject
+        const next = [...projects.value]
+        next[index] = updatedProject
+        projects.value = next
       }
       
       return updatedProject
@@ -114,6 +195,11 @@ export const useProjects = () => {
 
   // Delete project
   const deleteProject = async (id: string) => {
+    if (useDevFallback()) {
+      projects.value = projects.value.filter(p => p.id !== id)
+      return true
+    }
+
     if (!userId.value) return false
     
     loading.value = true

@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "imports": {
-    "#internal/*": "./.nuxt/dist/server/*"
-  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --port 3002",

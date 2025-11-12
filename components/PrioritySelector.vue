@@ -1,19 +1,19 @@
 <template>
-  <div class="flex gap-2">
+  <div class="flex gap-2 flex-wrap">
     <button
       v-for="priority in priorities"
       :key="priority.value"
       @click="$emit('update:modelValue', priority.value)"
-      class="flex-1 px-3 py-2.5 rounded-xl font-medium text-sm transition-all touch-manipulation min-h-[44px]"
+      class="flex-1 min-w-[80px] px-2 sm:px-3 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all touch-manipulation min-h-[44px]"
       :class="
         modelValue === priority.value
           ? priority.activeClass
           : 'bg-telegram-secondary-bg text-telegram-text active:opacity-80'
       "
     >
-      <div class="flex items-center justify-center gap-1.5">
-        <component :is="priority.icon" :size="16" />
-        <span>{{ priority.label }}</span>
+      <div class="flex items-center justify-center gap-1 sm:gap-1.5">
+        <component :is="priority.icon" :size="14" class="sm:w-4 sm:h-4" />
+        <span class="whitespace-nowrap">{{ priority.label }}</span>
       </div>
     </button>
   </div>

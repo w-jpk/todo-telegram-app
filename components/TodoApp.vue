@@ -1,19 +1,19 @@
 <template>
-  <div class="min-h-screen-safe bg-white dark:bg-telegram-bg pb-safe-bottom">
+  <div class="min-h-screen-safe bg-telegram-bg pb-safe-bottom">
     <!-- Header -->
-    <header class="w-full bg-white dark:bg-telegram-header-bg py-4 shadow-sm">
+    <header class="w-full bg-telegram-header-bg py-4 shadow-sm border-b border-white/10">
       <div class="container">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-telegram-text text-center">
+        <h1 class="text-3xl font-bold text-telegram-text text-center">
           ToDo | {{ userName }}
         </h1>
       </div>
     </header>
 
-    <div class="pb-6 space-y-6">
+    <div class="container pb-6 space-y-6 pt-6">
       <!-- Add Todo Button -->
       <button
         @click="openModal"
-        class="w-full px-6 py-4 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-all flex items-center justify-center gap-3 min-h-[52px] touch-manipulation hover:bg-blue-600 cursor-pointer"
+        class="w-full px-6 py-4 bg-telegram-button text-telegram-button-text rounded-xl font-medium active:opacity-80 transition-all flex items-center justify-center gap-3 min-h-[52px] touch-manipulation hover:opacity-90 cursor-pointer"
       >
         <Plus :size="20" />
         <span class="text-lg">Создать задачу</span>
@@ -31,7 +31,7 @@
       <!-- Error Message -->
       <div
         v-if="error"
-        class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm"
+        class="p-3 bg-red-900/20 border border-red-800 text-red-400 rounded-xl text-sm"
       >
         {{ error }}
       </div>
@@ -71,7 +71,7 @@
       <!-- User not authenticated warning -->
       <div
         v-if="!userId && !loading"
-        class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl"
+        class="p-4 bg-yellow-900/20 border border-yellow-800 text-yellow-300 rounded-xl"
       >
         <p class="font-semibold text-sm">⚠️ Предупреждение</p>
         <p class="text-xs mt-1.5">

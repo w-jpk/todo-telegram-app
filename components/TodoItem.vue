@@ -1,100 +1,131 @@
 <template>
   <div
-    class="bg-white dark:bg-telegram-section-bg border border-gray-100 dark:border-telegram-secondary-bg/50 rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all touch-manipulation"
-    @click="handleOpenModal"
+    ref="todoCard"
+    class="group relative bg-telegram-section-bg border border-white/10 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all touch-manipulation overflow-hidden"
+    :style="{ transform: `translateX(${swipeOffset}px)`, transition: isSwiping ? 'none' : 'transform 0.3s ease-out' }"
+    @click="handleCardClick"
+    @mouseenter="showDeleteButton = true"
+    @mouseleave="showDeleteButton = false"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
   >
-    <div class="flex items-center gap-4">
+    <!-- Delete Action Background (visible when swiping) -->
+    <div
+      class="absolute inset-y-0 right-0 bg-telegram-destructive-text flex items-center justify-center px-6 z-0"
+      :style="{ width: `${Math.abs(swipeOffset)}px`, opacity: Math.min(Math.abs(swipeOffset) / 80, 1) }"
+    >
+      <Trash2 :size="24" class="text-white" />
+    </div>
+
+    <!-- Content Wrapper -->
+    <div class="relative z-10 flex items-start gap-4 p-4 pointer-events-auto" :class="{ 'pr-8': !isSwiping }">
       <!-- Checkbox -->
       <button
         @click.stop="toggleComplete"
         :class="{
-          'text-blue-500 bg-blue-50 dark:bg-blue-500/20': todo.completed,
-          'text-gray-300 dark:text-gray-600 bg-gray-50 dark:bg-telegram-secondary-bg': !todo.completed
+          'text-blue-500 bg-blue-500/20 border-blue-500': todo.completed,
+          'text-gray-400 border-gray-400 bg-transparent': !todo.completed
         }"
-        class="w-6 h-6 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0"
+        class="w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0 mt-0.5"
       >
-        <svg v-if="todo.completed" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <svg v-if="todo.completed" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
       </button>
       
       <!-- Content -->
       <div class="flex-1 min-w-0">
-        <!-- Title with Priority -->
-        <div class="flex items-start gap-2 mb-1">
-          <p
-            class="text-base font-medium break-words flex-1"
-            :class="{
-              'line-through text-gray-400 dark:text-gray-500': todo.completed,
-              'text-gray-900 dark:text-telegram-text': !todo.completed
-            }"
-          >
-            {{ todo.text }}
-          </p>
-          <!-- Priority Indicator -->
-          <div
-            v-if="todo.priority && todo.priority !== 'none'"
-            class="shrink-0"
-            :class="getPriorityClass(todo.priority)"
-          >
-            <Flag :size="14" />
-          </div>
-        </div>
+        <!-- Title -->
+        <p
+          class="text-base font-medium break-words mb-1"
+          :class="{
+            'line-through text-gray-500': todo.completed,
+            'text-telegram-text': !todo.completed
+          }"
+        >
+          {{ todo.text }}
+        </p>
         
         <!-- Description -->
         <p
           v-if="todo.description"
-          class="text-sm mt-1"
+          class="text-sm mb-2"
           :class="{
-            'text-gray-300 dark:text-gray-600': todo.completed,
-            'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed
+            'text-gray-600': todo.completed,
+            'text-telegram-subtitle-text': !todo.completed
           }"
         >
           {{ todo.description }}
         </p>
         
-        <!-- Meta Info: Project -->
-        <div
-          v-if="todo.project"
-          class="flex items-center gap-1.5 mt-2"
-        >
+        <!-- Meta Info: Project and Date -->
+        <div class="flex items-center gap-2 flex-wrap">
           <div
-            class="w-2.5 h-2.5 rounded-full shrink-0"
-            :style="{ backgroundColor: todo.project.color }"
-          />
-          <span 
-            class="text-xs"
-            :class="{
-              'text-gray-300 dark:text-gray-600': todo.completed,
-              'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed
-            }"
+            v-if="todo.project"
+            class="flex items-center gap-1.5"
           >
-            {{ todo.project.name }}
-          </span>
+            <div
+              class="w-2.5 h-2.5 rounded-full shrink-0"
+              :style="{ backgroundColor: todo.project.color }"
+            />
+            <span 
+              class="text-xs"
+              :class="{
+                'text-gray-600': todo.completed,
+                'text-telegram-subtitle-text': !todo.completed
+              }"
+            >
+              {{ todo.project.name }}
+            </span>
+          </div>
+          
+          <!-- Date next to project -->
+          <template v-if="todo.dueDate">
+            <span
+              v-if="todo.project"
+              class="text-xs text-telegram-hint"
+            >
+              •
+            </span>
+            <span
+              class="text-xs"
+              :class="{
+                'text-gray-600': todo.completed,
+                'text-telegram-subtitle-text': !todo.completed && !isOverdue,
+                'text-red-500': isOverdue && !todo.completed
+              }"
+            >
+              {{ formatDateShort(todo.dueDate) }}
+            </span>
+          </template>
         </div>
       </div>
-      
-      <!-- Due Date (right side) -->
-      <div class="text-right shrink-0">
-        <p
-          v-if="todo.dueDate"
-          class="text-sm font-medium"
-          :class="{
-            'text-gray-300 dark:text-gray-600': todo.completed,
-            'text-gray-500 dark:text-telegram-subtitle-text': !todo.completed && !isOverdue,
-            'text-red-500': isOverdue && !todo.completed
-          }"
-        >
-          {{ formatDateShort(todo.dueDate) }}
-        </p>
-      </div>
     </div>
+
+    <!-- Priority Flag (top right corner) -->
+    <div
+      v-if="todo.priority && todo.priority !== 'none'"
+      class="absolute top-3 right-10 z-20 pointer-events-none"
+      :class="getPriorityClass(todo.priority)"
+    >
+      <Flag :size="14" />
+    </div>
+
+    <!-- Delete Button (top right, visible on hover/desktop) -->
+    <button
+      @click.stop="handleDelete"
+      class="absolute top-3 right-3 transition-opacity p-1.5 text-telegram-destructive-text hover:bg-telegram-secondary-bg rounded-lg touch-manipulation z-20 hidden sm:block"
+      :class="showDeleteButton ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+    >
+      <Trash2 :size="16" />
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Flag } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { Flag, Trash2 } from 'lucide-vue-next'
 import type { Todo, TodoPriority } from '~/types/todo'
 
 interface Props {
@@ -109,24 +140,134 @@ const emit = defineEmits<{
   edit: [todo: Todo]
 }>()
 
-const { updateTodo } = useTodos()
+// Try to use todos composable, but handle case when it's not available (dev mode)
+let updateTodoFn: ((id: string, data: any) => Promise<any>) | null = null
+let deleteTodoFn: ((id: string) => Promise<boolean>) | null = null
+
+try {
+  const todosComposable = useTodos()
+  updateTodoFn = todosComposable.updateTodo
+  deleteTodoFn = todosComposable.deleteTodo
+} catch (e) {
+  // In dev mode without Telegram user, composable might not work
+  console.warn('useTodos not available, using direct emit mode')
+}
+
+const showDeleteButton = ref(false)
+
+// Swipe functionality
+const todoCard = ref<HTMLElement | null>(null)
+const swipeOffset = ref(0)
+const isSwiping = ref(false)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const SWIPE_THRESHOLD = 80 // Minimum swipe distance to trigger delete
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartX.value = e.touches[0].clientX
+  touchStartY.value = e.touches[0].clientY
+  isSwiping.value = true
+}
+
+const handleTouchMove = (e: TouchEvent) => {
+  if (!isSwiping.value) return
+  
+  const currentX = e.touches[0].clientX
+  const currentY = e.touches[0].clientY
+  const deltaX = currentX - touchStartX.value
+  const deltaY = Math.abs(currentY - touchStartY.value)
+  
+  // Only allow horizontal swipe (prevent vertical scrolling interference)
+  if (Math.abs(deltaX) > Math.abs(deltaY) && deltaX < 0) {
+    e.preventDefault()
+    swipeOffset.value = Math.max(deltaX, -120) // Limit max swipe distance
+  }
+}
+
+const handleTouchEnd = () => {
+  isSwiping.value = false
+  
+  if (Math.abs(swipeOffset.value) >= SWIPE_THRESHOLD) {
+    // Trigger delete without confirmation (swipe is the confirmation)
+    performDelete(false)
+  } else {
+    // Reset position
+    swipeOffset.value = 0
+  }
+}
+
+const handleCardClick = (e: MouseEvent) => {
+  // Don't open modal if we just finished a swipe
+  if (Math.abs(swipeOffset.value) > 0) {
+    swipeOffset.value = 0
+    return
+  }
+  
+  // Don't open modal if clicking on interactive elements
+  const target = e.target as HTMLElement
+  if (target.closest('button') || target.closest('svg') || target.closest('a')) {
+    return
+  }
+  
+  // Prevent event if clicking on the card itself (not content)
+  if (target === todoCard.value) {
+    return
+  }
+  
+  handleOpenModal()
+}
 
 const toggleComplete = async () => {
   const newCompleted = !props.todo.completed
-  await updateTodo(props.todo.id, { completed: newCompleted })
+  
+  // Try to update via API if available, otherwise just emit
+  if (updateTodoFn) {
+    try {
+      await updateTodoFn(props.todo.id, { completed: newCompleted })
+    } catch (e) {
+      console.warn('Failed to update via API, using emit only:', e)
+    }
+  }
+  
   emit('update', props.todo.id, newCompleted)
+  
+  // Haptic feedback
+  if (process.client && (window as any).Telegram?.WebApp) {
+    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  }
 }
 
 const handleOpenModal = () => {
   emit('edit', props.todo)
 }
 
-const handleDelete = async () => {
-  if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
-    const { deleteTodo } = useTodos()
-    await deleteTodo(props.todo.id)
-    emit('delete', props.todo.id)
+const performDelete = async (showConfirm: boolean = true) => {
+  if (showConfirm && !confirm('Вы уверены, что хотите удалить эту задачу?')) {
+    swipeOffset.value = 0
+    return
   }
+  
+  // Try to delete via API if available, otherwise just emit
+  if (deleteTodoFn) {
+    try {
+      await deleteTodoFn(props.todo.id)
+    } catch (e) {
+      console.warn('Failed to delete via API, using emit only:', e)
+    }
+  }
+  
+  emit('delete', props.todo.id)
+  
+  // Haptic feedback
+  if (process.client && (window as any).Telegram?.WebApp) {
+    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+  }
+  
+  swipeOffset.value = 0
+}
+
+const handleDelete = () => {
+  performDelete(true)
 }
 
 const formatDateShort = (date: Date) => {

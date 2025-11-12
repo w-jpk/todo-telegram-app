@@ -1,14 +1,14 @@
 <template>
   <div class="space-y-2">
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
       <button
         v-for="(quickDate, index) in quickDates"
         :key="index"
         @click="selectQuickDate(quickDate.value)"
-        class="flex-1 px-3 py-2 bg-telegram-secondary-bg text-telegram-text rounded-xl text-sm font-medium active:opacity-80 transition-opacity touch-manipulation min-h-[44px]"
+        class="flex-1 min-w-[90px] px-2 sm:px-3 py-2 bg-telegram-secondary-bg text-telegram-text rounded-xl text-xs sm:text-sm font-medium active:opacity-80 transition-opacity touch-manipulation min-h-[44px]"
         :class="{ 'bg-telegram-button text-telegram-button-text': quickDate.selected }"
       >
-        {{ quickDate.label }}
+        <span class="whitespace-nowrap">{{ quickDate.label }}</span>
       </button>
     </div>
     
@@ -16,16 +16,16 @@
       v-model="dateInput"
       type="date"
       :min="today"
-      class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text text-base touch-manipulation min-h-[44px]"
+      class="w-full px-3 sm:px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text text-sm sm:text-base touch-manipulation min-h-[44px]"
     />
     
-    <div v-if="modelValue" class="flex items-center justify-between px-2">
-      <span class="text-sm text-telegram-hint">
+    <div v-if="modelValue" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-2">
+      <span class="text-xs sm:text-sm text-telegram-hint">
         Выбрано: {{ formatDate(modelValue) }}
       </span>
       <button
         @click="clearDate"
-        class="text-sm text-telegram-link hover:text-telegram-button transition-colors touch-manipulation"
+        class="text-xs sm:text-sm text-telegram-link hover:text-telegram-button transition-colors touch-manipulation whitespace-nowrap"
       >
         Очистить
       </button>

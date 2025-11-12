@@ -2,19 +2,19 @@
   <div class="relative">
     <button
       @click="isOpen = !isOpen"
-      class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button text-telegram-text text-left flex items-center justify-between touch-manipulation min-h-[44px]"
+      class="w-full px-3 sm:px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button text-telegram-text text-left flex items-center justify-between touch-manipulation min-h-[44px]"
     >
       <div class="flex items-center gap-2 flex-1 min-w-0">
         <div
           v-if="selectedProject"
-          class="w-4 h-4 rounded-full shrink-0"
+          class="w-3 h-3 sm:w-4 sm:h-4 rounded-full shrink-0"
           :style="{ backgroundColor: selectedProject.color }"
         />
-        <span class="truncate">
+        <span class="truncate text-sm sm:text-base">
           {{ selectedProject?.name || 'Выберите проект' }}
         </span>
       </div>
-      <ChevronDown :size="20" class="shrink-0 ml-2" :class="{ 'rotate-180': isOpen }" />
+      <ChevronDown :size="18" class="sm:w-5 sm:h-5 shrink-0 ml-2" :class="{ 'rotate-180': isOpen }" />
     </button>
 
     <Transition name="dropdown">
@@ -25,31 +25,31 @@
       >
         <button
           @click="selectProject(undefined)"
-          class="w-full px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2"
+          class="w-full px-3 sm:px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2"
           :class="{ 'bg-telegram-secondary-bg': !modelValue }"
         >
-          <span class="text-telegram-text">Без проекта</span>
+          <span class="text-telegram-text text-sm sm:text-base">Без проекта</span>
         </button>
         <button
           v-for="project in projects"
           :key="project.id"
           @click="selectProject(project.id)"
-          class="w-full px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2"
+          class="w-full px-3 sm:px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2"
           :class="{ 'bg-telegram-secondary-bg': modelValue === project.id }"
         >
           <div
-            class="w-4 h-4 rounded-full shrink-0"
+            class="w-3 h-3 sm:w-4 sm:h-4 rounded-full shrink-0"
             :style="{ backgroundColor: project.color }"
           />
-          <span class="text-telegram-text">{{ project.name }}</span>
+          <span class="text-telegram-text text-sm sm:text-base">{{ project.name }}</span>
         </button>
         <div class="border-t border-telegram-secondary-bg/50 my-1" />
         <button
           @click="openCreateModal"
-          class="w-full px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2 text-telegram-link"
+          class="w-full px-3 sm:px-4 py-3 text-left hover:bg-telegram-secondary-bg transition-colors touch-manipulation flex items-center gap-2 text-telegram-link"
         >
-          <Plus :size="18" />
-          <span>Создать проект</span>
+          <Plus :size="16" class="sm:w-[18px] sm:h-[18px]" />
+          <span class="text-sm sm:text-base">Создать проект</span>
         </button>
       </div>
     </Transition>

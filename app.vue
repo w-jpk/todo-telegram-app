@@ -1,6 +1,6 @@
 <template>
   <div class="tg-viewport">
-    <TodoApp />
+    <NuxtPage />
   </div>
 </template>
 
@@ -85,6 +85,27 @@ const handleResize = () => {
 }
 
 onMounted(() => {
+  // Apply dark theme immediately
+  if (process.client) {
+    // Set dark theme as default
+    document.documentElement.classList.add('dark')
+    document.documentElement.style.colorScheme = 'dark'
+    
+    // Apply Telegram theme colors immediately
+    document.documentElement.style.setProperty('--tg-theme-bg-color', '#212121')
+    document.documentElement.style.setProperty('--tg-theme-text-color', '#ffffff')
+    document.documentElement.style.setProperty('--tg-theme-hint-color', '#707579')
+    document.documentElement.style.setProperty('--tg-theme-link-color', '#6ab7ff')
+    document.documentElement.style.setProperty('--tg-theme-button-color', '#5288c1')
+    document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff')
+    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', '#181818')
+    document.documentElement.style.setProperty('--tg-theme-header-bg-color', '#212121')
+    document.documentElement.style.setProperty('--tg-theme-section-bg-color', '#212121')
+    document.documentElement.style.setProperty('--tg-theme-section-header-text-color', '#ffffff')
+    document.documentElement.style.setProperty('--tg-theme-subtitle-text-color', '#707579')
+    document.documentElement.style.setProperty('--tg-theme-destructive-text-color', '#ff453a')
+  }
+  
   // Wait a bit for Telegram SDK to initialize
   setTimeout(() => {
     applyTheme()
