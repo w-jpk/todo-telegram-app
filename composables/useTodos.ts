@@ -1,11 +1,10 @@
 import type { Todo, CreateTodoDto, UpdateTodoDto, TodoFilter } from '~/types/todo'
-import { triggerRef } from 'vue'
 
 export const useTodos = () => {
-  const todos = ref<Todo[]>([])
-  const filter = ref<TodoFilter>('all')
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const todos = useState<Todo[]>('todos:list', () => [])
+  const filter = useState<TodoFilter>('todos:filter', () => 'all')
+  const loading = useState<boolean>('todos:loading', () => false)
+  const error = useState<string | null>('todos:error', () => null)
 
   const { $telegram } = useNuxtApp()
   const userId = computed(() => $telegram?.user?.id || null)
@@ -88,7 +87,7 @@ export const useTodos = () => {
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined
       }
       
-      todos.value.push(newTodo)
+      todos.value = [...todos.value, newTodo]
       return newTodo
     } catch (err: any) {
       error.value = err.message || 'Failed to create todo'
@@ -122,8 +121,9 @@ export const useTodos = () => {
       
       const index = todos.value.findIndex(t => t.id === id)
       if (index !== -1) {
-        todos.value[index] = updatedTodo
-        triggerRef(todos)
+        const nextTodos = [...todos.value]
+        nextTodos[index] = updatedTodo
+        todos.value = nextTodos
       }
       
       return updatedTodo
@@ -173,7 +173,7 @@ export const useTodos = () => {
         headers: getHeaders()
       })
       
-      todos.value = activeTodos.value
+      todos.value = todos.value.filter(todo => !todo.completed)
       return true
     } catch (err: any) {
       error.value = err.message || 'Failed to clear completed todos'

@@ -11,42 +11,57 @@
 
     <div class="pb-6 space-y-6">
       <!-- Add Todo Button -->
-      <button @click="openModal"
-        class="w-full px-6 py-4 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-all flex items-center justify-center gap-3 min-h-[52px] touch-manipulation hover:bg-blue-600 cursor-pointer">
+      <button
+        @click="openModal"
+        class="w-full px-6 py-4 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-all flex items-center justify-center gap-3 min-h-[52px] touch-manipulation hover:bg-blue-600 cursor-pointer"
+      >
         <Plus :size="20" />
         <span class="text-lg">Создать задачу</span>
       </button>
 
       <!-- Filters -->
-      <TodoFilters :current-filter="filter" :date-from="dateFrom" :date-to="dateTo" @filter="handleFilterChange"
-        @date-change="handleDateChange" />
+      <TodoFilters
+        :current-filter="filter"
+        :date-from="dateFrom"
+        :date-to="dateTo"
+        @filter="handleFilterChange"
+        @date-change="handleDateChange"
+      />
 
       <!-- Error Message -->
-      <div v-if="error"
-        class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm">
+      <div
+        v-if="error"
+        class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-xl text-sm"
+      >
         {{ error }}
       </div>
 
       <!-- Loading State -->
       <div v-if="loading && todosWithDateFilter.length === 0" class="text-center py-12">
-        <div
-          class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-telegram-button border-t-transparent">
-        </div>
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-telegram-button border-t-transparent"></div>
         <p class="mt-4 text-telegram-hint text-sm">Загрузка задач...</p>
       </div>
 
       <!-- Todo List -->
       <div v-else-if="todosWithDateFilter.length > 0" class="space-y-3">
-        <TodoItem v-for="todo in todosWithDateFilter" :key="todo.id" :todo="todo" @update="handleUpdate"
-          @delete="handleDelete" @edit="handleEdit" />
+        <TodoItem
+          v-for="todo in todosWithDateFilter"
+          :key="todo.id"
+          :todo="todo"
+          @update="handleUpdate"
+          @delete="handleDelete"
+          @edit="handleEdit"
+        />
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-12 text-telegram-hint">
+      <div
+        v-else
+        class="text-center py-12 text-telegram-hint"
+      >
         <CheckCircle2 :size="56" class="mx-auto mb-6 opacity-50" />
         <p class="text-lg font-medium text-telegram-text mb-2">
-          {{ filter === 'active' ? 'Нет активных задач' : filter === 'completed' ? 'Нет выполненных задач' : 'Нет задач'
-          }}
+          {{ filter === 'active' ? 'Нет активных задач' : filter === 'completed' ? 'Нет выполненных задач' : 'Нет задач' }}
         </p>
         <p class="text-sm text-telegram-hint px-4">
           {{ filter === 'all' ? 'Добавьте первую задачу выше' : 'Измените фильтр, чтобы увидеть другие задачи' }}
@@ -54,18 +69,26 @@
       </div>
 
       <!-- User not authenticated warning -->
-      <div v-if="!userId && !loading"
-        class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl">
+      <div
+        v-if="!userId && !loading"
+        class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded-xl"
+      >
         <p class="font-semibold text-sm">⚠️ Предупреждение</p>
         <p class="text-xs mt-1.5">
           Для работы приложения необходимо открыть его через Telegram Mini App.
         </p>
       </div>
     </div>
-
-    <!-- Todo Modal -->
-    <TodoModal :is-open="isModalOpen" :todo="selectedTodo" :projects="projects as readonly Project[]"
-      @close="closeModal" @save="handleSaveTodo" @project-created="handleProjectCreated" />
+      
+      <!-- Todo Modal -->
+      <TodoModal
+        :is-open="isModalOpen"
+        :todo="selectedTodo"
+        :projects="projects as readonly Project[]"
+        @close="closeModal"
+        @save="handleSaveTodo"
+        @project-created="handleProjectCreated"
+      />
   </div>
 </template>
 
@@ -92,30 +115,30 @@ const {
 // Apply date filter to filtered todos
 const todosWithDateFilter = computed(() => {
   let result = filteredTodos.value
-
+  
   if (dateFrom.value || dateTo.value) {
     result = result.filter(todo => {
       if (!todo.dueDate) return false
-
+      
       const todoDate = new Date(todo.dueDate)
       todoDate.setHours(0, 0, 0, 0)
-
+      
       if (dateFrom.value) {
         const fromDate = new Date(dateFrom.value)
         fromDate.setHours(0, 0, 0, 0)
         if (todoDate < fromDate) return false
       }
-
+      
       if (dateTo.value) {
         const toDate = new Date(dateTo.value)
         toDate.setHours(23, 59, 59, 999)
         if (todoDate > toDate) return false
       }
-
+      
       return true
     })
   }
-
+  
   return result
 })
 
@@ -136,7 +159,7 @@ const dateTo = ref<Date | null>(null)
 const openModal = () => {
   selectedTodo.value = null
   isModalOpen.value = true
-
+  
   // Haptic feedback
   if (process.client && (window as any).Telegram?.WebApp) {
     (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
@@ -156,9 +179,9 @@ const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
     // Create new todo
     await createTodo(data as CreateTodoDto)
   }
-
+  
   closeModal()
-
+  
   // Haptic feedback
   if (process.client && (window as any).Telegram?.WebApp) {
     (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
@@ -166,7 +189,7 @@ const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
 }
 
 const handleUpdate = (id: string, completed: boolean) => {
-
+  // Already handled in TodoItem component
 }
 
 const handleDelete = (id: string) => {
@@ -179,7 +202,7 @@ const handleDelete = (id: string) => {
 const handleEdit = (todo: Todo) => {
   selectedTodo.value = todo
   isModalOpen.value = true
-
+  
   // Haptic feedback
   if (process.client && (window as any).Telegram?.WebApp) {
     (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
@@ -209,7 +232,7 @@ const handleProjectCreated = async (project: Project) => {
 
 onMounted(async () => {
   const { $telegram } = useNuxtApp()
-
+  
   // Auto-authenticate user if available from Telegram
   if ($telegram?.user) {
     try {
@@ -224,7 +247,7 @@ onMounted(async () => {
       console.error('Error authenticating user:', error)
     }
   }
-
+  
   // Fetch projects and todos after authentication
   await Promise.all([
     fetchProjects(),
@@ -232,3 +255,4 @@ onMounted(async () => {
   ])
 })
 </script>
+
