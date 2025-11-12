@@ -3,23 +3,23 @@
     <div class="flex gap-2 flex-wrap">
       <!-- Кнопки быстрого выбора -->
       <button v-for="(quickDate, index) in quickDates" :key="index" @click="selectQuickDate(quickDate.value)"
-        class="flex-1 min-w-[90px] px-2 sm:px-3 py-2 bg-telegram-secondary-bg text-telegram-text rounded-xl text-xs sm:text-sm font-medium active:opacity-80 transition-opacity touch-manipulation min-h-[44px]"
-        :class="{ 'bg-telegram-button text-telegram-button-text': quickDate.selected }">
+        class="flex-1 min-w-[90px] px-2 sm:px-3 py-2 bg-gray-100 text-gray-900 rounded-xl text-xs sm:text-sm font-medium active:opacity-80 transition-opacity touch-manipulation min-h-[44px]"
+        :class="{ 'bg-blue-500 text-white': quickDate.selected }">
         <span class="whitespace-nowrap">{{ quickDate.label }}</span>
       </button>
     </div>
 
     <!-- Поле ввода даты -->
     <input v-model="dateInput" type="date" :min="todayStr"
-      class="w-full px-3 sm:px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text text-sm sm:text-base touch-manipulation min-h-[44px]" />
+      class="w-full px-3 sm:px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm sm:text-base touch-manipulation min-h-[44px]" />
 
     <!-- Информация о выбранной дате и кнопка очистки -->
     <div v-if="displayDate" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-2">
-      <span class="text-xs sm:text-sm text-telegram-hint">
+      <span class="text-xs sm:text-sm text-gray-600">
         Выбрано: {{ formatDate(displayDate) }}
       </span>
       <button @click="clearDate"
-        class="text-xs sm:text-sm text-telegram-link hover:text-telegram-button transition-colors touch-manipulation whitespace-nowrap">
+        class="text-xs sm:text-sm text-blue-500 hover:text-blue-600 transition-colors touch-manipulation whitespace-nowrap">
         Очистить
       </button>
     </div>

@@ -7,55 +7,55 @@
         @click.self="handleClose"
       >
         <div
-          class="w-full max-w-lg max-h-[90vh] bg-telegram-bg rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+          class="w-full max-w-lg max-h-[90vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
           @click.stop
         >
           <!-- Header -->
-          <div class="flex items-center justify-between p-4 sm:p-6 border-b border-telegram-secondary-bg/50">
-            <h2 class="text-xl sm:text-2xl font-bold text-telegram-text">
+          <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
               {{ todo ? 'Редактировать задачу' : 'Новая задача' }}
             </h2>
             <button
               @click="handleClose"
-              class="p-2 text-telegram-hint hover:text-telegram-text transition-colors touch-manipulation"
+              class="p-2 text-gray-600 hover:text-gray-900 transition-colors touch-manipulation"
               aria-label="Close"
             >
-              <X :size="24" />
+              <i class="fas fa-times text-lg"></i>
             </button>
           </div>
 
           <!-- Content -->
-          <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-hide">
             <!-- Title Input -->
             <div>
-              <label class="block text-sm font-medium text-telegram-text mb-2">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
                 Название задачи *
               </label>
               <input
                 v-model="formData.text"
                 type="text"
                 placeholder="Введите название задачи..."
-                class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text placeholder-telegram-hint text-base"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 text-base"
                 ref="titleInput"
               />
             </div>
 
             <!-- Description Input -->
             <div>
-              <label class="block text-sm font-medium text-telegram-text mb-2">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
                 Описание
               </label>
               <textarea
                 v-model="formData.description"
                 placeholder="Добавьте описание..."
                 rows="3"
-                class="w-full px-4 py-3 bg-telegram-secondary-bg border border-telegram-secondary-bg/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-telegram-button focus:border-transparent text-telegram-text placeholder-telegram-hint text-base resize-none"
+                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 text-base resize-none"
               />
             </div>
 
             <!-- Priority Selector -->
             <div>
-              <label class="block text-sm font-medium text-telegram-text mb-2">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
                 Приоритет
               </label>
               <PrioritySelector
@@ -66,7 +66,7 @@
 
             <!-- Project Selector -->
             <div>
-              <label class="block text-sm font-medium text-telegram-text mb-2">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
                 Проект
               </label>
               <ProjectSelector
@@ -79,7 +79,7 @@
 
             <!-- Due Date Selector -->
             <div>
-              <label class="block text-sm font-medium text-telegram-text mb-2">
+              <label class="block text-sm font-medium text-gray-900 mb-2">
                 Срок выполнения
               </label>
               <DateSelector
@@ -90,17 +90,17 @@
           </div>
 
           <!-- Footer -->
-          <div class="flex gap-3 p-4 sm:p-6 border-t border-telegram-secondary-bg/50">
+          <div class="flex gap-3 p-4 sm:p-6 border-t border-gray-200">
             <button
               @click="handleClose"
-              class="flex-1 px-4 py-3 bg-telegram-secondary-bg text-telegram-text rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation"
+              class="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation hover:bg-gray-200"
             >
               Отмена
             </button>
             <button
               @click="handleSave"
               :disabled="!formData.text.trim() || saving"
-              class="flex-1 px-4 py-3 bg-telegram-button text-telegram-button-text rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+              class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-blue-600"
             >
               {{ saving ? 'Сохранение...' : todo ? 'Сохранить' : 'Создать' }}
             </button>
@@ -112,8 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue'
-import { X } from 'lucide-vue-next'
+import { ref, watch, nextTick } from 'vue'
 import type { Todo, CreateTodoDto, UpdateTodoDto, Project, TodoPriority } from '~/types/todo'
 import PrioritySelector from './PrioritySelector.vue'
 import ProjectSelector from './ProjectSelector.vue'

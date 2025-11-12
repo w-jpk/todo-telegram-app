@@ -8,7 +8,7 @@
       :class="
         modelValue === priority.value
           ? priority.activeClass
-          : 'bg-telegram-secondary-bg text-telegram-text active:opacity-80'
+          : 'bg-gray-100 text-gray-900 active:opacity-80'
       "
     >
       <div class="flex items-center justify-center gap-1 sm:gap-1.5">
@@ -38,7 +38,7 @@ const priorities = [
     value: 'none' as TodoPriority,
     label: 'Нет',
     icon: FlagOff,
-    activeClass: 'bg-telegram-secondary-bg text-telegram-text border-2 border-telegram-hint'
+    activeClass: 'bg-gray-100 text-gray-900 border-2 border-gray-400'
   },
   {
     value: 'low' as TodoPriority,
