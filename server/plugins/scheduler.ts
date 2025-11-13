@@ -101,8 +101,8 @@ export default defineNitroPlugin((nitroApp) => {
     timezone: 'UTC'
   })
 
-  // Reminders - runs every day at 9:00 AM
-  cron.schedule('0 9 * * *', async () => {
+  // Reminders - runs every day at 7:00 AM UTC (10:00 MSK)
+  cron.schedule('0 7 * * *', async () => {
     console.log('Running reminders scheduler...')
     
     try {
@@ -121,7 +121,7 @@ export default defineNitroPlugin((nitroApp) => {
 
       for (const userRow of usersResult.rows) {
         const userId = parseInt(userRow.user_id)
-        const reminderDays = userRow.reminder_days_before || [1, 3]
+        const reminderDays = userRow.reminder_days_before || [1]
 
         for (const daysBefore of reminderDays) {
           const reminderDate = new Date(today)
@@ -152,8 +152,7 @@ export default defineNitroPlugin((nitroApp) => {
               })
               .join('\n')
 
-            const daysText = daysBefore === 1 ? 'завтра' : `через ${daysBefore} дня`
-            const message = `⏰ <b>Напоминание: задачи ${daysText}</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>`
+            const message = `🌅 <b>Доброе утро! Напоминаем о задачах на завтра:</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>\n\nУспехов в выполнении! 🚀`
 
             await sendNotification(userId, message)
             totalSent++
@@ -234,7 +233,7 @@ export default defineNitroPlugin((nitroApp) => {
 
   console.log('✅ Notification scheduler initialized')
   console.log('   - Daily notifications: every day at 9:00 AM UTC')
-  console.log('   - Reminders: every day at 9:00 AM UTC')
+  console.log('   - Reminders: every day at 7:00 AM UTC (10:00 MSK)')
   console.log('   - Overdue notifications: every day at 9:00 AM UTC')
 })
 
