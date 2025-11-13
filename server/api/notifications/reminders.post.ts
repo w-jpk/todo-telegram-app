@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     
     for (const userRow of usersResult.rows) {
       const userId = parseInt(userRow.user_id)
-      const reminderDays = userRow.reminder_days_before || [1, 3]
+      const reminderDays = userRow.reminder_days_before || [1]
       
       // Get todos for each reminder day
       for (const daysBefore of reminderDays) {
@@ -61,8 +61,7 @@ export default defineEventHandler(async (event) => {
             })
             .join('\n')
           
-          const daysText = daysBefore === 1 ? 'завтра' : `через ${daysBefore} дня`
-          const message = `⏰ <b>Напоминание: задачи ${daysText}</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>`
+          const message = `🌅 <b>Доброе утро! 📅 Напоминание о задачах на завтра</b>\n\n${todoList}\n\n✨ <i>У вас ${todosResult.rows.length} задач на завтра. Не забудьте их выполнить!</i>`
           
           try {
             await $fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
