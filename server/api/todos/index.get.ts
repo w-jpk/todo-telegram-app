@@ -18,14 +18,14 @@ export default defineEventHandler(async (event) => {
        FROM todos t
        LEFT JOIN projects p ON t.project_id = p.id
        WHERE t.user_id = $1
-       ORDER BY 
+       ORDER BY
+         t.created_at DESC,
          CASE t.priority
            WHEN 'high' THEN 1
            WHEN 'medium' THEN 2
            WHEN 'low' THEN 3
            ELSE 4
          END,
-         t.created_at DESC,
          t.due_date NULLS LAST`,
       [userId]
     )
