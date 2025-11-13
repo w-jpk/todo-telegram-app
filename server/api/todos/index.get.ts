@@ -25,8 +25,8 @@ export default defineEventHandler(async (event) => {
            WHEN 'low' THEN 3
            ELSE 4
          END,
-         t.due_date NULLS LAST,
-         t.created_at DESC`,
+         t.created_at DESC,
+         t.due_date NULLS LAST`,
       [userId]
     )
     
