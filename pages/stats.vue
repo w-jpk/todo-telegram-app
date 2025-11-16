@@ -185,6 +185,11 @@ const { projects } = useProjects()
 
 const activePeriod = ref('Weekly')
 const timePeriods = ref(['Daily', 'Weekly', 'Monthly'])
+const projectColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
+
+const getLocalDateString = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 
 const totalCompleted = computed(() => {
   return todos.value.filter(t => t.completed).length
@@ -235,25 +240,23 @@ const currentStreak = computed(() => {
 
 const categoryStats = computed(() => {
   const stats: Record<string, number> = {}
-  
+
   todos.value.forEach(todo => {
     const category = todo.project?.name || 'Uncategorized'
     stats[category] = (stats[category] || 0) + 1
   })
-  
-  const colorMap: Record<string, string> = {
-    'Work': 'bg-blue-500',
-    'Personal': 'bg-green-500',
-    'Shopping': 'bg-purple-500',
-    'Health': 'bg-pink-500',
-    'Uncategorized': 'bg-gray-400'
-  }
-  
-  return Object.entries(stats).map(([name, count]) => ({
-    name,
-    count,
-    color: colorMap[name] || 'bg-gray-400'
-  }))
+
+  return Object.entries(stats).map(([name, count]) => {
+    let color = 'bg-gray-400'
+    if (name !== 'Uncategorized') {
+      const project = projects.value.find(p => p.name === name)
+      if (project) {
+        const index = projects.value.indexOf(project)
+        color = projectColors[index % projectColors.length]
+      }
+    }
+    return { name, count, color }
+  })
 })
 
 const priorityStats = computed(() => {
@@ -289,27 +292,27 @@ const priorityStats = computed(() => {
 const heatmapData = computed(() => {
   const days: HeatmapDay[] = []
   const today = new Date()
-  
+
   for (let i = 6; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(date.getDate() - i)
-    
+
     const dayTasks = todos.value.filter(t => {
       if (!t.dueDate) return false
       const taskDate = new Date(t.dueDate)
-      return taskDate.toDateString() === date.toDateString()
+      return getLocalDateString(taskDate) === getLocalDateString(date)
     })
-    
+
     const intensity = Math.min(dayTasks.length / 5, 1) // Normalize to 0-1
-    
+
     days.push({
-      date: date.toISOString().split('T')[0],
+      date: getLocalDateString(date),
       day: date.getDate(),
       dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
       intensity
     })
   }
-  
+
   return days
 })
 
