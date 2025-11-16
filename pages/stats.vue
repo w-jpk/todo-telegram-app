@@ -192,6 +192,22 @@ const { projects, fetchProjects } = useProjects()
 
 const activePeriod = ref('Weekly')
 const timePeriods = ref(['Daily', 'Weekly', 'Monthly'])
+
+const periodStart = computed(() => {
+  const now = new Date()
+  switch (activePeriod.value) {
+    case 'Daily': return new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    case 'Weekly': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    case 'Monthly': return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    default: return new Date(0)
+  }
+})
+
+const periodFilteredTodos = computed(() => {
+  return todos.value.filter(todo => {
+    return todo.createdAt >= periodStart.value
+  })
+})
 const projectColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
 const hexColors = ['#2481cc', '#7c3aed', '#059669', '#dc2626', '#ea580c', '#ca8a04']
 
@@ -200,12 +216,12 @@ const getLocalDateString = (date: Date) => {
 }
 
 const totalCompleted = computed(() => {
-  return todos.value.filter(t => t.completed).length
+  return periodFilteredTodos.value.filter(t => t.completed).length
 })
 
 const completionRate = computed(() => {
-  if (todos.value.length === 0) return 0
-  return Math.round((totalCompleted.value / todos.value.length) * 100)
+  if (periodFilteredTodos.value.length === 0) return 0
+  return Math.round((totalCompleted.value / periodFilteredTodos.value.length) * 100)
 })
 
 const averageDaily = computed(() => {
@@ -249,7 +265,7 @@ const currentStreak = computed(() => {
 const categoryStats = computed(() => {
   const stats: Record<string, number> = {}
 
-  todos.value.forEach(todo => {
+  periodFilteredTodos.value.forEach(todo => {
     const category = todo.project?.name || 'Uncategorized'
     stats[category] = (stats[category] || 0) + 1
   })
@@ -303,7 +319,7 @@ const priorityStats = computed(() => {
     'Low': { total: 0, completed: 0 }
   }
 
-  todos.value.forEach(todo => {
+  periodFilteredTodos.value.forEach(todo => {
     const level = todo.priority === 'high' ? 'High' : todo.priority === 'medium' ? 'Medium' : 'Low'
     stats[level].total++
     if (todo.completed) {
@@ -357,11 +373,11 @@ const chartData = computed(() => {
 
   return {
 
-    total: todos.value.length,
+    total: periodFilteredTodos.value.length,
 
-    completed: completedTodos.value.length,
+    completed: periodFilteredTodos.value.filter(t => t.completed).length,
 
-    pending: activeTodos.value.length
+    pending: periodFilteredTodos.value.filter(t => !t.completed).length
 
   }
 
