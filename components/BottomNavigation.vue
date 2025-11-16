@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-50">
+  <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-50 transition-transform duration-300 ease-in-out">
     <div class="grid grid-cols-4 py-2">
       <NuxtLink
         to="/"

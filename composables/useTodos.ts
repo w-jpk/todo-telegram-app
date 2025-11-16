@@ -43,10 +43,10 @@ export const useTodos = () => {
   // Fetch todos
   const fetchTodos = async () => {
     if (!userId.value) return
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       const { data } = await $fetch<{ data: Todo[] }>('/api/todos', {
         method: 'GET',
@@ -69,24 +69,24 @@ export const useTodos = () => {
   // Create todo
   const createTodo = async (todoData: CreateTodoDto) => {
     if (!userId.value) return null
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       const { data } = await $fetch<{ data: Todo }>('/api/todos', {
         method: 'POST',
         headers: getHeaders(),
         body: todoData
       })
-      
+
       const newTodo = {
         ...data,
         createdAt: new Date(data.createdAt),
         updatedAt: new Date(data.updatedAt),
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined
       }
-      
+
       todos.value = [...todos.value, newTodo]
       return newTodo
     } catch (err: any) {
@@ -101,31 +101,31 @@ export const useTodos = () => {
   // Update todo
   const updateTodo = async (id: string, todoData: UpdateTodoDto) => {
     if (!userId.value) return null
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       const { data } = await $fetch<{ data: Todo }>(`/api/todos/${id}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: todoData
       })
-      
+
       const updatedTodo = {
         ...data,
         createdAt: new Date(data.createdAt),
         updatedAt: new Date(data.updatedAt),
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined
       }
-      
+
       const index = todos.value.findIndex(t => t.id === id)
       if (index !== -1) {
         const nextTodos = [...todos.value]
         nextTodos[index] = updatedTodo
         todos.value = nextTodos
       }
-      
+
       return updatedTodo
     } catch (err: any) {
       error.value = err.message || 'Failed to update todo'
@@ -139,16 +139,16 @@ export const useTodos = () => {
   // Delete todo
   const deleteTodo = async (id: string) => {
     if (!userId.value) return false
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       await $fetch(`/api/todos/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
       })
-      
+
       todos.value = todos.value.filter(t => t.id !== id)
       return true
     } catch (err: any) {
@@ -163,16 +163,16 @@ export const useTodos = () => {
   // Clear completed todos
   const clearCompleted = async () => {
     if (!userId.value) return false
-    
+
     loading.value = true
     error.value = null
-    
+
     try {
       await $fetch('/api/todos/clear-completed', {
         method: 'DELETE',
         headers: getHeaders()
       })
-      
+
       todos.value = todos.value.filter(todo => !todo.completed)
       return true
     } catch (err: any) {

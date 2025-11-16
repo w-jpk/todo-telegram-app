@@ -46,10 +46,16 @@ export default defineNuxtPlugin(() => {
     // Create reactive state for Telegram data
     const telegramState = reactive({
       webApp: null as any,
-      user: savedData?.user || null as any,
+      user: savedData?.user || (process.dev ? {
+        id: 123456789,
+        first_name: 'Test',
+        last_name: 'User',
+        username: 'testuser',
+        language_code: 'ru'
+      } : null) as any,
       initData: savedData?.initData || '',
       initDataUnsafe: savedData?.initDataUnsafe || {} as any,
-      isReady: savedData ? true : false
+      isReady: savedData ? true : (process.dev ? true : false)
     })
     
     // Function to initialize Telegram WebApp

@@ -29,7 +29,7 @@
             :value="formatDateInput(dateFrom)"
             @change="handleDateFromChange"
             type="date"
-            class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 touch-manipulation"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400 touch-manipulation"
             placeholder="От"
           />
         </div>
@@ -39,7 +39,7 @@
             :value="formatDateInput(dateTo)"
             @change="handleDateToChange"
             type="date"
-            class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 touch-manipulation"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400 touch-manipulation"
             placeholder="До"
           />
         </div>

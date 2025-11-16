@@ -11,7 +11,15 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss'
   ],
-  
+
+  vite: {
+    server: {
+      hmr: {
+        port: 24679
+      }
+    }
+  },
+
   css: ['~/assets/css/main.css'],
   
   runtimeConfig: {

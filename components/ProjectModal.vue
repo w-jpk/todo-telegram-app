@@ -3,7 +3,7 @@
     <Transition name="modal">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+        class="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
         @click.self="handleClose"
       >
         <div
@@ -20,7 +20,7 @@
               class="p-2 text-gray-600 hover:text-gray-900 transition-colors touch-manipulation"
               aria-label="Close"
             >
-              <i class="fas fa-times text-lg"></i>
+              <X :size="24" />
             </button>
           </div>
 
@@ -91,6 +91,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
+import { X } from 'lucide-vue-next'
 import type { Project, CreateProjectDto, UpdateProjectDto } from '~/types/todo'
 
 interface Props {

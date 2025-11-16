@@ -20,7 +20,7 @@
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto scrollbar-hide"
+        class="absolute z-[150] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto scrollbar-hide"
         @click.stop
       >
         <button
@@ -45,7 +45,7 @@
         </button>
         <div class="border-t border-gray-200 my-1" />
         <button
-          @click="openCreateModal"
+          @click.stop="openCreateModal"
           class="w-full px-3 sm:px-4 py-3 text-left hover:bg-gray-100 transition-colors touch-manipulation flex items-center gap-2 text-blue-500"
         >
           <Plus :size="16" class="sm:w-[18px] sm:h-[18px]" />
@@ -139,8 +139,10 @@ const handleCreateProject = async (data: CreateProjectDto | UpdateProjectDto) =>
 
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  if (!target.closest('.relative')) {
+  const dropdown = target.closest('.relative')
+  if (!dropdown) {
     isOpen.value = false
+    isProjectModalOpen.value = false
   }
 }
 
