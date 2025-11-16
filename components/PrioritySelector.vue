@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Flag, FlagOff } from 'lucide-vue-next'
 import type { TodoPriority } from '~/types/todo'
 
@@ -33,31 +34,33 @@ defineEmits<{
   'update:modelValue': [value: TodoPriority]
 }>()
 
-const priorities = [
+const { t } = useI18n()
+
+const priorities = computed(() => [
   {
     value: 'none' as TodoPriority,
-    label: 'Нет',
+    label: t('priority.none'),
     icon: FlagOff,
     activeClass: 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-2 border-gray-400 dark:border-gray-500'
   },
   {
     value: 'low' as TodoPriority,
-    label: 'Низкий',
+    label: t('priority.low'),
     icon: Flag,
     activeClass: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-2 border-blue-500 dark:border-blue-400'
   },
   {
     value: 'medium' as TodoPriority,
-    label: 'Средний',
+    label: t('priority.medium'),
     icon: Flag,
     activeClass: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 border-2 border-yellow-500 dark:border-yellow-400'
   },
   {
     value: 'high' as TodoPriority,
-    label: 'Высокий',
+    label: t('priority.high'),
     icon: Flag,
     activeClass: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 border-2 border-red-500 dark:border-red-400'
   }
-]
+])
 </script>
 

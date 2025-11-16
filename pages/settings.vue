@@ -120,6 +120,34 @@
         </div>
       </div>
 
+      <!-- Language Selection -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+            <i class="fas fa-language text-indigo-500"></i>
+          </div>
+          <h3 class="font-medium text-gray-900 dark:text-white">{{ $t('settings.language') }}</h3>
+        </div>
+        <div class="space-y-3">
+          <div
+            v-for="locale in availableLocales"
+            :key="locale.code"
+            :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900': currentLocale === locale.code, 'border-gray-200 dark:border-gray-600': currentLocale !== locale.code }"
+            class="flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer"
+            @click="setLocale(locale.code)">
+            <div class="flex items-center space-x-3">
+              <i :class="locale.code === 'ru' ? 'fas fa-flag' : 'fas fa-flag-usa'" class="text-lg"></i>
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ locale.name }}</p>
+              </div>
+            </div>
+            <i
+              :class="{ 'text-blue-500': currentLocale === locale.code, 'text-gray-300 dark:text-gray-500': currentLocale !== locale.code }"
+              class="fas fa-check text-lg"></i>
+          </div>
+        </div>
+      </div>
+
       <!-- Data Management -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-3 mb-4">
@@ -211,6 +239,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { ThemeMode } from '~/composables/useTheme'
+
+const { locale, locales, setLocale: i18nSetLocale } = useI18n()
+const availableLocales = computed(() => locales.value)
+const currentLocale = computed(() => locale.value)
+
+const setLocale = async (newLocale: 'ru' | 'en') => {
+  await i18nSetLocale(newLocale)
+  if (settings.value) {
+    await updateSettings({ language: newLocale })
+  }
+}
 
 interface Theme {
   value: ThemeMode
@@ -344,6 +383,11 @@ onMounted(async () => {
   await waitForTelegram()
 
   await fetchSettings()
+
+  // Set initial locale from settings
+  if (settings.value?.language) {
+    await i18nSetLocale(settings.value.language as 'ru' | 'en')
+  }
 })
 
 const pushNotifications = computed({

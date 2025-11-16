@@ -7,7 +7,7 @@
         :class="isActive('/') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"
       >
         <i class="fas fa-tasks text-lg mb-1" :class="isActive('/') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"></i>
-        <span class="text-xs" :class="isActive('/') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">Tasks</span>
+        <span class="text-xs" :class="isActive('/') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">{{ $t('nav.tasks') }}</span>
       </NuxtLink>
       <NuxtLink
         to="/calendar"
@@ -15,7 +15,7 @@
         :class="isActive('/calendar') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"
       >
         <i class="fas fa-calendar-alt text-lg mb-1" :class="isActive('/calendar') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"></i>
-        <span class="text-xs" :class="isActive('/calendar') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">Calendar</span>
+        <span class="text-xs" :class="isActive('/calendar') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">{{ $t('nav.calendar') }}</span>
       </NuxtLink>
       <NuxtLink
         to="/stats"
@@ -23,7 +23,7 @@
         :class="isActive('/stats') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"
       >
         <i class="fas fa-chart-bar text-lg mb-1" :class="isActive('/stats') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"></i>
-        <span class="text-xs" :class="isActive('/stats') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">Stats</span>
+        <span class="text-xs" :class="isActive('/stats') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">{{ $t('nav.stats') }}</span>
       </NuxtLink>
       <NuxtLink
         to="/settings"
@@ -31,7 +31,7 @@
         :class="isActive('/settings') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"
       >
         <i class="fas fa-cog text-lg mb-1" :class="isActive('/settings') ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'"></i>
-        <span class="text-xs" :class="isActive('/settings') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">Settings</span>
+        <span class="text-xs" :class="isActive('/settings') ? 'text-blue-500 font-medium' : 'text-gray-400 dark:text-gray-500'">{{ $t('nav.settings') }}</span>
       </NuxtLink>
     </div>
   </div>

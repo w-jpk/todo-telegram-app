@@ -84,11 +84,22 @@ async function createTables() {
         notify_on_update BOOLEAN DEFAULT FALSE,
         notify_on_overdue BOOLEAN DEFAULT TRUE,
         timezone VARCHAR(50) DEFAULT 'UTC',
+        theme VARCHAR(10) DEFAULT 'light' CHECK (theme IN ('light', 'dark', 'auto')),
+        language VARCHAR(10) DEFAULT 'en',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✅ Created user_settings table');
+
+    // Add new columns to existing user_settings table if they don't exist
+    try {
+      await pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS theme VARCHAR(10) DEFAULT 'light' CHECK (theme IN ('light', 'dark', 'auto'))`);
+      await pool.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en'`);
+      console.log('✅ Updated user_settings table with new columns');
+    } catch (error) {
+      console.log('ℹ️  Columns may already exist or update skipped');
+    }
 
     console.log('📊 Creating indexes...');
 
@@ -125,8 +136,8 @@ async function createTables() {
 
     // Create default settings for existing users
     const settingsResult = await pool.query(`
-      INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue)
-      SELECT id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE
+      INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language)
+      SELECT id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'en'
       FROM users
       WHERE NOT EXISTS (
         SELECT 1 FROM user_settings WHERE user_settings.user_id = users.id

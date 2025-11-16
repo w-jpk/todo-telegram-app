@@ -71,6 +71,8 @@ export interface UserSettings {
   notifyOnUpdate: boolean
   notifyOnOverdue: boolean
   timezone: string
+  theme: 'light' | 'dark' | 'auto'
+  language: string
   createdAt: Date
   updatedAt: Date
 }
@@ -84,5 +86,7 @@ export interface UpdateUserSettingsDto {
   notifyOnUpdate?: boolean
   notifyOnOverdue?: boolean
   timezone?: string
+  theme?: 'light' | 'dark' | 'auto'
+  language?: string
 }
 

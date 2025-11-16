@@ -1,6 +1,8 @@
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 export const useTheme = () => {
+  const { settings, updateSettings } = useSettings()
+
   const theme = useState<ThemeMode>('theme', () => {
     if (process.client) {
       const saved = localStorage.getItem('theme') as ThemeMode
@@ -17,6 +19,13 @@ export const useTheme = () => {
       }
     }
     return 'light'
+  })
+
+  // Sync theme with settings when settings are loaded
+  watch(() => settings.value?.theme, (newTheme) => {
+    if (newTheme && newTheme !== theme.value) {
+      theme.value = newTheme
+    }
   })
 
   const isDark = computed(() => {
@@ -92,10 +101,17 @@ export const useTheme = () => {
     }
   }
 
-  const setTheme = (newTheme: ThemeMode) => {
+  const setTheme = async (newTheme: ThemeMode) => {
     theme.value = newTheme
+    if (settings.value) {
+      await updateSettings({ theme: newTheme })
+    } else {
+      // Fallback to localStorage if settings not loaded
+      if (process.client) {
+        localStorage.setItem('theme', newTheme)
+      }
+    }
     if (process.client) {
-      localStorage.setItem('theme', newTheme)
       applyTheme(newTheme)
     }
   }
@@ -139,7 +155,7 @@ export const useTheme = () => {
   // Watch theme changes
   watch(theme, (newTheme) => {
     applyTheme(newTheme)
-  })
+  }, { immediate: false })
 
   return {
     theme: readonly(theme),

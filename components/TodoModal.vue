@@ -13,7 +13,7 @@
           <!-- Header -->
           <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {{ todo ? 'Редактировать задачу' : 'Новая задача' }}
+              {{ todo ? $t('tasks.editTask') : $t('tasks.newTask') }}
             </h2>
             <button
               @click="handleClose"
@@ -29,12 +29,12 @@
             <!-- Title Input -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Название задачи *
+                {{ $t('tasks.taskTitle') }} *
               </label>
               <input
                 v-model="formData.text"
                 type="text"
-                placeholder="Введите название задачи..."
+                :placeholder="$t('tasks.taskTitlePlaceholder')"
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base"
                 ref="titleInput"
               />
@@ -43,11 +43,11 @@
             <!-- Description Input -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Описание
+                {{ $t('tasks.description') }}
               </label>
               <textarea
                 v-model="formData.description"
-                placeholder="Добавьте описание..."
+                :placeholder="$t('tasks.descriptionPlaceholder')"
                 rows="3"
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base resize-none"
               />
@@ -56,7 +56,7 @@
             <!-- Priority Selector -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Приоритет
+                {{ $t('tasks.priority') }}
               </label>
               <PrioritySelector
                 v-model="formData.priority"
@@ -67,7 +67,7 @@
             <!-- Project Selector -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Проект
+                {{ $t('tasks.project') }}
               </label>
               <ProjectSelector
                 v-model="formData.projectId"
@@ -80,7 +80,7 @@
             <!-- Due Date Selector -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Срок выполнения
+                {{ $t('tasks.dueDate') }}
               </label>
               <DateSelector
                 v-model="formData.dueDate"
@@ -95,14 +95,14 @@
               @click="handleClose"
               class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation hover:bg-gray-200 dark:hover:bg-gray-600"
             >
-              Отмена
+              {{ $t('common.cancel') }}
             </button>
             <button
               @click="handleSave"
               :disabled="!formData.text.trim() || saving"
               class="flex-1 px-4 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-blue-600 dark:hover:bg-blue-700"
             >
-              {{ saving ? 'Сохранение...' : todo ? 'Сохранить' : 'Создать' }}
+              {{ saving ? $t('common.loading') : todo ? $t('common.save') : $t('common.create') }}
             </button>
           </div>
         </div>

@@ -53,6 +53,16 @@ export default defineEventHandler(async (event) => {
       updates.push(`timezone = $${paramIndex++}`)
       values.push(body.timezone)
     }
+
+    if (body.theme !== undefined) {
+      updates.push(`theme = $${paramIndex++}`)
+      values.push(body.theme)
+    }
+
+    if (body.language !== undefined) {
+      updates.push(`language = $${paramIndex++}`)
+      values.push(body.language)
+    }
     
     if (updates.length === 0) {
       throw createError({
@@ -75,8 +85,8 @@ export default defineEventHandler(async (event) => {
     if (existing.rows.length === 0) {
       // Create default settings first
       await pool.query(
-        `INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue)
-         VALUES ($1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE)`,
+        `INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language)
+         VALUES ($1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'en')`,
         [userId]
       )
     }
@@ -100,6 +110,8 @@ export default defineEventHandler(async (event) => {
       notifyOnUpdate: row.notify_on_update,
       notifyOnOverdue: row.notify_on_overdue,
       timezone: row.timezone || 'UTC',
+      theme: row.theme || 'light',
+      language: row.language || 'en',
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }

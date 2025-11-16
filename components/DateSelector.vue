@@ -16,11 +16,11 @@
     <!-- Информация о выбранной дате и кнопка очистки -->
     <div v-if="displayDate" class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-2">
       <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-        Выбрано: {{ formatDate(displayDate) }}
+        {{ $t('dateSelector.custom') }}: {{ formatDate(displayDate) }}
       </span>
       <button @click="clearDate"
         class="text-xs sm:text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors touch-manipulation whitespace-nowrap">
-        Очистить
+        {{ $t('common.delete') }}
       </button>
     </div>
   </div>
@@ -99,20 +99,21 @@ const quickDates = computed(() => {
   // Сравниваем строки или нормализованные даты
   const currentSelectedDateStr = props.modelValue ? getDateStr(props.modelValue) : null;
 
+  const { t } = useI18n()
   return [
     {
       value: todayNormalizedStr, // Передаем строку даты
-      label: 'Сегодня',
+      label: t('dateSelector.today'),
       selected: currentSelectedDateStr === todayNormalizedStr,
     },
     {
       value: tomorrowNormalizedStr,
-      label: 'Завтра',
+      label: t('dateSelector.tomorrow'),
       selected: currentSelectedDateStr === tomorrowNormalizedStr,
     },
     {
       value: nextWeekNormalizedStr,
-      label: 'Через неделю',
+      label: t('dateSelector.nextWeek'),
       selected: currentSelectedDateStr === nextWeekNormalizedStr,
     },
   ];

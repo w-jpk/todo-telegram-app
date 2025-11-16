@@ -11,7 +11,7 @@
           :style="{ backgroundColor: selectedProject.color || '#2481cc' }"
         />
         <span class="truncate text-sm sm:text-base">
-          {{ selectedProject?.name || 'Выберите проект' }}
+          {{ selectedProject?.name || $t('tasks.project') }}
         </span>
       </div>
       <ChevronDown :size="18" class="sm:w-5 sm:h-5 shrink-0 ml-2" :class="{ 'rotate-180': isOpen }" />
@@ -28,7 +28,7 @@
           class="w-full px-3 sm:px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-manipulation flex items-center gap-2"
           :class="{ 'bg-gray-100 dark:bg-gray-700': !modelValue }"
         >
-          <span class="text-gray-900 dark:text-white text-sm sm:text-base">Без проекта</span>
+          <span class="text-gray-900 dark:text-white text-sm sm:text-base">{{ $t('tasks.noProject') }}</span>
         </button>
         <button
           v-for="project in projects"
@@ -49,7 +49,7 @@
           class="w-full px-3 sm:px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-manipulation flex items-center gap-2 text-blue-500 dark:text-blue-400"
         >
           <Plus :size="16" class="sm:w-[18px] sm:h-[18px]" />
-          <span class="text-sm sm:text-base">Создать проект</span>
+          <span class="text-sm sm:text-base">{{ $t('projects.createProject') }}</span>
         </button>
       </div>
     </Transition>
