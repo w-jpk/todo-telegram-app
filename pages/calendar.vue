@@ -147,7 +147,7 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <BottomNavigation />
+    <BottomNavigation v-show="!showTaskModal" />
   </div>
 </template>
 
