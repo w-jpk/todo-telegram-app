@@ -115,11 +115,15 @@ const categories = computed<Category[]>(() => {
   const projectCategories = projects.value.map(project => ({
     name: project.name,
     icon: 'fas fa-circle',
-    color: project.color
+    color: project.color || '#2481cc'
   }))
 
   return [...baseCategories, ...projectCategories]
 })
+
+const getLocalDateString = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 
 const today = computed(() => {
   const date = new Date()
@@ -128,11 +132,11 @@ const today = computed(() => {
 })
 
 const todayTasks = computed(() => {
+  const todayStr = getLocalDateString(today.value)
   return todos.value.filter(task => {
     if (!task.dueDate) return false
-    const taskDate = new Date(task.dueDate)
-    taskDate.setHours(0, 0, 0, 0)
-    return taskDate.getTime() === today.value.getTime()
+    const taskDateStr = getLocalDateString(task.dueDate)
+    return taskDateStr === todayStr
   })
 })
 
@@ -150,11 +154,11 @@ const filteredTasks = computed(() => {
 
   // Apply category filter
   if (activeCategory.value === 'Today') {
+    const todayStr = getLocalDateString(today.value)
     result = result.filter(task => {
       if (!task.dueDate) return false
-      const taskDate = new Date(task.dueDate)
-      taskDate.setHours(0, 0, 0, 0)
-      return taskDate.getTime() === today.value.getTime()
+      const taskDateStr = getLocalDateString(task.dueDate)
+      return taskDateStr === todayStr
     })
   } else if (activeCategory.value !== 'All') {
     result = result.filter(task => {

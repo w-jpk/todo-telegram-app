@@ -35,16 +35,11 @@
       <!-- Category Filter Bar -->
       <div class="px-4 mb-4">
         <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
-          <button
-            v-for="category in filterCategories"
-            :key="category.name"
-            :class="{
-              'bg-blue-500 text-white': activeFilter === category.name,
-              'bg-white text-gray-600': activeFilter !== category.name
-            }"
-            class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
-            @click="activeFilter = category.name"
-          >
+          <button v-for="category in filterCategories" :key="category.name" :class="{
+            'bg-blue-500 text-white': activeFilter === category.name,
+            'bg-white text-gray-600': activeFilter !== category.name
+          }" class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
+            @click="activeFilter = category.name">
             <i :class="category.icon" class="mr-1"></i>
             {{ category.name }}
           </button>
@@ -56,35 +51,22 @@
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
           <!-- Week Days Header -->
           <div class="grid grid-cols-7 bg-gray-50">
-            <div
-              v-for="day in weekDays"
-              :key="day"
-              class="p-3 text-center text-sm font-medium text-gray-600"
-            >
+            <div v-for="day in weekDays" :key="day" class="p-3 text-center text-sm font-medium text-gray-600">
               {{ day }}
             </div>
           </div>
           <!-- Calendar Days -->
           <div class="grid grid-cols-7">
-            <div
-              v-for="date in calendarDays"
-              :key="date.key"
-              :class="{
-                'bg-blue-500 text-white': date.isToday,
-                'text-gray-400': !date.isCurrentMonth,
-                'text-gray-900': date.isCurrentMonth && !date.isToday
-              }"
-              class="relative p-3 h-16 border-b border-r border-gray-100 cursor-pointer hover:bg-gray-50"
-              @click="selectDate(date)"
-            >
+            <div v-for="date in calendarDays" :key="date.key" :class="{
+              'bg-blue-500 text-white': date.isToday,
+              'text-gray-400': !date.isCurrentMonth,
+              'text-gray-900': date.isCurrentMonth && !date.isToday
+            }" class="relative p-3 h-16 border-b border-r border-gray-100 cursor-pointer hover:bg-gray-50"
+              @click="selectDate(date)">
               <div class="text-sm font-medium">{{ date.day }}</div>
               <div class="absolute bottom-1 right-1 flex space-x-1">
-                <div
-                  v-for="task in getTasksForDate(date.fullDate)"
-                  :key="task.id"
-                  :class="getTaskDotColor(task.project?.name || '')"
-                  class="w-2 h-2 rounded-full"
-                ></div>
+                <div v-for="task in getTasksForDate(date.fullDate)" :key="task.id"
+                  :class="getTaskDotColor(task.project?.name || '')" class="w-2 h-2 rounded-full"></div>
               </div>
             </div>
           </div>
@@ -114,15 +96,8 @@
     </div>
 
     <!-- Daily Task Details Modal -->
-    <div
-      v-if="showTaskModal"
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
-      @click="closeTaskModal"
-    >
-      <div
-        class="bg-white rounded-t-2xl w-full max-h-96 overflow-y-auto scrollbar-hide"
-        @click.stop
-      >
+    <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" @click="closeTaskModal">
+      <div class="bg-white rounded-t-2xl w-full max-h-96 overflow-y-auto scrollbar-hide" @click.stop>
         <div class="p-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">
@@ -139,46 +114,27 @@
             <p class="text-gray-500">No tasks for this date</p>
           </div>
           <div v-else class="space-y-3">
-            <div
-              v-for="task in selectedDateTasks"
-              :key="task.id"
-              class="bg-gray-50 rounded-xl p-3"
-            >
+            <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 rounded-xl p-3">
               <div class="flex items-start space-x-3">
-                <button
-                  :class="{
-                    'bg-green-500 border-green-500': task.completed,
-                    'border-gray-300': !task.completed
-                  }"
-                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
-                  @click="toggleTask(task.id)"
-                >
+                <button :class="{
+                  'bg-green-500 border-green-500': task.completed,
+                  'border-gray-300': !task.completed
+                }" class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
+                  @click="toggleTask(task.id)">
                   <i v-if="task.completed" class="fas fa-check text-white text-xs"></i>
                 </button>
                 <div class="flex-1">
-                  <h4
-                    :class="{ 'line-through text-gray-400': task.completed }"
-                    class="font-medium text-gray-900 mb-1"
-                  >
+                  <h4 :class="{ 'line-through text-gray-400': task.completed }" class="font-medium text-gray-900 mb-1">
                     {{ task.text }}
                   </h4>
-                  <p
-                    v-if="task.description"
-                    :class="{ 'line-through text-gray-400': task.completed }"
-                    class="text-sm text-gray-600 mb-2"
-                  >
+                  <p v-if="task.description" :class="{ 'line-through text-gray-400': task.completed }"
+                    class="text-sm text-gray-600 mb-2">
                     {{ task.description }}
                   </p>
                   <div class="flex items-center space-x-3">
-                    <div
-                      :class="getPriorityColor(task.priority)"
-                      class="w-2 h-2 rounded-full"
-                    ></div>
-                    <span
-                      v-if="task.project"
-                      :class="getCategoryColor(task.project.name)"
-                      class="px-2 py-1 rounded-full text-xs font-medium"
-                    >
+                    <div :class="getPriorityColor(task.priority)" class="w-2 h-2 rounded-full"></div>
+                    <span v-if="task.project" :class="getCategoryColor(task.project.name)"
+                      class="px-2 py-1 rounded-full text-xs font-medium">
                       {{ task.project.name }}
                     </span>
                   </div>
@@ -376,4 +332,3 @@ const toggleTask = async (id: string) => {
   }
 }
 </script>
-

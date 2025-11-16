@@ -13,7 +13,7 @@
       <div
         v-if="category.color"
         class="w-2 h-2 rounded-full shrink-0"
-        :style="{ backgroundColor: category.color }"
+        :style="{ backgroundColor: category.color || '#2481cc' }"
       ></div>
       <!-- Icon for system categories -->
       <i v-else :class="category.icon" class="text-xs"></i>

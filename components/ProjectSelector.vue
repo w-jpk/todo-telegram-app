@@ -8,7 +8,7 @@
         <div
           v-if="selectedProject"
           class="w-3 h-3 sm:w-4 sm:h-4 rounded-full shrink-0"
-          :style="{ backgroundColor: selectedProject.color }"
+          :style="{ backgroundColor: selectedProject.color || '#2481cc' }"
         />
         <span class="truncate text-sm sm:text-base">
           {{ selectedProject?.name || 'Выберите проект' }}
@@ -39,7 +39,7 @@
         >
           <div
             class="w-3 h-3 sm:w-4 sm:h-4 rounded-full shrink-0"
-            :style="{ backgroundColor: project.color }"
+            :style="{ backgroundColor: project.color || '#2481cc' }"
           />
           <span class="text-gray-900 text-sm sm:text-base">{{ project.name }}</span>
         </button>
