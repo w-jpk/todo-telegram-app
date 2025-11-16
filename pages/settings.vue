@@ -221,6 +221,48 @@ const userEmail = computed(() => {
   return $telegram?.user?.username ? `@${$telegram.user.username}` : null
 })
 
+onMounted(async () => {
+  const { $telegram } = useNuxtApp()
+
+  const waitForTelegram = (): Promise<void> => {
+    return new Promise((resolve) => {
+      if ($telegram?.isReady && $telegram?.user) {
+        resolve()
+        return
+      }
+
+      const checkInterval = setInterval(() => {
+        if ((window as any).Telegram?.WebApp) {
+          const tg = (window as any).Telegram.WebApp
+          if (tg.initDataUnsafe?.user) {
+            if ($telegram) {
+              $telegram.user = tg.initDataUnsafe.user
+              $telegram.initData = tg.initData || ''
+              $telegram.initDataUnsafe = tg.initDataUnsafe || {}
+              $telegram.isReady = true
+            }
+            clearInterval(checkInterval)
+            resolve()
+          } else if ($telegram?.user) {
+            clearInterval(checkInterval)
+            resolve()
+          }
+        } else if ($telegram?.user) {
+          clearInterval(checkInterval)
+          resolve()
+        }
+      }, 100)
+
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        resolve()
+      }, 3000)
+    })
+  }
+
+  await waitForTelegram()
+})
+
 const pushNotifications = ref(true)
 const emailAlerts = ref(false)
 const taskReminders = ref(true)
