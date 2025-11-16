@@ -86,7 +86,8 @@
     "pending": "В ожидании",
     "tasksForDate": "Задачи на {date}",
     "noTasksForDate": "Нет задач на эту дату",
-    "all": "Все"
+    "all": "Все",
+    "weekDays": ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
   },
   "settings": {
     "title": "Настройки",

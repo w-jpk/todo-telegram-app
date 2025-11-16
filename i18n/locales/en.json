@@ -86,7 +86,8 @@
     "pending": "Pending",
     "tasksForDate": "Tasks for {date}",
     "noTasksForDate": "No tasks for this date",
-    "all": "All"
+    "all": "All",
+    "weekDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   },
   "settings": {
     "title": "Settings",

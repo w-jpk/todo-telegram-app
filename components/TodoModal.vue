@@ -123,6 +123,7 @@ interface Props {
   isOpen: boolean
   todo?: Todo | null
   projects: readonly Project[]
+  initialDueDate?: Date
 }
 
 const props = defineProps<Props>()
@@ -166,7 +167,7 @@ watch(() => props.isOpen, (newVal) => {
         description: '',
         priority: 'none',
         projectId: undefined,
-        dueDate: undefined
+        dueDate: props.initialDueDate || undefined
       }
     }
     

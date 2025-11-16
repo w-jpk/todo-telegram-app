@@ -71,3 +71,17 @@ export const getRelativeTime = (date: Date): string => {
   if (diffInDays < 7) return `${diffInDays}d ago`
   return date.toLocaleDateString()
 }
+
+/**
+ * Format month and year with locale
+ */
+export const formatMonthYear = (date: Date, locale: string = 'en'): string => {
+  return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+}
+
+/**
+ * Format full date with locale
+ */
+export const formatFullDate = (date: Date, locale: string = 'en'): string => {
+  return date.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })
+}

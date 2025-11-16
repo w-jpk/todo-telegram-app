@@ -8,13 +8,13 @@
       <!-- Month Navigation -->
       <div class="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 mb-4">
         <div class="flex items-center justify-between">
-          <button @click="previousMonth" class="p-2 cursor-pointer">
+          <button @click="previousMonth" class="p-2 cursor-pointer" aria-label="Previous month">
             <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
           </button>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white" aria-live="polite">
             {{ currentMonthYear }}
           </h2>
-          <button @click="nextMonth" class="p-2 cursor-pointer">
+          <button @click="nextMonth" class="p-2 cursor-pointer" aria-label="Next month">
             <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
           </button>
         </div>
@@ -26,8 +26,10 @@
           <button v-for="category in filterCategories" :key="category.name" :class="{
             'bg-blue-500 dark:bg-blue-600 text-white': activeFilter === category.name,
             'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400': activeFilter !== category.name
-          }" class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm dark:shadow-gray-900/50 cursor-pointer"
-            @click="activeFilter = category.name">
+          }"
+            class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm dark:shadow-gray-900/50 cursor-pointer"
+            @click="activeFilter = category.name" :aria-label="`Filter by ${category.name}`"
+            :aria-pressed="activeFilter === category.name">
             <i :class="category.icon" class="mr-1"></i>
             {{ category.name }}
           </button>
@@ -36,10 +38,12 @@
 
       <!-- Calendar Grid -->
       <div class="px-4 mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden transition-all duration-300"
+          :key="currentDate.getMonth() + '-' + currentDate.getFullYear()" role="grid" aria-label="Calendar grid">
           <!-- Week Days Header -->
           <div class="grid grid-cols-7 bg-gray-50 dark:bg-gray-700">
-            <div v-for="day in weekDays" :key="day" class="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
+            <div v-for="day in weekDays" :key="day"
+              class="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
               {{ day }}
             </div>
           </div>
@@ -49,12 +53,17 @@
               'bg-gray-400 dark:bg-gray-600 text-white': date.isToday,
               'text-gray-400 dark:text-gray-500': !date.isCurrentMonth,
               'text-gray-900 dark:text-white': date.isCurrentMonth && !date.isToday
-            }" class="relative p-3 h-16 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
-              @click="selectDate(date)">
+            }"
+              class="relative p-3 h-16 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+              @click="selectDate(date)" role="gridcell"
+              :aria-label="`${date.day}, ${getTasksForDate(date.fullDate).length} tasks`">
               <div class="text-sm font-medium">{{ date.day }}</div>
-              <div class="absolute bottom-1 right-1 flex space-x-1">
-                <div v-for="task in getTasksForDate(date.fullDate)" :key="task.id"
+              <div class="absolute bottom-1 right-1 flex items-center space-x-1">
+                <div v-for="task in getTasksForDate(date.fullDate).slice(0, 3)" :key="task.id"
                   :style="{ backgroundColor: getTaskDotColor(task) }" class="w-2 h-2 rounded-full"></div>
+                <span v-if="getTasksForDate(date.fullDate).length > 3" class="text-xs text-gray-600 dark:text-gray-400">
+                  +{{ getTasksForDate(date.fullDate).length - 3 }}
+                </span>
               </div>
             </div>
           </div>
@@ -84,47 +93,58 @@
     </div>
 
     <!-- Daily Task Details Modal -->
-    <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" @click="closeTaskModal">
-      <div class="bg-white dark:bg-gray-800 rounded-t-2xl w-full max-h-96 overflow-y-auto scrollbar-hide" @click.stop>
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Tasks for {{ formatSelectedDate }}
-            </h3>
-            <button @click="closeTaskModal" class="p-2 cursor-pointer">
-              <i class="fas fa-times text-gray-600 dark:text-gray-400"></i>
-            </button>
-          </div>
-        </div>
-        <div class="p-4">
-          <div v-if="selectedDateTasks.length === 0" class="text-center py-8">
-            <i class="fas fa-calendar-check text-gray-300 dark:text-gray-600 text-4xl mb-3"></i>
-            <p class="text-gray-500 dark:text-gray-400">No tasks for this date</p>
-          </div>
-          <div v-else class="space-y-3">
-            <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
-              <div class="flex items-start space-x-3">
-                <button :class="{
-                  'bg-green-500 border-green-500': task.completed,
-                  'border-gray-300 dark:border-gray-600': !task.completed
-                }" class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
-                  @click="toggleTask(task.id)">
-                  <i v-if="task.completed" class="fas fa-check text-white text-xs"></i>
+    <transition name="slide-up">
+      <div v-show="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+        @click="closeTaskModal">
+        <div class="bg-white dark:bg-gray-800 rounded-t-2xl w-full max-h-96 overflow-y-auto scrollbar-hide" @click.stop>
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Tasks for {{ formatSelectedDate }}
+              </h3>
+              <div class="flex items-center space-x-2">
+                <button @click="createTaskForDate"
+                  class="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                  <i class="fas fa-plus mr-1"></i>{{ t('common.create') }}
                 </button>
-                <div class="flex-1">
-                  <h4 :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }" class="font-medium text-gray-900 dark:text-white mb-1">
-                    {{ task.text }}
-                  </h4>
-                  <p v-if="task.description" :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }"
-                    class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    {{ task.description }}
-                  </p>
-                  <div class="flex items-center space-x-3">
-                    <div :class="getPriorityColor(task.priority)" class="w-2 h-2 rounded-full"></div>
-                    <span v-if="task.project" :class="getCategoryColor(task.project.name)"
-                      class="px-2 py-1 rounded-full text-xs font-medium">
-                      {{ task.project.name }}
-                    </span>
+                <button @click="closeTaskModal" class="p-2 cursor-pointer">
+                  <i class="fas fa-times text-gray-600 dark:text-gray-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="p-4">
+            <div v-if="selectedDateTasks.length === 0" class="text-center py-8">
+              <i class="fas fa-calendar-check text-gray-300 dark:text-gray-600 text-4xl mb-3"></i>
+              <p class="text-gray-500 dark:text-gray-400">No tasks for this date</p>
+            </div>
+            <div v-else class="space-y-3">
+              <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
+                <div class="flex items-start space-x-3">
+                  <button :class="{
+                    'bg-green-500 border-green-500': task.completed,
+                    'border-gray-300 dark:border-gray-600': !task.completed
+                  }" class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
+                    @click="toggleTask(task.id)">
+                    <i v-if="task.completed" class="fas fa-check text-white text-xs"></i>
+                  </button>
+                  <div class="flex-1">
+                    <h4 :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }"
+                      class="font-medium text-gray-900 dark:text-white mb-1">
+                      {{ task.text }}
+                    </h4>
+                    <p v-if="task.description"
+                      :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }"
+                      class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      {{ task.description }}
+                    </p>
+                    <div class="flex items-center space-x-3">
+                      <div :class="getPriorityColor(task.priority)" class="w-2 h-2 rounded-full"></div>
+                      <span v-if="task.project" :class="getCategoryColor(task.project.name)"
+                        class="px-2 py-1 rounded-full text-xs font-medium">
+                        {{ task.project.name }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -132,17 +152,24 @@
           </div>
         </div>
       </div>
-    </div>
+    </transition>
 
     <!-- Bottom Navigation -->
     <BottomNavigation v-show="!showTaskModal" />
+
+    <!-- Todo Modal -->
+    <TodoModal :is-open="showTodoModal" :todo="selectedTodo" :projects="projects"
+      :initial-due-date="selectedDate ? new Date(selectedDate.fullDate) : undefined" @close="closeTodoModal"
+      @save="saveTodo" @project-created="handleProjectCreated" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Todo, Project } from '~/types/todo'
+import { ref, computed, onMounted } from 'vue'
+import type { Todo, Project, CreateTodoDto, UpdateTodoDto } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
+import TodoModal from '~/components/TodoModal.vue'
+import { formatDateISO, formatMonthYear, formatFullDate } from '~/utils/date'
 
 interface CalendarDate {
   day: number
@@ -160,38 +187,52 @@ interface FilterCategory {
 const {
   todos,
   updateTodo,
-  fetchTodos
+  fetchTodos,
+  createTodo
 } = useTodos()
 
 const { projects, fetchProjects } = useProjects()
-const { fetchSettings } = useSettings()
+const { settings, fetchSettings } = useSettings()
+const { t } = useI18n()
 
 const currentDate = ref(new Date())
 const showTaskModal = ref(false)
 const selectedDate = ref<CalendarDate | null>(null)
 const activeFilter = ref('All')
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const showTodoModal = ref(false)
+const selectedTodo = ref<Todo | null>(null)
+const searchQuery = ref('')
+
+const weekDays = computed(() => {
+  const locale = settings.value?.language || 'en'
+  if (locale === 'ru') {
+    return ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  }
+  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+})
 
 const projectColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
 const badgeColors = ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800', 'bg-purple-100 text-purple-800', 'bg-pink-100 text-pink-800', 'bg-yellow-100 text-yellow-800', 'bg-red-100 text-red-800']
 
 const filterCategories = computed(() => {
-  const cats = [{ name: 'All', icon: 'fas fa-list' }]
+  const cats = [
+    { name: 'All', icon: 'fas fa-list' },
+    { name: 'Active', icon: 'fas fa-play' },
+    { name: 'Completed', icon: 'fas fa-check' },
+    { name: 'High Priority', icon: 'fas fa-exclamation-triangle' },
+    { name: 'Medium Priority', icon: 'fas fa-exclamation-circle' },
+    { name: 'Low Priority', icon: 'fas fa-info-circle' }
+  ]
   projects.value.forEach(project => {
     cats.push({ name: project.name, icon: 'fas fa-folder' })
   })
   return cats
 })
 
-const getLocalDateString = (date: Date) => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
 
 const currentMonthYear = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  })
+  const locale = settings.value?.language || 'en'
+  return formatMonthYear(currentDate.value, locale)
 })
 
 const calendarDays = computed(() => {
@@ -200,7 +241,10 @@ const calendarDays = computed(() => {
   const firstDay = new Date(year, month, 1)
   const lastDay = new Date(year, month + 1, 0)
   const startDate = new Date(firstDay)
-  startDate.setDate(startDate.getDate() - firstDay.getDay())
+  const dayOfWeek = firstDay.getDay()
+  // Start from Monday: if Sunday (0), subtract 6, else subtract dayOfWeek - 1
+  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  startDate.setDate(startDate.getDate() - daysToSubtract)
   const days: CalendarDate[] = []
   const today = new Date()
   for (let i = 0; i < 42; i++) {
@@ -210,7 +254,7 @@ const calendarDays = computed(() => {
     const isToday = date.toDateString() === today.toDateString()
     days.push({
       day: date.getDate(),
-      fullDate: getLocalDateString(date),
+      fullDate: formatDateISO(date),
       isCurrentMonth,
       isToday,
       key: `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
@@ -220,14 +264,36 @@ const calendarDays = computed(() => {
 })
 
 const filteredTodos = computed(() => {
-  if (activeFilter.value === 'All') {
-    return todos.value
+  let filtered = todos.value
+
+  if (activeFilter.value === 'Active') {
+    filtered = filtered.filter(todo => !todo.completed)
+  } else if (activeFilter.value === 'Completed') {
+    filtered = filtered.filter(todo => todo.completed)
+  } else if (activeFilter.value === 'High Priority') {
+    filtered = filtered.filter(todo => todo.priority === 'high')
+  } else if (activeFilter.value === 'Medium Priority') {
+    filtered = filtered.filter(todo => todo.priority === 'medium')
+  } else if (activeFilter.value === 'Low Priority') {
+    filtered = filtered.filter(todo => todo.priority === 'low')
+  } else if (activeFilter.value !== 'All') {
+    // Filter by project name
+    filtered = filtered.filter(todo => {
+      if (!todo.project) return false
+      return todo.project.name === activeFilter.value
+    })
   }
-  // Filter by project name (simplified - in real app you'd have category field)
-  return todos.value.filter(todo => {
-    if (!todo.project) return false
-    return todo.project.name === activeFilter.value
-  })
+
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(todo =>
+      todo.text.toLowerCase().includes(query) ||
+      (todo.description && todo.description.toLowerCase().includes(query))
+    )
+  }
+
+  return filtered
 })
 
 const monthStats = computed(() => {
@@ -250,24 +316,21 @@ const selectedDateTasks = computed(() => {
   if (!selectedDate.value) return []
   return filteredTodos.value.filter(task => {
     if (!task.dueDate) return false
-    return getLocalDateString(task.dueDate) === selectedDate.value?.fullDate
+    return formatDateISO(task.dueDate) === selectedDate.value?.fullDate
   })
 })
 
 const formatSelectedDate = computed(() => {
   if (!selectedDate.value) return ''
   const date = new Date(selectedDate.value.fullDate)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric'
-  })
+  const locale = settings.value?.language || 'en'
+  return formatFullDate(date, locale)
 })
 
 const getTasksForDate = (date: string) => {
   return filteredTodos.value.filter(task => {
     if (!task.dueDate) return false
-    return getLocalDateString(task.dueDate) === date
+    return formatDateISO(task.dueDate) === date
   })
 }
 
@@ -322,13 +385,50 @@ const closeTaskModal = () => {
 }
 
 const toggleTask = async (id: string) => {
-  const task = todos.value.find(t => t.id === id)
-  if (task && updateTodo) {
-    await updateTodo(id, { completed: !task.completed })
+  try {
+    const task = todos.value.find(t => t.id === id)
+    if (task && updateTodo) {
+      await updateTodo(id, { completed: !task.completed })
+    }
+  } catch (error) {
+    console.error('Error toggling task:', error)
+    // TODO: Show toast notification
   }
 }
 
+const createTaskForDate = () => {
+  selectedTodo.value = null
+  showTodoModal.value = true
+}
+
+const closeTodoModal = () => {
+  showTodoModal.value = false
+  selectedTodo.value = null
+}
+
+const saveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
+  try {
+    if (selectedTodo.value) {
+      await updateTodo(selectedTodo.value.id, data as UpdateTodoDto)
+    } else {
+      await createTodo(data as CreateTodoDto)
+    }
+    closeTodoModal()
+  } catch (error) {
+    console.error('Error saving todo:', error)
+  }
+}
+
+const handleProjectCreated = (project: Project) => {
+  fetchProjects()
+}
+
 onMounted(async () => {
-  await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
+  try {
+    await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
+  } catch (error) {
+    console.error('Error loading data:', error)
+    // TODO: Show error message to user
+  }
 })
 </script>
