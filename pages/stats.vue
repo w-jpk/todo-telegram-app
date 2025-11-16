@@ -55,9 +55,12 @@
 
       <!-- Completion Rate Chart -->
       <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Completion Trends</h3>
-        <div class="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-          <p class="text-white text-sm">Chart visualization</p>
+        <h3 class="font-medium text-gray-900 mb-4">Tasks by Priority</h3>
+        <div class="relative h-32">
+          <svg viewBox="0 0 300 120" class="w-full h-full">
+            <rect v-for="(priority, index) in priorityStats" :key="priority.level" :x="index * 50 + 20" :y="100 - (priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :width="30" :height="(priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :fill="priority.color" />
+            <text v-for="(priority, index) in priorityStats" :key="priority.level + '-label'" :x="index * 50 + 35" y="115" text-anchor="middle" class="text-xs fill-gray-600">{{ priority.level }}</text>
+          </svg>
         </div>
       </div>
 
@@ -66,14 +69,15 @@
         <h3 class="font-medium text-gray-900 mb-4">Tasks by Category</h3>
         <div class="flex items-center justify-between">
           <div class="relative w-32 h-32">
-            <div class="w-full h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
-              <p class="text-white text-xs">Chart</p>
-            </div>
+            <svg viewBox="0 0 120 120" class="w-full h-full">
+              <circle cx="60" cy="60" r="60" fill="#f3f4f6" />
+              <path v-for="slice in pieSlices" :key="slice.name" :d="slice.path" :fill="slice.color" />
+            </svg>
           </div>
           <div class="flex-1 ml-6 space-y-2">
             <div v-for="category in categoryStats" :key="category.name" class="flex items-center justify-between">
               <div class="flex items-center space-x-2">
-                <div :class="category.color" class="w-3 h-3 rounded-full"></div>
+                <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: category.color }"></div>
                 <span class="text-sm text-gray-700">{{ category.name }}</span>
               </div>
               <span class="text-sm font-medium text-gray-900">{{ category.count }}</span>
@@ -137,15 +141,18 @@
 
       <!-- Weekly Comparison -->
       <div class="bg-white rounded-xl p-4 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Weekly Comparison</h3>
-        <div class="relative h-28 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-          <p class="text-white text-sm">Bar chart visualization</p>
+        <h3 class="font-medium text-gray-900 mb-4">Completion Overview</h3>
+        <div class="relative h-28">
+          <svg viewBox="0 0 300 100" class="w-full h-full">
+            <rect x="50" :y="80 - (completedTodos.length * 60 / Math.max(todos.value.length, 1))" width="50" :height="(completedTodos.length * 60 / Math.max(todos.value.length, 1))" fill="#3b82f6" />
+            <rect x="150" :y="80 - (activeTodos.length * 60 / Math.max(todos.value.length, 1))" width="50" :height="(activeTodos.length * 60 / Math.max(todos.value.length, 1))" fill="#ef4444" />
+            <text x="75" y="90" text-anchor="middle" class="text-xs fill-gray-600">Completed</text>
+            <text x="175" y="90" text-anchor="middle" class="text-xs fill-gray-600">Pending</text>
+          </svg>
         </div>
         <div class="flex justify-between mt-3 text-xs text-gray-600">
-          <span>Week 1</span>
-          <span>Week 2</span>
-          <span>Week 3</span>
-          <span>Current</span>
+          <span>{{ completedTodos.length }} completed</span>
+          <span>{{ activeTodos.length }} pending</span>
         </div>
       </div>
     </div>
@@ -180,12 +187,13 @@ interface HeatmapDay {
   intensity: number
 }
 
-const { todos, fetchTodos } = useTodos()
+const { todos, activeTodos, completedTodos, fetchTodos } = useTodos()
 const { projects, fetchProjects } = useProjects()
 
 const activePeriod = ref('Weekly')
 const timePeriods = ref(['Daily', 'Weekly', 'Monthly'])
 const projectColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
+const hexColors = ['#2481cc', '#7c3aed', '#059669', '#dc2626', '#ea580c', '#ca8a04']
 
 const getLocalDateString = (date: Date) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -247,15 +255,44 @@ const categoryStats = computed(() => {
   })
 
   return Object.entries(stats).map(([name, count]) => {
-    let color = 'bg-gray-400'
+    let color = '#6b7280'
     if (name !== 'Uncategorized') {
       const project = projects.value.find(p => p.name === name)
       if (project) {
         const index = projects.value.indexOf(project)
-        color = projectColors[index % projectColors.length]
+        color = hexColors[index % hexColors.length]
       }
     }
     return { name, count, color }
+  })
+})
+
+const pieSlices = computed(() => {
+  const total = categoryStats.value.reduce((sum, cat) => sum + cat.count, 0)
+  if (total === 0) return []
+
+  let currentAngle = 0
+  return categoryStats.value.map(cat => {
+    const angle = (cat.count / total) * 360
+    const startAngle = currentAngle
+    const endAngle = currentAngle + angle
+    currentAngle = endAngle
+
+    // Convert to path
+    const radius = 60
+    const x1 = radius + radius * Math.cos((startAngle * Math.PI) / 180)
+    const y1 = radius + radius * Math.sin((startAngle * Math.PI) / 180)
+    const x2 = radius + radius * Math.cos((endAngle * Math.PI) / 180)
+    const y2 = radius + radius * Math.sin((endAngle * Math.PI) / 180)
+    const largeArc = angle > 180 ? 1 : 0
+    const path = `M ${radius} ${radius} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`
+
+    return {
+      path,
+      color: cat.color.replace('bg-', '#').replace('-500', ''),
+      name: cat.name,
+      count: cat.count
+    }
   })
 })
 
@@ -265,7 +302,7 @@ const priorityStats = computed(() => {
     'Medium': { total: 0, completed: 0 },
     'Low': { total: 0, completed: 0 }
   }
-  
+
   todos.value.forEach(todo => {
     const level = todo.priority === 'high' ? 'High' : todo.priority === 'medium' ? 'Medium' : 'Low'
     stats[level].total++
@@ -273,19 +310,19 @@ const priorityStats = computed(() => {
       stats[level].completed++
     }
   })
-  
+
   const colorMap: Record<string, string> = {
-    'High': 'bg-red-500',
-    'Medium': 'bg-yellow-500',
-    'Low': 'bg-green-500'
+    'High': '#dc2626',
+    'Medium': '#d97706',
+    'Low': '#16a34a'
   }
-  
+
   return Object.entries(stats).map(([level, data]) => ({
     level,
     completed: data.completed,
     total: data.total,
     percentage: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
-    color: colorMap[level] || 'bg-gray-400'
+    color: colorMap[level] || '#6b7280'
   }))
 })
 
