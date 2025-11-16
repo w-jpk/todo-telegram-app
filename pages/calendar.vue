@@ -170,10 +170,11 @@ interface FilterCategory {
 
 const {
   todos,
-  updateTodo
+  updateTodo,
+  fetchTodos
 } = useTodos()
 
-const { projects } = useProjects()
+const { projects, fetchProjects } = useProjects()
 
 const currentDate = ref(new Date())
 const showTaskModal = ref(false)
@@ -331,4 +332,8 @@ const toggleTask = async (id: string) => {
     await updateTodo(id, { completed: !task.completed })
   }
 }
+
+onMounted(async () => {
+  await Promise.all([fetchProjects(), fetchTodos()])
+})
 </script>

@@ -180,8 +180,8 @@ interface HeatmapDay {
   intensity: number
 }
 
-const { todos } = useTodos()
-const { projects } = useProjects()
+const { todos, fetchTodos } = useTodos()
+const { projects, fetchProjects } = useProjects()
 
 const activePeriod = ref('Weekly')
 const timePeriods = ref(['Daily', 'Weekly', 'Monthly'])
@@ -323,5 +323,9 @@ const getHeatmapColor = (intensity: number) => {
   if (intensity >= 0.2) return 'bg-blue-200 text-gray-700'
   return 'bg-gray-200 text-gray-600'
 }
+
+onMounted(async () => {
+  await Promise.all([fetchProjects(), fetchTodos()])
+})
 </script>
 
