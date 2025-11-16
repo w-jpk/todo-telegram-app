@@ -20,15 +20,16 @@
       <!-- User Profile Card -->
       <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-white text-xl"></i>
+          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
+            <img v-if="userPhoto" :src="userPhoto" class="w-full h-full object-cover" alt="User photo" />
+            <i v-else class="fas fa-user text-white text-xl"></i>
           </div>
           <div class="flex-1">
             <h3 class="font-semibold text-gray-900">{{ userName || 'User' }}</h3>
             <p class="text-sm text-gray-600">{{ userEmail || 'Telegram User' }}</p>
             <p class="text-xs text-blue-500 mt-1">Premium Member</p>
           </div>
-          <button class="cursor-pointer">
+          <button @click="openUserProfile" class="cursor-pointer">
             <i class="fas fa-chevron-right text-gray-400"></i>
           </button>
         </div>
@@ -227,6 +228,16 @@ const userEmail = computed(() => {
   // Telegram doesn't provide email, but we can show username
   return $telegram?.user?.username ? `@${$telegram.user.username}` : null
 })
+
+const userPhoto = computed(() => {
+  return $telegram?.user?.photo_url
+})
+
+const openUserProfile = () => {
+  if ($telegram?.user?.username) {
+    window.open(`https://t.me/${$telegram.user.username}`, '_blank')
+  }
+}
 
 const exportData = async () => {
   await Promise.all([fetchTodos(), fetchProjects(), fetchSettings()])
