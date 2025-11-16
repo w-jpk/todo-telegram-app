@@ -40,7 +40,7 @@
         @click.stop="toggleComplete"
         :class="{
           'text-blue-500 bg-blue-500/20 border-blue-500': todo.completed,
-          'text-gray-400 border-gray-400 bg-transparent': !todo.completed
+          'text-gray-400 dark:text-gray-500 border-gray-400 dark:border-gray-500 bg-transparent': !todo.completed
         }"
         class="w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0 mt-0.5"
       >

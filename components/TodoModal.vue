@@ -7,17 +7,17 @@
         @click.self="handleClose"
       >
         <div
-          class="w-full max-w-lg max-h-[90vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+          class="w-full max-w-lg max-h-[90vh] bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
           @click.stop
         >
           <!-- Header -->
-          <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+          <div class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {{ todo ? 'Редактировать задачу' : 'Новая задача' }}
             </h2>
             <button
               @click="handleClose"
-              class="p-2 text-gray-600 hover:text-gray-900 transition-colors touch-manipulation"
+              class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors touch-manipulation"
               aria-label="Close"
             >
               <X :size="24" />
@@ -28,34 +28,34 @@
           <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-hide">
             <!-- Title Input -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                 Название задачи *
               </label>
               <input
                 v-model="formData.text"
                 type="text"
                 placeholder="Введите название задачи..."
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 text-base"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base"
                 ref="titleInput"
               />
             </div>
 
             <!-- Description Input -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                 Описание
               </label>
               <textarea
                 v-model="formData.description"
                 placeholder="Добавьте описание..."
                 rows="3"
-                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 text-base resize-none"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base resize-none"
               />
             </div>
 
             <!-- Priority Selector -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                 Приоритет
               </label>
               <PrioritySelector
@@ -66,7 +66,7 @@
 
             <!-- Project Selector -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                 Проект
               </label>
               <ProjectSelector
@@ -79,7 +79,7 @@
 
             <!-- Due Date Selector -->
             <div>
-              <label class="block text-sm font-medium text-gray-900 mb-2">
+              <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
                 Срок выполнения
               </label>
               <DateSelector
@@ -90,10 +90,10 @@
           </div>
 
           <!-- Footer -->
-          <div class="flex gap-3 p-4 sm:p-6 border-t border-gray-200">
+          <div class="flex gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
             <button
               @click="handleClose"
-              class="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation hover:bg-gray-200"
+              class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation hover:bg-gray-200 dark:hover:bg-gray-600"
             >
               Отмена
             </button>
