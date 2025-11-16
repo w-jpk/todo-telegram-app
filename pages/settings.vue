@@ -171,14 +171,14 @@
       <div class="bg-white rounded-xl p-4 shadow-sm">
         <h3 class="font-medium text-gray-900 mb-4">Support & Information</h3>
         <div class="space-y-3">
-          <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="openHelp" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-question-circle text-blue-500"></i>
               <span class="text-sm font-medium text-gray-900">Help & FAQ</span>
             </div>
             <i class="fas fa-chevron-right text-gray-400"></i>
           </button>
-          <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="contactSupport" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-headset text-green-500"></i>
               <span class="text-sm font-medium text-gray-900">Contact Support</span>
@@ -326,6 +326,11 @@ onMounted(async () => {
   await waitForTelegram()
 
   await fetchSettings()
+
+  // Load theme from localStorage
+  if (process.client) {
+    selectedTheme.value = localStorage.getItem('theme') || 'light'
+  }
 })
 
 const pushNotifications = computed({
@@ -370,4 +375,20 @@ const themes = ref<Theme[]>([
     icon: 'fas fa-adjust text-gray-500'
   }
 ])
+
+const openHelp = () => {
+  window.open('https://example.com/help', '_blank')
+}
+
+const contactSupport = () => {
+  window.open('https://t.me/support', '_blank')
+}
+
+watch(selectedTheme, (newTheme) => {
+  if (process.client) {
+    localStorage.setItem('theme', newTheme)
+    // Apply theme
+    document.documentElement.className = newTheme === 'dark' ? 'dark' : ''
+  }
+})
 </script>
