@@ -224,13 +224,21 @@ const showTaskModal = ref(false)
 const selectedDate = ref<CalendarDate | null>(null)
 const activeFilter = ref('All')
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const filterCategories = ref<FilterCategory[]>([
-  { name: 'All', icon: 'fas fa-list' },
-  { name: 'Work', icon: 'fas fa-briefcase' },
-  { name: 'Personal', icon: 'fas fa-user' },
-  { name: 'Shopping', icon: 'fas fa-shopping-cart' },
-  { name: 'Health', icon: 'fas fa-heart' }
-])
+
+const projectColors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
+const badgeColors = ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800', 'bg-purple-100 text-purple-800', 'bg-pink-100 text-pink-800', 'bg-yellow-100 text-yellow-800', 'bg-red-100 text-red-800']
+
+const filterCategories = computed(() => {
+  const cats = [{ name: 'All', icon: 'fas fa-list' }]
+  projects.value.forEach(project => {
+    cats.push({ name: project.name, icon: 'fas fa-folder' })
+  })
+  return cats
+})
+
+const getLocalDateString = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 
 const currentMonthYear = computed(() => {
   return currentDate.value.toLocaleDateString('en-US', {
@@ -255,7 +263,7 @@ const calendarDays = computed(() => {
     const isToday = date.toDateString() === today.toDateString()
     days.push({
       day: date.getDate(),
-      fullDate: date.toISOString().split('T')[0],
+      fullDate: getLocalDateString(date),
       isCurrentMonth,
       isToday,
       key: `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
@@ -295,7 +303,7 @@ const selectedDateTasks = computed(() => {
   if (!selectedDate.value) return []
   return filteredTodos.value.filter(task => {
     if (!task.dueDate) return false
-    return task.dueDate.toISOString().split('T')[0] === selectedDate.value?.fullDate
+    return getLocalDateString(task.dueDate) === selectedDate.value?.fullDate
   })
 })
 
@@ -312,19 +320,15 @@ const formatSelectedDate = computed(() => {
 const getTasksForDate = (date: string) => {
   return filteredTodos.value.filter(task => {
     if (!task.dueDate) return false
-    return task.dueDate.toISOString().split('T')[0] === date
+    return getLocalDateString(task.dueDate) === date
   })
 }
 
 const getTaskDotColor = (projectName: string) => {
-  // Map project names to colors
-  const colorMap: Record<string, string> = {
-    'Work': 'bg-blue-500',
-    'Personal': 'bg-green-500',
-    'Shopping': 'bg-purple-500',
-    'Health': 'bg-pink-500'
-  }
-  return colorMap[projectName] || 'bg-gray-400'
+  const project = projects.value.find(p => p.name === projectName)
+  if (!project) return 'bg-gray-400'
+  const index = projects.value.indexOf(project)
+  return projectColors[index % projectColors.length]
 }
 
 const getPriorityColor = (priority: string) => {
@@ -337,13 +341,10 @@ const getPriorityColor = (priority: string) => {
 }
 
 const getCategoryColor = (category: string) => {
-  switch (category) {
-    case 'Work': return 'bg-blue-100 text-blue-800'
-    case 'Personal': return 'bg-green-100 text-green-800'
-    case 'Shopping': return 'bg-purple-100 text-purple-800'
-    case 'Health': return 'bg-pink-100 text-pink-800'
-    default: return 'bg-gray-100 text-gray-800'
-  }
+  const project = projects.value.find(p => p.name === category)
+  if (!project) return 'bg-gray-100 text-gray-800'
+  const index = projects.value.indexOf(project)
+  return badgeColors[index % badgeColors.length]
 }
 
 const previousMonth = () => {
