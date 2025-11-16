@@ -18,6 +18,23 @@
   --tg-theme-destructive-text-color: #ef4444;
 }
 
+.dark {
+  /* Dark theme */
+  --tg-theme-bg-color: #1f2937;
+  --tg-theme-text-color: #f9fafb;
+  --tg-theme-hint-color: #9ca3af;
+  --tg-theme-link-color: #60a5fa;
+  --tg-theme-button-color: #60a5fa;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #374151;
+  --tg-theme-header-bg-color: #374151;
+  --tg-theme-section-bg-color: #374151;
+  --tg-theme-section-header-text-color: #f9fafb;
+  --tg-theme-subtitle-text-color: #9ca3af;
+  --tg-theme-destructive-text-color: #f87171;
+  color-scheme: dark;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }

@@ -1,15 +1,15 @@
 <template>
-  <div class="min-h-screen bg-gray-50 pb-20">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <div class="fixed top-0 w-full bg-white shadow-sm z-50">
+    <div class="fixed top-0 w-full bg-white dark:bg-gray-800 shadow-sm z-50">
       <div class="flex items-center justify-between px-4 py-3">
-        <h1 class="text-xl font-bold text-gray-900">Settings</h1>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
         <div class="flex items-center space-x-3">
           <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <i class="fas fa-user text-white text-sm"></i>
           </div>
           <button class="p-1 cursor-pointer">
-            <i class="fas fa-ellipsis-v text-gray-600"></i>
+            <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-400"></i>
           </button>
         </div>
       </div>
@@ -18,30 +18,30 @@
     <!-- Content Area -->
     <div class="pt-16 pb-20 px-4">
       <!-- User Profile Card -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-4">
           <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
             <img v-if="userPhoto" :src="userPhoto" class="w-full h-full object-cover" alt="User photo" />
             <i v-else class="fas fa-user text-white text-xl"></i>
           </div>
           <div class="flex-1">
-            <h3 class="font-semibold text-gray-900">{{ userName || 'User' }}</h3>
-            <p class="text-sm text-gray-600">{{ userEmail || 'Telegram User' }}</p>
+            <h3 class="font-semibold text-gray-900 dark:text-white">{{ userName || 'User' }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ userEmail || 'Telegram User' }}</p>
             <p class="text-xs text-blue-500 mt-1">Premium Member</p>
           </div>
           <button @click="openUserProfile" class="cursor-pointer">
-            <i class="fas fa-chevron-right text-gray-400"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
           </button>
         </div>
       </div>
 
       <!-- Notification Preferences -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
             <i class="fas fa-bell text-blue-500"></i>
           </div>
-          <h3 class="font-medium text-gray-900">Notification Preferences</h3>
+          <h3 class="font-medium text-gray-900 dark:text-white">Notification Preferences</h3>
         </div>
         <div class="space-y-4">
           <div class="flex items-center justify-between">
@@ -93,27 +93,27 @@
       </div>
 
       <!-- Theme Customization -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
             <i class="fas fa-palette text-purple-500"></i>
           </div>
-          <h3 class="font-medium text-gray-900">Theme Customization</h3>
+          <h3 class="font-medium text-gray-900 dark:text-white">Theme Customization</h3>
         </div>
         <div class="space-y-3">
           <div v-for="theme in themes" :key="theme.value"
-            :class="{ 'border-blue-500 bg-blue-50': selectedTheme === theme.value, 'border-gray-200': selectedTheme !== theme.value }"
+            :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900': selectedTheme === theme.value, 'border-gray-200 dark:border-gray-600': selectedTheme !== theme.value }"
             class="flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer"
             @click="selectedTheme = theme.value">
             <div class="flex items-center space-x-3">
               <i :class="theme.icon" class="text-lg"></i>
               <div>
-                <p class="text-sm font-medium text-gray-900">{{ theme.name }}</p>
-                <p class="text-xs text-gray-600">{{ theme.description }}</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ theme.name }}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ theme.description }}</p>
               </div>
             </div>
             <div
-              :class="{ 'text-blue-500': selectedTheme === theme.value, 'text-gray-300': selectedTheme !== theme.value }">
+              :class="{ 'text-blue-500': selectedTheme === theme.value, 'text-gray-300 dark:text-gray-500': selectedTheme !== theme.value }">
               <i class="fas fa-check-circle"></i>
             </div>
           </div>
@@ -121,77 +121,83 @@
       </div>
 
       <!-- Data Management -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
         <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
             <i class="fas fa-database text-green-500"></i>
           </div>
-          <h3 class="font-medium text-gray-900">Data Management</h3>
+          <h3 class="font-medium text-gray-900 dark:text-white">Data Management</h3>
         </div>
         <div class="space-y-3">
-          <button @click="exportData" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="exportData"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-download text-blue-500"></i>
               <div class="text-left">
-                <p class="text-sm font-medium text-gray-900">Export Data</p>
-                <p class="text-xs text-gray-600">Download your tasks and settings</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Export Data</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Download your tasks and settings</p>
               </div>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
           </button>
           <div class="relative">
-            <input type="file" accept=".json" @change="importData" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-            <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+            <input type="file" accept=".json" @change="importData"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <button class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
               <div class="flex items-center space-x-3">
                 <i class="fas fa-upload text-green-500"></i>
                 <div class="text-left">
-                  <p class="text-sm font-medium text-gray-900">Import Data</p>
-                  <p class="text-xs text-gray-600">Restore from backup file</p>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">Import Data</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">Restore from backup file</p>
                 </div>
               </div>
-              <i class="fas fa-chevron-right text-gray-400"></i>
+              <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
             </button>
           </div>
-          <button @click="toggleSync" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="toggleSync"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-sync text-purple-500"></i>
               <div class="text-left">
-                <p class="text-sm font-medium text-gray-900">Sync Settings</p>
-                <p class="text-xs text-gray-600">Manage cloud synchronization</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Sync Settings</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Manage cloud synchronization</p>
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              <span :class="settings?.notificationsEnabled ? 'text-green-600' : 'text-red-600'" class="text-xs">{{ settings?.notificationsEnabled ? 'Active' : 'Inactive' }}</span>
-              <i class="fas fa-chevron-right text-gray-400"></i>
+              <span :class="settings?.notificationsEnabled ? 'text-green-600' : 'text-red-600'" class="text-xs">{{
+                settings?.notificationsEnabled ? 'Active' : 'Inactive' }}</span>
+              <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
             </div>
           </button>
         </div>
       </div>
 
       <!-- Support and Information -->
-      <div class="bg-white rounded-xl p-4 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Support & Information</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Support & Information</h3>
         <div class="space-y-3">
-          <button @click="openHelp" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="openHelp"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-question-circle text-blue-500"></i>
-              <span class="text-sm font-medium text-gray-900">Help & FAQ</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">Help & FAQ</span>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
           </button>
-          <button @click="contactSupport" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="contactSupport"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-headset text-green-500"></i>
-              <span class="text-sm font-medium text-gray-900">Contact Support</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">Contact Support</span>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
           </button>
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div class="flex items-center space-x-3">
               <i class="fas fa-info-circle text-gray-500"></i>
-              <span class="text-sm font-medium text-gray-900">App Version</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">App Version</span>
             </div>
-            <span class="text-sm text-gray-600">2.1.4</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">2.1.4</span>
           </div>
         </div>
       </div>
@@ -395,11 +401,45 @@ const contactSupport = () => {
   window.open('https://t.me/support', '_blank')
 }
 
+const applyTheme = (theme: string) => {
+  if (!process.client) return
+  let className = ''
+  if (theme === 'dark') {
+    className = 'dark'
+  } else if (theme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    className = prefersDark ? 'dark' : ''
+  }
+  document.documentElement.className = className
+}
+
 watch(selectedTheme, (newTheme) => {
   if (process.client) {
     localStorage.setItem('theme', newTheme)
-    // Apply theme
-    document.documentElement.className = newTheme === 'dark' ? 'dark' : ''
+    applyTheme(newTheme)
+  }
+})
+
+let mediaQuery: MediaQueryList | null = null
+
+onMounted(() => {
+  if (process.client) {
+    // Apply initial theme
+    applyTheme(selectedTheme.value)
+
+    // Listen to system theme changes for auto mode
+    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addEventListener('change', () => {
+      if (selectedTheme.value === 'auto') {
+        applyTheme('auto')
+      }
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', () => {})
   }
 })
 </script>
