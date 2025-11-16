@@ -157,3 +157,53 @@ export async function closeDbPool() {
   }
 }
 
+/**
+ * Validates and parses userId from header
+ * @param userIdHeader - The userId header value
+ * @returns Parsed userId as number
+ * @throws createError if userId is invalid
+ */
+export function validateUserId(userIdHeader: string | null | undefined): number {
+  if (!userIdHeader) {
+    throw createError({
+      statusCode: 401,
+      message: 'User ID is required'
+    })
+  }
+  
+  const userId = parseInt(userIdHeader, 10)
+  if (isNaN(userId) || userId <= 0) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid user ID format'
+    })
+  }
+  
+  return userId
+}
+
+/**
+ * Validates UUID format
+ * @param id - The UUID string to validate
+ * @returns true if valid UUID
+ * @throws createError if UUID is invalid
+ */
+export function validateUUID(id: string | null | undefined): string {
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      message: 'ID is required'
+    })
+  }
+  
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(id)) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid ID format (must be UUID)'
+    })
+  }
+  
+  return id
+}
+

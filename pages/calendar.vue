@@ -9,7 +9,7 @@
             <i class="fas fa-user text-white text-sm"></i>
           </div>
           <button class="p-1 cursor-pointer">
-            <i class="fas fa-ellipsis-v text-gray-600"></i>
+            <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-400"></i>
           </button>
         </div>
       </div>
@@ -36,9 +36,9 @@
       <div class="px-4 mb-4">
         <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
           <button v-for="category in filterCategories" :key="category.name" :class="{
-            'bg-blue-500 text-white': activeFilter === category.name,
-            'bg-white text-gray-600': activeFilter !== category.name
-          }" class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
+            'bg-blue-500 dark:bg-blue-600 text-white': activeFilter === category.name,
+            'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400': activeFilter !== category.name
+          }" class="px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium shadow-sm dark:shadow-gray-900/50 cursor-pointer"
             @click="activeFilter = category.name">
             <i :class="category.icon" class="mr-1"></i>
             {{ category.name }}
@@ -79,16 +79,16 @@
           <h3 class="font-medium text-gray-900 dark:text-white mb-3">Month Overview</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-500">{{ monthStats.total }}</div>
-              <div class="text-sm text-gray-600">Total Tasks</div>
+              <div class="text-2xl font-bold text-blue-500 dark:text-blue-400">{{ monthStats.total }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Total Tasks</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-green-500">{{ monthStats.completed }}</div>
-              <div class="text-sm text-gray-600">Completed</div>
+              <div class="text-2xl font-bold text-green-500 dark:text-green-400">{{ monthStats.completed }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Completed</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-orange-500">{{ monthStats.pending }}</div>
-              <div class="text-sm text-gray-600">Pending</div>
+              <div class="text-2xl font-bold text-orange-500 dark:text-orange-400">{{ monthStats.pending }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Pending</div>
             </div>
           </div>
         </div>
@@ -110,25 +110,25 @@
         </div>
         <div class="p-4">
           <div v-if="selectedDateTasks.length === 0" class="text-center py-8">
-            <i class="fas fa-calendar-check text-gray-300 text-4xl mb-3"></i>
-            <p class="text-gray-500">No tasks for this date</p>
+            <i class="fas fa-calendar-check text-gray-300 dark:text-gray-600 text-4xl mb-3"></i>
+            <p class="text-gray-500 dark:text-gray-400">No tasks for this date</p>
           </div>
           <div v-else class="space-y-3">
-            <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 rounded-xl p-3">
+            <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
               <div class="flex items-start space-x-3">
                 <button :class="{
                   'bg-green-500 border-green-500': task.completed,
-                  'border-gray-300': !task.completed
+                  'border-gray-300 dark:border-gray-600': !task.completed
                 }" class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
                   @click="toggleTask(task.id)">
                   <i v-if="task.completed" class="fas fa-check text-white text-xs"></i>
                 </button>
                 <div class="flex-1">
-                  <h4 :class="{ 'line-through text-gray-400': task.completed }" class="font-medium text-gray-900 mb-1">
+                  <h4 :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }" class="font-medium text-gray-900 dark:text-white mb-1">
                     {{ task.text }}
                   </h4>
-                  <p v-if="task.description" :class="{ 'line-through text-gray-400': task.completed }"
-                    class="text-sm text-gray-600 mb-2">
+                  <p v-if="task.description" :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }"
+                    class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     {{ task.description }}
                   </p>
                   <div class="flex items-center space-x-3">
@@ -299,9 +299,17 @@ const getPriorityColor = (priority: string) => {
 
 const getCategoryColor = (category: string) => {
   const project = projects.value.find(p => p.name === category)
-  if (!project) return 'bg-gray-100 text-gray-800'
+  if (!project) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
   const index = projects.value.indexOf(project)
-  return badgeColors[index % badgeColors.length]
+  const baseColor = badgeColors[index % badgeColors.length]
+  // Add dark mode variants
+  if (baseColor.includes('bg-blue-100')) return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+  if (baseColor.includes('bg-green-100')) return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+  if (baseColor.includes('bg-purple-100')) return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
+  if (baseColor.includes('bg-pink-100')) return 'bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-200'
+  if (baseColor.includes('bg-yellow-100')) return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+  if (baseColor.includes('bg-red-100')) return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+  return baseColor
 }
 
 const previousMonth = () => {

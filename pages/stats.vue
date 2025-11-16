@@ -9,7 +9,7 @@
             <i class="fas fa-user text-white text-sm"></i>
           </div>
           <button class="p-1 cursor-pointer">
-            <i class="fas fa-ellipsis-v text-gray-600"></i>
+            <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-400"></i>
           </button>
         </div>
       </div>
@@ -59,7 +59,7 @@
         <div class="relative h-32">
           <svg viewBox="0 0 300 120" class="w-full h-full">
             <rect v-for="(priority, index) in priorityStats" :key="priority.level" :x="index * 50 + 20" :y="100 - (priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :width="30" :height="(priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :fill="priority.color" />
-            <text v-for="(priority, index) in priorityStats" :key="priority.level + '-label'" :x="index * 50 + 35" y="115" text-anchor="middle" class="text-xs fill-gray-600">{{ priority.level }}</text>
+            <text v-for="(priority, index) in priorityStats" :key="priority.level + '-label'" :x="index * 50 + 35" y="115" text-anchor="middle" class="text-xs fill-gray-600 dark:fill-gray-400">{{ priority.level }}</text>
           </svg>
         </div>
       </div>
@@ -70,7 +70,7 @@
         <div class="flex items-center justify-between">
           <div class="relative w-32 h-32">
             <svg viewBox="0 0 120 120" class="w-full h-full">
-              <circle cx="60" cy="60" r="60" fill="#f3f4f6" />
+              <circle cx="60" cy="60" r="60" class="fill-gray-200 dark:fill-gray-700" />
               <path v-for="slice in pieSlices" :key="slice.name" :d="slice.path" :fill="slice.color" />
             </svg>
           </div>
@@ -78,9 +78,9 @@
             <div v-for="category in categoryStats" :key="category.name" class="flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: category.color }"></div>
-                <span class="text-sm text-gray-700">{{ category.name }}</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ category.name }}</span>
               </div>
-              <span class="text-sm font-medium text-gray-900">{{ category.count }}</span>
+              <span class="text-sm font-medium text-gray-900 dark:text-white">{{ category.count }}</span>
             </div>
           </div>
         </div>
@@ -91,15 +91,15 @@
         <h3 class="font-medium text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
         <div class="space-y-3">
           <div v-for="priority in priorityStats" :key="priority.level" class="flex items-center space-x-3">
-            <div class="w-16 text-sm text-gray-600">{{ priority.level }}</div>
-            <div class="flex-1 bg-gray-200 rounded-full h-3">
+            <div class="w-16 text-sm text-gray-600 dark:text-gray-400">{{ priority.level }}</div>
+            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div
                 :class="priority.color"
                 :style="{ width: priority.percentage + '%' }"
                 class="h-3 rounded-full transition-all duration-300"
               ></div>
             </div>
-            <div class="text-sm font-medium text-gray-900">{{ priority.completed }}/{{ priority.total }}</div>
+            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ priority.completed }}/{{ priority.total }}</div>
           </div>
         </div>
       </div>
@@ -109,12 +109,12 @@
         <h3 class="font-medium text-gray-900 dark:text-white mb-4">Daily Activity</h3>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="day in heatmapData" :key="day.date" class="text-center">
-            <div class="text-xs text-gray-500 mb-1">{{ day.dayName }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ day.dayName }}</div>
             <div
               :class="getHeatmapColor(day.intensity)"
               class="w-8 h-8 rounded-lg mx-auto flex items-center justify-center"
             >
-              <span class="text-xs font-medium">{{ day.day }}</span>
+              <span class="text-xs font-medium text-gray-900 dark:text-white">{{ day.day }}</span>
             </div>
           </div>
         </div>
@@ -146,11 +146,11 @@
           <svg viewBox="0 0 300 100" class="w-full h-full">
             <rect x="50" :y="80 - (chartData.completed * 60 / Math.max(chartData.total, 1))" width="50" :height="(chartData.completed * 60 / Math.max(chartData.total, 1))" fill="#3b82f6" />
             <rect x="150" :y="80 - (chartData.pending * 60 / Math.max(chartData.total, 1))" width="50" :height="(chartData.pending * 60 / Math.max(chartData.total, 1))" fill="#ef4444" />
-            <text x="75" y="90" text-anchor="middle" class="text-xs fill-gray-600">Completed</text>
-            <text x="175" y="90" text-anchor="middle" class="text-xs fill-gray-600">Pending</text>
+            <text x="75" y="90" text-anchor="middle" class="text-xs fill-gray-600 dark:fill-gray-400">Completed</text>
+            <text x="175" y="90" text-anchor="middle" class="text-xs fill-gray-600 dark:fill-gray-400">Pending</text>
           </svg>
         </div>
-        <div class="flex justify-between mt-3 text-xs text-gray-600">
+        <div class="flex justify-between mt-3 text-xs text-gray-600 dark:text-gray-400">
           <span>{{ chartData.completed }} completed</span>
           <span>{{ chartData.pending }} pending</span>
         </div>
@@ -384,11 +384,11 @@ const chartData = computed(() => {
 })
 
 const getHeatmapColor = (intensity: number) => {
-  if (intensity >= 0.8) return 'bg-blue-500 text-white'
-  if (intensity >= 0.6) return 'bg-blue-400 text-white'
-  if (intensity >= 0.4) return 'bg-blue-300 text-gray-700'
-  if (intensity >= 0.2) return 'bg-blue-200 text-gray-700'
-  return 'bg-gray-200 text-gray-600'
+  if (intensity >= 0.8) return 'bg-blue-500 dark:bg-blue-600 text-white'
+  if (intensity >= 0.6) return 'bg-blue-400 dark:bg-blue-500 text-white'
+  if (intensity >= 0.4) return 'bg-blue-300 dark:bg-blue-400 text-gray-700 dark:text-gray-200'
+  if (intensity >= 0.2) return 'bg-blue-200 dark:bg-blue-300 text-gray-700 dark:text-gray-200'
+  return 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
 }
 
 onMounted(async () => {

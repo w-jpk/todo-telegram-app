@@ -55,7 +55,7 @@
         <p
           class="text-base font-medium break-words mb-1"
           :class="{
-            'line-through text-gray-500': todo.completed,
+            'line-through text-gray-500 dark:text-gray-400': todo.completed,
             'text-telegram-text': !todo.completed
           }"
         >
@@ -67,7 +67,7 @@
           v-if="todo.description"
           class="text-sm mb-2"
           :class="{
-            'text-gray-600': todo.completed,
+            'text-gray-600 dark:text-gray-400': todo.completed,
             'text-telegram-subtitle-text': !todo.completed
           }"
         >
@@ -87,7 +87,7 @@
             <span 
               class="text-xs"
               :class="{
-                'text-gray-600': todo.completed,
+                'text-gray-600 dark:text-gray-400': todo.completed,
                 'text-telegram-subtitle-text': !todo.completed
               }"
             >
@@ -106,9 +106,9 @@
             <span
               class="text-xs"
               :class="{
-                'text-gray-600': todo.completed,
+                'text-gray-600 dark:text-gray-400': todo.completed,
                 'text-telegram-subtitle-text': !todo.completed && !isOverdue,
-                'text-red-500': isOverdue && !todo.completed
+                'text-red-500 dark:text-red-400': isOverdue && !todo.completed
               }"
             >
               {{ formatDateShort(todo.dueDate) }}

@@ -1,15 +1,8 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { UserSettings, UpdateUserSettingsDto } from '~/types/todo'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   const body = await readBody<UpdateUserSettingsDto>(event)
   
@@ -69,7 +62,9 @@ export default defineEventHandler(async (event) => {
     }
     
     updates.push(`updated_at = CURRENT_TIMESTAMP`)
+    // Add userId to values array, then use paramIndex for WHERE clause
     values.push(userId)
+    const userIdParamIndex = paramIndex
     
     // Check if settings exist, if not create them
     const existing = await pool.query(
@@ -89,7 +84,7 @@ export default defineEventHandler(async (event) => {
     const result = await pool.query(
       `UPDATE user_settings 
        SET ${updates.join(', ')}
-       WHERE user_id = $${paramIndex++}
+       WHERE user_id = $${userIdParamIndex}
        RETURNING *`,
       values
     )

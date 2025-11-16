@@ -59,7 +59,8 @@ export const useTodos = () => {
         dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined
       }))
     } catch (err: any) {
-      error.value = err.message || 'Failed to fetch todos'
+      const errorMessage = err.data?.message || err.message || 'Failed to fetch todos'
+      error.value = errorMessage
       console.error('Error fetching todos:', err)
     } finally {
       loading.value = false
@@ -90,7 +91,8 @@ export const useTodos = () => {
       todos.value = [...todos.value, newTodo]
       return newTodo
     } catch (err: any) {
-      error.value = err.message || 'Failed to create todo'
+      const errorMessage = err.data?.message || err.message || 'Failed to create todo'
+      error.value = errorMessage
       console.error('Error creating todo:', err)
       return null
     } finally {
@@ -128,7 +130,8 @@ export const useTodos = () => {
 
       return updatedTodo
     } catch (err: any) {
-      error.value = err.message || 'Failed to update todo'
+      const errorMessage = err.data?.message || err.message || 'Failed to update todo'
+      error.value = errorMessage
       console.error('Error updating todo:', err)
       return null
     } finally {
@@ -152,7 +155,8 @@ export const useTodos = () => {
       todos.value = todos.value.filter(t => t.id !== id)
       return true
     } catch (err: any) {
-      error.value = err.message || 'Failed to delete todo'
+      const errorMessage = err.data?.message || err.message || 'Failed to delete todo'
+      error.value = errorMessage
       console.error('Error deleting todo:', err)
       return false
     } finally {
@@ -176,7 +180,8 @@ export const useTodos = () => {
       todos.value = todos.value.filter(todo => !todo.completed)
       return true
     } catch (err: any) {
-      error.value = err.message || 'Failed to clear completed todos'
+      const errorMessage = err.data?.message || err.message || 'Failed to clear completed todos'
+      error.value = errorMessage
       console.error('Error clearing completed todos:', err)
       return false
     } finally {

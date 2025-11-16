@@ -4,8 +4,8 @@
       v-for="category in categories"
       :key="category.name"
       :class="{
-        'bg-blue-500 text-white': activeCategory === category.name,
-        'bg-white text-gray-600': activeCategory !== category.name
+        'bg-blue-500 dark:bg-blue-600 text-white': activeCategory === category.name,
+        'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400': activeCategory !== category.name
       }"
       class="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer transition-colors flex items-center gap-2"
       @click="$emit('category-change', category.name)">

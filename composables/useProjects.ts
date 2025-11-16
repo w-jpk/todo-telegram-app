@@ -39,7 +39,8 @@ export const useProjects = () => {
         updatedAt: new Date(project.updatedAt)
       }))
     } catch (err: any) {
-      error.value = err.message || 'Failed to fetch projects'
+      const errorMessage = err.data?.message || err.message || 'Failed to fetch projects'
+      error.value = errorMessage
       console.error('Error fetching projects:', err)
     } finally {
       loading.value = false
@@ -69,7 +70,8 @@ export const useProjects = () => {
       projects.value.push(newProject)
       return newProject
     } catch (err: any) {
-      error.value = err.message || 'Failed to create project'
+      const errorMessage = err.data?.message || err.message || 'Failed to create project'
+      error.value = errorMessage
       console.error('Error creating project:', err)
       return null
     } finally {
@@ -106,7 +108,8 @@ export const useProjects = () => {
 
       return updatedProject
     } catch (err: any) {
-      error.value = err.message || 'Failed to update project'
+      const errorMessage = err.data?.message || err.message || 'Failed to update project'
+      error.value = errorMessage
       console.error('Error updating project:', err)
       return null
     } finally {
@@ -130,7 +133,8 @@ export const useProjects = () => {
       projects.value = projects.value.filter(p => p.id !== id)
       return true
     } catch (err: any) {
-      error.value = err.message || 'Failed to delete project'
+      const errorMessage = err.data?.message || err.message || 'Failed to delete project'
+      error.value = errorMessage
       console.error('Error deleting project:', err)
       return false
     } finally {

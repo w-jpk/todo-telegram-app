@@ -12,6 +12,13 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss'
   ],
 
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+
   vite: {
     server: {
       hmr: {

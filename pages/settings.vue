@@ -51,11 +51,11 @@
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="pushNotifications" class="sr-only" />
-              <div :class="{ 'bg-blue-500': pushNotifications, 'bg-gray-300': !pushNotifications }"
+              <div :class="{ 'bg-blue-500 dark:bg-blue-600': pushNotifications, 'bg-gray-300 dark:bg-gray-600': !pushNotifications }"
                 class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
                 @click="pushNotifications = !pushNotifications">
                 <div :class="{ 'translate-x-7': pushNotifications, 'translate-x-1': !pushNotifications }"
-                  class="w-4 h-4 bg-white rounded-full transition-transform"></div>
+                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
               </div>
             </div>
           </div>
@@ -66,11 +66,11 @@
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="emailAlerts" class="sr-only" />
-              <div :class="{ 'bg-blue-500': emailAlerts, 'bg-gray-300': !emailAlerts }"
+              <div :class="{ 'bg-blue-500 dark:bg-blue-600': emailAlerts, 'bg-gray-300 dark:bg-gray-600': !emailAlerts }"
                 class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
                 @click="emailAlerts = !emailAlerts">
                 <div :class="{ 'translate-x-7': emailAlerts, 'translate-x-1': !emailAlerts }"
-                  class="w-4 h-4 bg-white rounded-full transition-transform"></div>
+                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
               </div>
             </div>
           </div>
@@ -81,11 +81,11 @@
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="taskReminders" class="sr-only" />
-              <div :class="{ 'bg-blue-500': taskReminders, 'bg-gray-300': !taskReminders }"
+              <div :class="{ 'bg-blue-500 dark:bg-blue-600': taskReminders, 'bg-gray-300 dark:bg-gray-600': !taskReminders }"
                 class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
                 @click="taskReminders = !taskReminders">
                 <div :class="{ 'translate-x-7': taskReminders, 'translate-x-1': !taskReminders }"
-                  class="w-4 h-4 bg-white rounded-full transition-transform"></div>
+                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@
           <div v-for="theme in themes" :key="theme.value"
             :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900': selectedTheme === theme.value, 'border-gray-200 dark:border-gray-600': selectedTheme !== theme.value }"
             class="flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer"
-            @click="selectedTheme = theme.value">
+            @click="setTheme(theme.value)">
             <div class="flex items-center space-x-3">
               <i :class="theme.icon" class="text-lg"></i>
               <div>
@@ -210,9 +210,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import type { ThemeMode } from '~/composables/useTheme'
 
 interface Theme {
-  value: string
+  value: ThemeMode
   name: string
   description: string
   icon: string
@@ -343,11 +344,6 @@ onMounted(async () => {
   await waitForTelegram()
 
   await fetchSettings()
-
-  // Load theme from localStorage
-  if (process.client) {
-    selectedTheme.value = localStorage.getItem('theme') || 'light'
-  }
 })
 
 const pushNotifications = computed({
@@ -371,7 +367,12 @@ const taskReminders = computed({
   }
 })
 
-const selectedTheme = ref('light')
+const { theme, setTheme } = useTheme()
+const selectedTheme = computed({
+  get: () => theme.value,
+  set: (value) => setTheme(value)
+})
+
 const themes = ref<Theme[]>([
   {
     value: 'light',
@@ -400,46 +401,4 @@ const openHelp = () => {
 const contactSupport = () => {
   window.open('https://t.me/support', '_blank')
 }
-
-const applyTheme = (theme: string) => {
-  if (!process.client) return
-  let className = ''
-  if (theme === 'dark') {
-    className = 'dark'
-  } else if (theme === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    className = prefersDark ? 'dark' : ''
-  }
-  document.documentElement.className = className
-}
-
-watch(selectedTheme, (newTheme) => {
-  if (process.client) {
-    localStorage.setItem('theme', newTheme)
-    applyTheme(newTheme)
-  }
-})
-
-let mediaQuery: MediaQueryList | null = null
-
-onMounted(() => {
-  if (process.client) {
-    // Apply initial theme
-    applyTheme(selectedTheme.value)
-
-    // Listen to system theme changes for auto mode
-    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.addEventListener('change', () => {
-      if (selectedTheme.value === 'auto') {
-        applyTheme('auto')
-      }
-    })
-  }
-})
-
-onUnmounted(() => {
-  if (mediaQuery) {
-    mediaQuery.removeEventListener('change', () => {})
-  }
-})
 </script>

@@ -1,22 +1,8 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId, validateUUID } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  const id = getRouterParam(event, 'id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
-  
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      message: 'Todo ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
+  const id = validateUUID(getRouterParam(event, 'id'))
   
   try {
     const pool = getDbPool()

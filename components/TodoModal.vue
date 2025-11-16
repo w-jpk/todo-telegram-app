@@ -100,7 +100,7 @@
             <button
               @click="handleSave"
               :disabled="!formData.text.trim() || saving"
-              class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-blue-600"
+              class="flex-1 px-4 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-blue-600 dark:hover:bg-blue-700"
             >
               {{ saving ? 'Сохранение...' : todo ? 'Сохранить' : 'Создать' }}
             </button>

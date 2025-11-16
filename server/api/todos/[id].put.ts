@@ -1,28 +1,29 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId, validateUUID } from '~/server/utils/db'
 import type { Todo, UpdateTodoDto } from '~/types/todo'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  const id = getRouterParam(event, 'id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
-  
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      message: 'Todo ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
+  const id = validateUUID(getRouterParam(event, 'id'))
   
   const body = await readBody<UpdateTodoDto>(event)
   
   try {
     const pool = getDbPool()
+    
+    // Get old todo to check if it was completed before update
+    const oldTodoResult = await pool.query(
+      'SELECT completed FROM todos WHERE user_id = $1 AND id = $2',
+      [userId, id]
+    )
+    
+    if (oldTodoResult.rows.length === 0) {
+      throw createError({
+        statusCode: 404,
+        message: 'Todo not found'
+      })
+    }
+    
+    const wasCompletedBefore = oldTodoResult.rows[0].completed
     
     // Build update query dynamically
     const updates: string[] = []
@@ -67,22 +68,18 @@ export default defineEventHandler(async (event) => {
     }
     
     updates.push(`updated_at = CURRENT_TIMESTAMP`)
+    // Add userId and id to values array, then use paramIndex for WHERE clause
     values.push(userId, id)
+    const userIdParamIndex = paramIndex
+    const idParamIndex = paramIndex + 1
     
     const result = await pool.query(
       `UPDATE todos 
        SET ${updates.join(', ')}
-       WHERE user_id = $${paramIndex++} AND id = $${paramIndex++}
+       WHERE user_id = $${userIdParamIndex} AND id = $${idParamIndex}
        RETURNING *`,
       values
     )
-    
-    if (result.rows.length === 0) {
-      throw createError({
-        statusCode: 404,
-        message: 'Todo not found'
-      })
-    }
     
     // Get project info if exists
     let project = null
@@ -120,7 +117,7 @@ export default defineEventHandler(async (event) => {
     }
     
     // Send notification if enabled and task was completed
-    if (body.completed === true && !result.rows[0].completed) {
+    if (body.completed === true && !wasCompletedBefore) {
       try {
         const settingsResult = await pool.query(
           'SELECT notify_on_update, notifications_enabled FROM user_settings WHERE user_id = $1',

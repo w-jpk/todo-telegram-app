@@ -1,14 +1,7 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   try {
     const pool = getDbPool()

@@ -1,20 +1,14 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Todo } from '~/types/todo'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   try {
     const pool = getDbPool()
     const result = await pool.query(
-      `SELECT t.*, p.id as project_id_full, p.name as project_name, p.color as project_color
+      `SELECT t.*, p.id as project_id_full, p.name as project_name, p.color as project_color, 
+              p.created_at as project_created_at, p.updated_at as project_updated_at
        FROM todos t
        LEFT JOIN projects p ON t.project_id = p.id
        WHERE t.user_id = $1
@@ -43,8 +37,8 @@ export default defineEventHandler(async (event) => {
         name: row.project_name,
         color: row.project_color,
         userId: parseInt(row.user_id),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: row.project_created_at || new Date(),
+        updatedAt: row.project_updated_at || new Date()
       } : undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

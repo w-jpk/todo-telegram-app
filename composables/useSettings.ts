@@ -36,7 +36,8 @@ export const useSettings = () => {
       })
       settings.value = data
     } catch (err: any) {
-      error.value = err.message || 'Failed to fetch settings'
+      const errorMessage = err.data?.message || err.message || 'Failed to fetch settings'
+      error.value = errorMessage
       console.error('Error fetching settings:', err)
     } finally {
       loading.value = false
@@ -60,7 +61,8 @@ export const useSettings = () => {
       settings.value = data
       return data
     } catch (err: any) {
-      error.value = err.message || 'Failed to update settings'
+      const errorMessage = err.data?.message || err.message || 'Failed to update settings'
+      error.value = errorMessage
       console.error('Error updating settings:', err)
       return null
     } finally {
