@@ -46,8 +46,8 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-900">Push Notifications</p>
-              <p class="text-xs text-gray-600">Receive task reminders and updates</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Receive task reminders and updates</p>
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="pushNotifications" class="sr-only" />
@@ -61,8 +61,8 @@
           </div>
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-900">Email Alerts</p>
-              <p class="text-xs text-gray-600">Daily summary and important updates</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Email Alerts</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Daily summary and important updates</p>
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="emailAlerts" class="sr-only" />
@@ -76,8 +76,8 @@
           </div>
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-900">Task Reminders</p>
-              <p class="text-xs text-gray-600">Get notified before due dates</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Task Reminders</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Get notified before due dates</p>
             </div>
             <div class="relative flex-shrink-0">
               <input type="checkbox" v-model="taskReminders" class="sr-only" />
