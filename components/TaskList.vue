@@ -10,9 +10,10 @@
             'bg-green-500 border-green-500': task.completed,
             'border-gray-300 dark:border-gray-600': !task.completed
           }"
-          class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer"
+          class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+          :aria-label="task.completed ? 'Mark task as incomplete' : 'Mark task as complete'"
           @click="$emit('toggle', task.id)">
-          <i v-if="task.completed" class="fas fa-check text-white text-xs"></i>
+          <i v-if="task.completed" class="fas fa-check text-white text-xs" aria-hidden="true"></i>
         </button>
         <div class="flex-1">
           <div class="flex items-center justify-between mb-1">
@@ -22,9 +23,12 @@
             <div class="flex items-center space-x-2">
               <div v-if="task.priority && task.priority !== 'none'" :class="getPriorityColor(task.priority)"
                 class="w-2 h-2 rounded-full"></div>
-              <button class="cursor-pointer" @click="$emit('edit', task)">
-                <i class="fas fa-ellipsis-h text-gray-400 dark:text-gray-500 text-sm"></i>
-              </button>
+              <button
+                class="cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 p-1 rounded"
+                @click="$emit('edit', task)"
+                :aria-label="`Edit task: ${task.text}`">
+                  <i class="fas fa-ellipsis-h text-gray-400 dark:text-gray-500 text-sm" aria-hidden="true"></i>
+                </button>
             </div>
           </div>
             <p v-if="task.description" :class="{ 'line-through text-gray-400 dark:text-gray-500': task.completed }"
@@ -52,6 +56,7 @@
 
 <script setup lang="ts">
 import type { Todo } from '~/types/todo'
+import { formatDateForDisplay, isOverdue, isToday } from '~/utils/date'
 
 interface Props {
   tasks: Todo[]
@@ -75,12 +80,8 @@ const getPriorityColor = (priority: string) => {
 
 const getDueDateColor = (dueDate: Date, completed: boolean) => {
   if (completed) return 'text-gray-500 dark:text-gray-400'
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const taskDate = new Date(dueDate)
-  taskDate.setHours(0, 0, 0, 0)
-  if (taskDate < today) return 'text-red-500 dark:text-red-400'
-  if (taskDate.getTime() === today.getTime()) return 'text-orange-500 dark:text-orange-400'
+  if (isOverdue(dueDate)) return 'text-red-500 dark:text-red-400'
+  if (isToday(dueDate)) return 'text-orange-500 dark:text-orange-400'
   return 'text-gray-500 dark:text-gray-400'
 }
 
@@ -95,16 +96,6 @@ const getCategoryColor = (category: string) => {
 }
 
 const formatDate = (dateString: Date) => {
-  const date = new Date(dateString)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const dateOnly = new Date(date)
-  dateOnly.setHours(0, 0, 0, 0)
-
-  if (dateOnly.getTime() === today.getTime()) return 'Today'
-  if (dateOnly.getTime() === tomorrow.getTime()) return 'Tomorrow'
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return formatDateForDisplay(dateString)
 }
 </script>

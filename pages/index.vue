@@ -13,6 +13,24 @@
         :completion-percentage="completionPercentage"
       />
 
+      <!-- Search Bar -->
+      <div class="mb-6" role="search">
+        <label for="task-search" class="sr-only">Search tasks</label>
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
+          <input
+            id="task-search"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search tasks..."
+            class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
+            aria-describedby="search-help"
+            autocomplete="off"
+          />
+        </div>
+        <div id="search-help" class="sr-only">Type to search through your tasks</div>
+      </div>
+
       <!-- Add New Task -->
       <QuickAddTask
         v-model="newTask"
@@ -36,7 +54,7 @@
       <!-- Task List -->
       <TaskList
         v-else-if="filteredTasks.length > 0"
-        :tasks="filteredTasks"
+        :tasks="filteredTasks as Todo[]"
         @toggle="toggleTask"
         @edit="handleEdit"
       />
@@ -61,12 +79,16 @@
 
     <!-- Bottom Navigation -->
     <BottomNavigation v-show="!isModalOpen" />
+
+    <!-- Toast Notifications -->
+    <Toast ref="toast" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Todo, CreateTodoDto, UpdateTodoDto, Project, TodoFilter } from '~/types/todo'
+import { formatDateISO, startOfDay } from '~/utils/date'
 import TodoModal from '~/components/TodoModal.vue'
 import AppHeader from '~/components/AppHeader.vue'
 import StatsDashboard from '~/components/StatsDashboard.vue'
@@ -76,6 +98,7 @@ import TaskList from '~/components/TaskList.vue'
 import EmptyState from '~/components/EmptyState.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import FloatingActionButton from '~/components/FloatingActionButton.vue'
+import Toast from '~/components/Toast.vue'
 
 interface Category {
   name: string
@@ -105,6 +128,8 @@ const newTask = ref('')
 const activeCategory = ref('All')
 const isModalOpen = ref(false)
 const selectedTodo = ref<Todo | null>(null)
+const toast = ref()
+const searchQuery = ref('')
 
 const categories = computed<Category[]>(() => {
   const baseCategories = [
@@ -122,21 +147,15 @@ const categories = computed<Category[]>(() => {
   return [...baseCategories, ...projectCategories]
 })
 
-const getLocalDateString = (date: Date) => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
 const today = computed(() => {
-  const date = new Date()
-  date.setHours(0, 0, 0, 0)
-  return date
+  return startOfDay(new Date())
 })
 
 const todayTasks = computed(() => {
-  const todayStr = getLocalDateString(today.value)
+  const todayStr = formatDateISO(today.value)
   return todos.value.filter(task => {
     if (!task.dueDate) return false
-    const taskDateStr = getLocalDateString(task.dueDate)
+    const taskDateStr = formatDateISO(task.dueDate)
     return taskDateStr === todayStr
   })
 })
@@ -151,14 +170,14 @@ const completionPercentage = computed(() => {
 })
 
 const filteredTasks = computed(() => {
-  let result = filteredTodos.value
+  let result = todos.value // Use raw todos instead of pre-filtered
 
   // Apply category filter
   if (activeCategory.value === 'Today') {
-    const todayStr = getLocalDateString(today.value)
+    const todayStr = formatDateISO(today.value)
     result = result.filter(task => {
       if (!task.dueDate) return false
-      const taskDateStr = getLocalDateString(task.dueDate)
+      const taskDateStr = formatDateISO(task.dueDate)
       return taskDateStr === todayStr
     })
   } else if (activeCategory.value !== 'All') {
@@ -166,6 +185,29 @@ const filteredTasks = computed(() => {
       if (!task.project) return false
       return task.project.name === activeCategory.value
     })
+  } else {
+    // For 'All' category, apply the general filter from useTodos
+    switch (filter.value) {
+      case 'active':
+        result = result.filter(todo => !todo.completed)
+        break
+      case 'completed':
+        result = result.filter(todo => todo.completed)
+        break
+      default:
+        // 'all' - no additional filtering needed
+        break
+    }
+  }
+
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    result = result.filter(task =>
+      task.text.toLowerCase().includes(query) ||
+      (task.description && task.description.toLowerCase().includes(query)) ||
+      (task.project && task.project.name.toLowerCase().includes(query))
+    )
   }
 
   return result
@@ -185,32 +227,52 @@ const closeModal = () => {
 }
 
 const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
-  if (selectedTodo.value) {
-    await updateTodo(selectedTodo.value.id, data as UpdateTodoDto)
-  } else {
-    await createTodo(data as CreateTodoDto)
-  }
-  closeModal()
-  newTask.value = ''
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  try {
+    if (selectedTodo.value) {
+      await updateTodo(selectedTodo.value.id, data as UpdateTodoDto)
+      toast.value?.showSuccess('Task Updated', 'Your task has been updated successfully.')
+    } else {
+      await createTodo(data as CreateTodoDto)
+      toast.value?.showSuccess('Task Created', 'Your new task has been created successfully.')
+    }
+    closeModal()
+    newTask.value = ''
+    if (process.client && (window as any).Telegram?.WebApp) {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    }
+  } catch (error) {
+    toast.value?.showError(
+      'Save Failed',
+      'There was an error saving your task. Please try again.'
+    )
+    console.error('Error saving todo:', error)
   }
 }
 
-const addQuickTask = () => {
-  if (newTask.value.trim()) {
-    openModal()
-    // The modal will handle the creation
-  }
-}
 
 const toggleTask = async (id: string) => {
   const task = todos.value.find(t => t.id === id)
-  if (task && updateTodo) {
-    await updateTodo(id, { completed: !task.completed })
-  }
+  if (!task) return
+
+  const newCompleted = !task.completed
+
+  // Haptic feedback
   if (process.client && (window as any).Telegram?.WebApp) {
     (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  }
+
+  try {
+    await updateTodo(id, { completed: newCompleted })
+    toast.value?.showSuccess(
+      newCompleted ? 'Task Completed' : 'Task Uncompleted',
+      `Task "${task.text}" has been ${newCompleted ? 'completed' : 'marked as incomplete'}.`
+    )
+  } catch (error) {
+    toast.value?.showError(
+      'Update Failed',
+      'There was an error updating the task. Please try again.'
+    )
+    console.error('Error toggling task:', error)
   }
 }
 
@@ -227,12 +289,51 @@ const handleProjectCreated = async (project: Project) => {
 }
 
 const handleMenuClick = () => {
-  // Handle menu button click - could open settings or show menu
-  console.log('Menu clicked')
+  // Navigate to settings page
+  navigateTo('/settings')
+}
+
+const handleKeyboardShortcuts = (event: KeyboardEvent) => {
+  // Don't trigger shortcuts when typing in inputs
+  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+    return
+  }
+
+  // Ctrl+N or Cmd+N for new task
+  if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
+    event.preventDefault()
+    if (!isModalOpen.value) {
+      openModal()
+    }
+  }
+
+  // Escape to close modal
+  if (event.key === 'Escape' && isModalOpen.value) {
+    event.preventDefault()
+    closeModal()
+  }
+
+  // Ctrl+K or Cmd+K for search focus
+  if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+    event.preventDefault()
+    const searchInput = document.getElementById('task-search') as HTMLInputElement
+    if (searchInput) {
+      searchInput.focus()
+    }
+  }
+
+  // Ctrl+/ or Cmd+/ for settings
+  if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+    event.preventDefault()
+    navigateTo('/settings')
+  }
 }
 
 
 onMounted(async () => {
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', handleKeyboardShortcuts)
+
   const { $telegram } = useNuxtApp()
 
   const waitForTelegram = (): Promise<void> => {
@@ -292,5 +393,10 @@ onMounted(async () => {
     fetchTodos(),
     fetchSettings()
   ])
+})
+
+onUnmounted(() => {
+  // Clean up keyboard shortcuts
+  document.removeEventListener('keydown', handleKeyboardShortcuts)
 })
 </script>
