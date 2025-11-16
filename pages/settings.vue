@@ -1,24 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <div class="fixed top-0 w-full bg-white dark:bg-gray-800 shadow-sm z-50">
-      <div class="flex items-center justify-between px-4 py-3">
-        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <div class="flex items-center space-x-3">
-          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-white text-sm"></i>
-          </div>
-          <button class="p-1 cursor-pointer">
-            <i class="fas fa-ellipsis-v text-gray-600 dark:text-gray-400"></i>
-          </button>
-        </div>
-      </div>
-    </div>
+    <AppHeader title="Settings" />
 
     <!-- Content Area -->
     <div class="pt-16 pb-20 px-4">
       <!-- User Profile Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm" @click="openUserProfile">
         <div class="flex items-center space-x-4">
           <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
             <img v-if="userPhoto" :src="userPhoto" class="w-full h-full object-cover" alt="User photo" />
@@ -239,6 +227,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { ThemeMode } from '~/composables/useTheme'
+import AppHeader from '~/components/AppHeader.vue'
 
 const { locale, locales, setLocale: i18nSetLocale } = useI18n()
 const availableLocales = computed(() => locales.value)
