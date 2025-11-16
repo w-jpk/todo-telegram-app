@@ -1,0 +1,78 @@
+import type { UserSettings, UpdateUserSettingsDto } from '~/types/todo'
+
+export const useSettings = () => {
+  const settings = useState<UserSettings | null>('settings', () => null)
+  const loading = useState<boolean>('settings:loading', () => false)
+  const error = useState<string | null>('settings:error', () => null)
+
+  const { $telegram } = useNuxtApp()
+  const userId = computed(() => $telegram?.user?.id || null)
+
+  // Get headers for API requests
+  const getHeaders = () => {
+    const headers: Record<string, string> = {
+      'x-telegram-user-id': userId.value?.toString() || ''
+    }
+
+    // Encode JSON if there is data
+    if ($telegram?.user) {
+      headers['x-telegram-user-data'] = encodeURIComponent(JSON.stringify($telegram.user))
+    }
+
+    return headers
+  }
+
+  // Fetch settings
+  const fetchSettings = async () => {
+    if (!userId.value) return
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data } = await $fetch<{ data: UserSettings }>('/api/settings', {
+        method: 'GET',
+        headers: getHeaders()
+      })
+      settings.value = data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch settings'
+      console.error('Error fetching settings:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update settings
+  const updateSettings = async (settingsData: UpdateUserSettingsDto) => {
+    if (!userId.value) return null
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data } = await $fetch<{ data: UserSettings }>('/api/settings', {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: settingsData
+      })
+
+      settings.value = data
+      return data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to update settings'
+      console.error('Error updating settings:', err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    settings: readonly(settings),
+    loading: readonly(loading),
+    error: readonly(error),
+    fetchSettings,
+    updateSettings
+  }
+}

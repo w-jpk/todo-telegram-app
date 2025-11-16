@@ -128,7 +128,7 @@
           <h3 class="font-medium text-gray-900">Data Management</h3>
         </div>
         <div class="space-y-3">
-          <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+          <button @click="exportData" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-download text-blue-500"></i>
               <div class="text-left">
@@ -138,17 +138,20 @@
             </div>
             <i class="fas fa-chevron-right text-gray-400"></i>
           </button>
-          <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-upload text-green-500"></i>
-              <div class="text-left">
-                <p class="text-sm font-medium text-gray-900">Import Data</p>
-                <p class="text-xs text-gray-600">Restore from backup file</p>
+          <div class="relative">
+            <input type="file" accept=".json" @change="importData" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-upload text-green-500"></i>
+                <div class="text-left">
+                  <p class="text-sm font-medium text-gray-900">Import Data</p>
+                  <p class="text-xs text-gray-600">Restore from backup file</p>
+                </div>
               </div>
-            </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
-          </button>
-          <button class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
+              <i class="fas fa-chevron-right text-gray-400"></i>
+            </button>
+          </div>
+          <button @click="toggleSync" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
             <div class="flex items-center space-x-3">
               <i class="fas fa-sync text-purple-500"></i>
               <div class="text-left">
@@ -157,7 +160,7 @@
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              <span class="text-xs text-green-600">Active</span>
+              <span :class="settings?.notificationsEnabled ? 'text-green-600' : 'text-red-600'" class="text-xs">{{ settings?.notificationsEnabled ? 'Active' : 'Inactive' }}</span>
               <i class="fas fa-chevron-right text-gray-400"></i>
             </div>
           </button>
@@ -209,6 +212,10 @@ interface Theme {
 }
 
 const { $telegram } = useNuxtApp()
+const { settings, fetchSettings, updateSettings } = useSettings()
+const { todos, fetchTodos, createTodo } = useTodos()
+const { projects, fetchProjects, createProject } = useProjects()
+
 const userName = computed(() => {
   const user = $telegram?.user
   if (user) {
@@ -220,6 +227,62 @@ const userEmail = computed(() => {
   // Telegram doesn't provide email, but we can show username
   return $telegram?.user?.username ? `@${$telegram.user.username}` : null
 })
+
+const exportData = async () => {
+  await Promise.all([fetchTodos(), fetchProjects(), fetchSettings()])
+  const data = {
+    todos: todos.value,
+    projects: projects.value,
+    settings: settings.value,
+    exportDate: new Date().toISOString()
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'todo-backup.json'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const importData = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const text = await file.text()
+  const data = JSON.parse(text)
+  // Import projects first
+  for (const project of data.projects || []) {
+    try {
+      await createProject({ name: project.name, color: project.color })
+    } catch (e) {
+      // Skip if exists
+    }
+  }
+  // Then todos
+  for (const todo of data.todos || []) {
+    try {
+      await createTodo({
+        text: todo.text,
+        description: todo.description,
+        priority: todo.priority,
+        projectId: todo.projectId,
+        dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined
+      })
+    } catch (e) {
+      console.error('Failed to import todo:', e)
+    }
+  }
+  // Settings
+  if (data.settings) {
+    await updateSettings(data.settings)
+  }
+}
+
+const toggleSync = async () => {
+  if (settings.value) {
+    await updateSettings({ notificationsEnabled: !settings.value.notificationsEnabled })
+  }
+}
 
 onMounted(async () => {
   const { $telegram } = useNuxtApp()
@@ -261,11 +324,31 @@ onMounted(async () => {
   }
 
   await waitForTelegram()
+
+  await fetchSettings()
 })
 
-const pushNotifications = ref(true)
-const emailAlerts = ref(false)
-const taskReminders = ref(true)
+const pushNotifications = computed({
+  get: () => settings.value?.notificationsEnabled ?? true,
+  set: async (value: boolean) => {
+    await updateSettings({ notificationsEnabled: value })
+  }
+})
+
+const emailAlerts = computed({
+  get: () => settings.value?.dailyNotifications ?? false,
+  set: async (value: boolean) => {
+    await updateSettings({ dailyNotifications: value })
+  }
+})
+
+const taskReminders = computed({
+  get: () => settings.value?.notifyOnOverdue ?? true,
+  set: async (value: boolean) => {
+    await updateSettings({ notifyOnOverdue: value })
+  }
+})
+
 const selectedTheme = ref('light')
 const themes = ref<Theme[]>([
   {
