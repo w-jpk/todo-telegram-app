@@ -46,7 +46,7 @@
           <!-- Calendar Days -->
           <div class="grid grid-cols-7">
             <div v-for="date in calendarDays" :key="date.key" :class="{
-              'bg-blue-500 text-white': date.isToday,
+              'bg-gray-400 dark:bg-gray-600 text-white': date.isToday,
               'text-gray-400 dark:text-gray-500': !date.isCurrentMonth,
               'text-gray-900 dark:text-white': date.isCurrentMonth && !date.isToday
             }" class="relative p-3 h-16 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -54,7 +54,7 @@
               <div class="text-sm font-medium">{{ date.day }}</div>
               <div class="absolute bottom-1 right-1 flex space-x-1">
                 <div v-for="task in getTasksForDate(date.fullDate)" :key="task.id"
-                  :class="getTaskDotColor(task.project?.name || '')" class="w-2 h-2 rounded-full"></div>
+                  :style="{ backgroundColor: getTaskDotColor(task) }" class="w-2 h-2 rounded-full"></div>
               </div>
             </div>
           </div>
@@ -271,11 +271,8 @@ const getTasksForDate = (date: string) => {
   })
 }
 
-const getTaskDotColor = (projectName: string) => {
-  const project = projects.value.find(p => p.name === projectName)
-  if (!project) return 'bg-gray-400'
-  const index = projects.value.indexOf(project)
-  return projectColors[index % projectColors.length]
+const getTaskDotColor = (task: Todo) => {
+  return task.project?.color || '#9ca3af'
 }
 
 const getPriorityColor = (priority: string) => {
