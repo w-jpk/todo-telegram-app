@@ -14,9 +14,21 @@ export default defineEventHandler(async (event) => {
     if (result.rows.length === 0) {
       // Create default settings
       await pool.query(
-        `INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language)
-         VALUES ($1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'en')
-         RETURNING *`,
+        `INSERT INTO user_settings (
+          user_id, notifications_enabled, daily_notifications, daily_notification_time,
+          reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue,
+          vibration_enabled, default_priority, default_sort_by, auto_archive_completed,
+          archive_after_days, show_completed_tasks, confirm_delete_task, theme,
+          font_size, animations_enabled, compact_view, language, date_format,
+          time_format, auto_sync, sync_frequency, backup_frequency, data_retention_days,
+          analytics_enabled, crash_reporting_enabled, data_encryption_enabled,
+          profile_visibility
+        ) VALUES (
+          $1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE,
+          TRUE, 'medium', 'dueDate', FALSE, 30, TRUE, TRUE, 'light',
+          'medium', TRUE, FALSE, 'en', 'DD/MM/YYYY', '24h',
+          TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE, 'private'
+        ) RETURNING *`,
         [userId]
       )
       
@@ -28,6 +40,7 @@ export default defineEventHandler(async (event) => {
       const row = newResult.rows[0]
       const settings: UserSettings = {
         userId: parseInt(row.user_id),
+        // Basic notifications
         notificationsEnabled: row.notifications_enabled,
         dailyNotifications: row.daily_notifications,
         dailyNotificationTime: row.daily_notification_time,
@@ -35,9 +48,36 @@ export default defineEventHandler(async (event) => {
         notifyOnCreate: row.notify_on_create,
         notifyOnUpdate: row.notify_on_update,
         notifyOnOverdue: row.notify_on_overdue,
+        // Advanced notifications
+        vibrationEnabled: row.vibration_enabled ?? true,
+        // App behavior
+        defaultPriority: row.default_priority || 'medium',
+        defaultSortBy: row.default_sort_by || 'dueDate',
+        autoArchiveCompleted: row.auto_archive_completed ?? false,
+        archiveAfterDays: row.archive_after_days ?? 30,
+        showCompletedTasks: row.show_completed_tasks ?? true,
+        confirmDeleteTask: row.confirm_delete_task ?? true,
+        // Appearance
         timezone: row.timezone || 'UTC',
         theme: row.theme || 'light',
+        fontSize: row.font_size || 'medium',
+        animationsEnabled: row.animations_enabled ?? true,
+        compactView: row.compact_view ?? false,
+        // Language & Region
         language: row.language || 'en',
+        dateFormat: row.date_format || 'DD/MM/YYYY',
+        timeFormat: row.time_format || '24h',
+        // Data & Sync
+        autoSync: row.auto_sync ?? true,
+        syncFrequency: row.sync_frequency || 'daily',
+        backupFrequency: row.backup_frequency || 'weekly',
+        dataRetentionDays: row.data_retention_days ?? 365,
+        // Privacy & Security
+        analyticsEnabled: row.analytics_enabled ?? true,
+        crashReportingEnabled: row.crash_reporting_enabled ?? true,
+        dataEncryptionEnabled: row.data_encryption_enabled ?? true,
+        // Profile
+        profileVisibility: row.profile_visibility || 'private',
         createdAt: row.created_at,
         updatedAt: row.updated_at
       }
@@ -50,6 +90,7 @@ export default defineEventHandler(async (event) => {
     const row = result.rows[0]
     const settings: UserSettings = {
       userId: parseInt(row.user_id),
+      // Basic notifications
       notificationsEnabled: row.notifications_enabled,
       dailyNotifications: row.daily_notifications,
       dailyNotificationTime: row.daily_notification_time,
@@ -57,9 +98,36 @@ export default defineEventHandler(async (event) => {
       notifyOnCreate: row.notify_on_create,
       notifyOnUpdate: row.notify_on_update,
       notifyOnOverdue: row.notify_on_overdue,
+      // Advanced notifications
+      vibrationEnabled: row.vibration_enabled ?? true,
+      // App behavior
+      defaultPriority: row.default_priority || 'medium',
+      defaultSortBy: row.default_sort_by || 'dueDate',
+      autoArchiveCompleted: row.auto_archive_completed ?? false,
+      archiveAfterDays: row.archive_after_days ?? 30,
+      showCompletedTasks: row.show_completed_tasks ?? true,
+      confirmDeleteTask: row.confirm_delete_task ?? true,
+      // Appearance
       timezone: row.timezone || 'UTC',
       theme: row.theme || 'light',
+      fontSize: row.font_size || 'medium',
+      animationsEnabled: row.animations_enabled ?? true,
+      compactView: row.compact_view ?? false,
+      // Language & Region
       language: row.language || 'en',
+      dateFormat: row.date_format || 'DD/MM/YYYY',
+      timeFormat: row.time_format || '24h',
+      // Data & Sync
+      autoSync: row.auto_sync ?? true,
+      syncFrequency: row.sync_frequency || 'daily',
+      backupFrequency: row.backup_frequency || 'weekly',
+      dataRetentionDays: row.data_retention_days ?? 365,
+      // Privacy & Security
+      analyticsEnabled: row.analytics_enabled ?? true,
+      crashReportingEnabled: row.crash_reporting_enabled ?? true,
+      dataEncryptionEnabled: row.data_encryption_enabled ?? true,
+      // Profile
+      profileVisibility: row.profile_visibility || 'private',
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }

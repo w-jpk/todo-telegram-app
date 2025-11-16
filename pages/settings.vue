@@ -4,253 +4,272 @@
     <AppHeader title="Settings" />
 
     <!-- Content Area -->
-    <div class="pt-16 pb-20 px-4">
-      <!-- User Profile Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm" @click="openUserProfile">
-        <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
-            <img v-if="userPhoto" :src="userPhoto" class="w-full h-full object-cover" alt="User photo" />
-            <i v-else class="fas fa-user text-white text-xl"></i>
+    <div class="pt-16 pb-20 px-4 max-w-2xl mx-auto">
+      <!-- Search Bar -->
+      <div class="mb-6" role="search">
+        <label for="settings-search" class="sr-only">Search settings</label>
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
+          <input
+            id="settings-search"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search settings..."
+            class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
+            aria-describedby="search-help"
+            autocomplete="off"
+          />
+        </div>
+        <div id="search-help" class="sr-only">Type to search through available settings</div>
+      </div>
+
+      <!-- User Profile Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg" role="region" aria-labelledby="profile-heading">
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="profile-heading" class="text-lg font-semibold text-gray-900 dark:text-white">👤 Profile</h2>
+          <button
+            @click="editProfile = !editProfile"
+            class="text-blue-500 hover:text-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded"
+            :aria-expanded="editProfile"
+            aria-controls="profile-edit-form"
+          >
+            {{ editProfile ? 'Cancel' : 'Edit' }}
+          </button>
+        </div>
+
+        <div v-if="!editProfile" class="flex items-center space-x-4" @click="openUserProfile" role="button" tabindex="0" @keydown.enter="openUserProfile" @keydown.space.prevent="openUserProfile" aria-label="Open user profile">
+          <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:bg-blue-600 transition-colors" aria-hidden="true">
+            <img v-if="userPhoto" :src="userPhoto" class="w-full h-full object-cover" alt="User profile photo" />
+            <i v-else class="fas fa-user text-white text-xl" aria-hidden="true"></i>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 cursor-pointer">
             <h3 class="font-semibold text-gray-900 dark:text-white">{{ userName || 'User' }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">{{ userEmail || 'Telegram User' }}</p>
             <p class="text-xs text-blue-500 mt-1">Premium Member</p>
           </div>
-          <button @click="openUserProfile" class="cursor-pointer">
-            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
+          <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500" aria-hidden="true"></i>
+        </div>
+
+        <div v-else class="space-y-4" id="profile-edit-form">
+          <div>
+            <label for="display-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Name</label>
+            <input
+              id="display-name"
+              v-model="profileForm.displayName"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter display name"
+              aria-describedby="display-name-help"
+              autocomplete="name"
+            />
+            <div id="display-name-help" class="sr-only">Your display name will be shown to other users</div>
+          </div>
+          <div>
+            <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bio</label>
+            <textarea
+              id="bio"
+              v-model="profileForm.bio"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Tell us about yourself..."
+              aria-describedby="bio-help"
+              maxlength="500"
+            ></textarea>
+            <div id="bio-help" class="sr-only">A short description about yourself (maximum 500 characters)</div>
+          </div>
+          <div>
+            <label for="profile-visibility" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Visibility</label>
+            <select
+              id="profile-visibility"
+              v-model="profileForm.profileVisibility"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              aria-describedby="visibility-help"
+            >
+              <option value="private">Private</option>
+              <option value="contacts">Contacts Only</option>
+              <option value="public">Public</option>
+            </select>
+            <div id="visibility-help" class="sr-only">Choose who can see your profile information</div>
+          </div>
+          <button
+            @click="saveProfile"
+            class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            aria-describedby="save-help"
+          >
+            Save Profile
           </button>
+          <div id="save-help" class="sr-only">Save your profile changes</div>
         </div>
       </div>
 
-      <!-- Notification Preferences -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-            <i class="fas fa-bell text-blue-500"></i>
-          </div>
-          <h3 class="font-medium text-gray-900 dark:text-white">Notification Preferences</h3>
-        </div>
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Push Notifications</p>
-              <p class="text-xs text-gray-600 dark:text-gray-400">Receive task reminders and updates</p>
-            </div>
-            <div class="relative flex-shrink-0">
-              <input type="checkbox" v-model="pushNotifications" class="sr-only" />
-              <div :class="{ 'bg-blue-500 dark:bg-blue-600': pushNotifications, 'bg-gray-300 dark:bg-gray-600': !pushNotifications }"
-                class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
-                @click="pushNotifications = !pushNotifications">
-                <div :class="{ 'translate-x-7': pushNotifications, 'translate-x-1': !pushNotifications }"
-                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Email Alerts</p>
-              <p class="text-xs text-gray-600 dark:text-gray-400">Daily summary and important updates</p>
-            </div>
-            <div class="relative flex-shrink-0">
-              <input type="checkbox" v-model="emailAlerts" class="sr-only" />
-              <div :class="{ 'bg-blue-500 dark:bg-blue-600': emailAlerts, 'bg-gray-300 dark:bg-gray-600': !emailAlerts }"
-                class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
-                @click="emailAlerts = !emailAlerts">
-                <div :class="{ 'translate-x-7': emailAlerts, 'translate-x-1': !emailAlerts }"
-                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Task Reminders</p>
-              <p class="text-xs text-gray-600 dark:text-gray-400">Get notified before due dates</p>
-            </div>
-            <div class="relative flex-shrink-0">
-              <input type="checkbox" v-model="taskReminders" class="sr-only" />
-              <div :class="{ 'bg-blue-500 dark:bg-blue-600': taskReminders, 'bg-gray-300 dark:bg-gray-600': !taskReminders }"
-                class="w-12 h-6 rounded-full cursor-pointer transition-colors flex items-center"
-                @click="taskReminders = !taskReminders">
-                <div :class="{ 'translate-x-7': taskReminders, 'translate-x-1': !taskReminders }"
-                  class="w-4 h-4 bg-white dark:bg-gray-200 rounded-full transition-transform"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Theme Customization -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-            <i class="fas fa-palette text-purple-500"></i>
-          </div>
-          <h3 class="font-medium text-gray-900 dark:text-white">Theme Customization</h3>
-        </div>
-        <div class="space-y-3">
-          <div v-for="theme in themes" :key="theme.value"
-            :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900': selectedTheme === theme.value, 'border-gray-200 dark:border-gray-600': selectedTheme !== theme.value }"
-            class="flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer"
-            @click="setTheme(theme.value)">
+      <!-- Filtered Settings Sections -->
+      <div v-for="section in filteredSections" :key="section.id" class="mb-6" role="region" :aria-labelledby="`section-${section.id}`">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          <!-- Section Header -->
+          <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-3">
-              <i :class="theme.icon" class="text-lg"></i>
+              <div :class="`w-10 h-10 ${section.color} rounded-full flex items-center justify-center`" aria-hidden="true">
+                <i :class="section.icon" class="text-white"></i>
+              </div>
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ theme.name }}</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400">{{ theme.description }}</p>
+                <h3 :id="`section-${section.id}`" class="font-semibold text-gray-900 dark:text-white">{{ section.title }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ section.description }}</p>
               </div>
             </div>
-            <div
-              :class="{ 'text-blue-500': selectedTheme === theme.value, 'text-gray-300 dark:text-gray-500': selectedTheme !== theme.value }">
-              <i class="fas fa-check-circle"></i>
-            </div>
+          </div>
+
+          <!-- Section Content -->
+          <div class="p-6">
+            <!-- Dynamic component rendering -->
+            <NotificationSettings
+              v-if="section.component === 'NotificationSettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+            />
+            <AppearanceSettings
+              v-else-if="section.component === 'AppearanceSettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+            />
+            <BehaviorSettings
+              v-else-if="section.component === 'BehaviorSettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+            />
+            <LanguageSettings
+              v-else-if="section.component === 'LanguageSettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+            />
+            <DataSettings
+              v-else-if="section.component === 'DataSettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+              @export="handleExport"
+              @import="handleImport"
+              @clear="handleClear"
+            />
+            <PrivacySettings
+              v-else-if="section.component === 'PrivacySettings'"
+              :settings="settings as UserSettings | null"
+              @update="handleSettingUpdate"
+              @disconnect="handleDisconnect"
+              @export-request="handleExportRequest"
+              @deletion-request="handleDeletionRequest"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Language Selection -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
-            <i class="fas fa-language text-indigo-500"></i>
-          </div>
-          <h3 class="font-medium text-gray-900 dark:text-white">{{ $t('settings.language') }}</h3>
-        </div>
-        <div class="space-y-3">
-          <div
-            v-for="locale in availableLocales"
-            :key="locale.code"
-            :class="{ 'border-blue-500 bg-blue-50 dark:bg-blue-900': currentLocale === locale.code, 'border-gray-200 dark:border-gray-600': currentLocale !== locale.code }"
-            class="flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer"
-            @click="setLocale(locale.code)">
+      <!-- Support Section -->
+      <section class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg" aria-labelledby="support-heading">
+        <h3 id="support-heading" class="font-semibold text-gray-900 dark:text-white mb-4">❓ Support & Information</h3>
+        <div class="space-y-3" role="list">
+          <button
+            @click="openHelp"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            role="listitem"
+            aria-label="Open help and FAQ page"
+          >
             <div class="flex items-center space-x-3">
-              <i :class="locale.code === 'ru' ? 'fas fa-flag' : 'fas fa-flag-usa'" class="text-lg"></i>
-              <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ locale.name }}</p>
-              </div>
-            </div>
-            <i
-              :class="{ 'text-blue-500': currentLocale === locale.code, 'text-gray-300 dark:text-gray-500': currentLocale !== locale.code }"
-              class="fas fa-check text-lg"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- Data Management -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-            <i class="fas fa-database text-green-500"></i>
-          </div>
-          <h3 class="font-medium text-gray-900 dark:text-white">Data Management</h3>
-        </div>
-        <div class="space-y-3">
-          <button @click="exportData"
-            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-download text-blue-500"></i>
-              <div class="text-left">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Export Data</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400">Download your tasks and settings</p>
-              </div>
-            </div>
-            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
-          </button>
-          <div class="relative">
-            <input type="file" accept=".json" @change="importData"
-              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-            <button class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
-              <div class="flex items-center space-x-3">
-                <i class="fas fa-upload text-green-500"></i>
-                <div class="text-left">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">Import Data</p>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Restore from backup file</p>
-                </div>
-              </div>
-              <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
-            </button>
-          </div>
-          <button @click="toggleSync"
-            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-sync text-purple-500"></i>
-              <div class="text-left">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Sync Settings</p>
-                <p class="text-xs text-gray-600 dark:text-gray-400">Manage cloud synchronization</p>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span :class="settings?.notificationsEnabled ? 'text-green-600' : 'text-red-600'" class="text-xs">{{
-                settings?.notificationsEnabled ? 'Active' : 'Inactive' }}</span>
-              <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Support and Information -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Support & Information</h3>
-        <div class="space-y-3">
-          <button @click="openHelp"
-            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
-            <div class="flex items-center space-x-3">
-              <i class="fas fa-question-circle text-blue-500"></i>
+              <i class="fas fa-question-circle text-blue-500" aria-hidden="true"></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white">Help & FAQ</span>
             </div>
-            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500" aria-hidden="true"></i>
           </button>
-          <button @click="contactSupport"
-            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer">
+          <button
+            @click="contactSupport"
+            class="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            role="listitem"
+            aria-label="Contact support team"
+          >
             <div class="flex items-center space-x-3">
-              <i class="fas fa-headset text-green-500"></i>
+              <i class="fas fa-headset text-green-500" aria-hidden="true"></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white">Contact Support</span>
             </div>
-            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500"></i>
+            <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500" aria-hidden="true"></i>
           </button>
-          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg" role="listitem">
             <div class="flex items-center space-x-3">
-              <i class="fas fa-info-circle text-gray-500"></i>
+              <i class="fas fa-info-circle text-gray-500" aria-hidden="true"></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white">App Version</span>
             </div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">2.1.4</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400" aria-label="Current app version 2.1.4">2.1.4</span>
           </div>
         </div>
-      </div>
+      </section>
     </div>
 
     <!-- Bottom Navigation -->
     <BottomNavigation />
+
+    <!-- Confirmation Dialog -->
+    <ConfirmationDialog
+      ref="confirmationDialog"
+      :title="dialogConfig.title"
+      :message="dialogConfig.message"
+      :confirm-text="dialogConfig.confirmText"
+      :cancel-text="dialogConfig.cancelText"
+      :icon="dialogConfig.icon"
+      :icon-color="dialogConfig.iconColor"
+      :confirm-button-class="dialogConfig.confirmButtonClass"
+      :additional-info="dialogConfig.additionalInfo"
+      @confirm="handleDialogConfirm"
+      @cancel="handleDialogCancel"
+    />
+
+    <!-- Toast Notifications -->
+    <Toast ref="toast" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { ThemeMode } from '~/composables/useTheme'
+import type { TodoPriority, SortOption, FontSize, SyncFrequency, BackupFrequency, UserSettings } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
+import ConfirmationDialog from '~/components/ConfirmationDialog.vue'
+import Toast from '~/components/Toast.vue'
 
+// Reactive data
+const searchQuery = ref('')
+const editProfile = ref(false)
+const profileForm = ref({
+  displayName: '',
+  bio: '',
+  profileVisibility: 'private' as 'public' | 'private' | 'contacts'
+})
+const confirmationDialog = ref()
+const toast = ref()
+const dialogConfig = ref({
+  title: '',
+  message: '',
+  confirmText: 'Confirm',
+  cancelText: 'Cancel',
+  icon: 'fas fa-exclamation-triangle',
+  iconColor: 'bg-red-500',
+  confirmButtonClass: 'bg-red-500 hover:bg-red-600',
+  additionalInfo: ''
+})
+
+// Settings history for undo functionality
+const settingsHistory = ref<UserSettings[]>([])
+const maxHistorySize = 10
+
+// Composables
 const { locale, locales, setLocale: i18nSetLocale } = useI18n()
-const availableLocales = computed(() => locales.value)
-const currentLocale = computed(() => locale.value)
-
-const setLocale = async (newLocale: 'ru' | 'en') => {
-  await i18nSetLocale(newLocale)
-  if (settings.value) {
-    await updateSettings({ language: newLocale })
-  }
-}
-
-interface Theme {
-  value: ThemeMode
-  name: string
-  description: string
-  icon: string
-}
-
 const { $telegram } = useNuxtApp()
 const { settings, fetchSettings, updateSettings } = useSettings()
 const { todos, fetchTodos, createTodo } = useTodos()
 const { projects, fetchProjects, createProject } = useProjects()
+const { theme, setTheme } = useTheme()
+
+// Computed properties
+const availableLocales = computed(() => locales.value)
+const currentLocale = computed(() => locale.value)
+const selectedTheme = computed({
+  get: () => theme.value,
+  set: (value) => setTheme(value)
+})
 
 const userName = computed(() => {
   const user = $telegram?.user
@@ -259,8 +278,8 @@ const userName = computed(() => {
   }
   return null
 })
+
 const userEmail = computed(() => {
-  // Telegram doesn't provide email, but we can show username
   return $telegram?.user?.username ? `@${$telegram.user.username}` : null
 })
 
@@ -268,71 +287,294 @@ const userPhoto = computed(() => {
   return $telegram?.user?.photo_url
 })
 
+// Settings sections
+const settingsSections = ref([
+  {
+    id: 'notifications',
+    title: '🔔 Notifications',
+    description: 'Manage alerts and reminders',
+    icon: 'fas fa-bell',
+    color: 'bg-blue-100 dark:bg-blue-900',
+    component: 'NotificationSettings'
+  },
+  {
+    id: 'appearance',
+    title: '🎨 Appearance',
+    description: 'Theme, colors, and display options',
+    icon: 'fas fa-palette',
+    color: 'bg-purple-100 dark:bg-purple-900',
+    component: 'AppearanceSettings'
+  },
+  {
+    id: 'behavior',
+    title: '⚙️ App Behavior',
+    description: 'Task defaults and app preferences',
+    icon: 'fas fa-cogs',
+    color: 'bg-green-100 dark:bg-green-900',
+    component: 'BehaviorSettings'
+  },
+  {
+    id: 'language',
+    title: '🌐 Language & Region',
+    description: 'Language, date, and time formats',
+    icon: 'fas fa-language',
+    color: 'bg-indigo-100 dark:bg-indigo-900',
+    component: 'LanguageSettings'
+  },
+  {
+    id: 'data',
+    title: '💾 Data & Sync',
+    description: 'Backup, import, and synchronization',
+    icon: 'fas fa-database',
+    color: 'bg-orange-100 dark:bg-orange-900',
+    component: 'DataSettings'
+  },
+  {
+    id: 'privacy',
+    title: '🔒 Privacy & Security',
+    description: 'Data protection and analytics',
+    icon: 'fas fa-shield-alt',
+    color: 'bg-red-100 dark:bg-red-900',
+    component: 'PrivacySettings'
+  }
+])
+
+const filteredSections = computed(() => {
+  if (!searchQuery.value) return settingsSections.value
+
+  const query = searchQuery.value.toLowerCase()
+  return settingsSections.value.filter(section =>
+    section.title.toLowerCase().includes(query) ||
+    section.description.toLowerCase().includes(query)
+  )
+})
+
+// Methods
+const setLocale = async (newLocale: 'ru' | 'en') => {
+  await i18nSetLocale(newLocale)
+  if (settings.value) {
+    await updateSettings({ language: newLocale })
+  }
+}
+
 const openUserProfile = () => {
   if ($telegram?.user?.username) {
     window.open(`https://t.me/${$telegram.user.username}`, '_blank')
   }
 }
 
-const exportData = async () => {
-  await Promise.all([fetchTodos(), fetchProjects(), fetchSettings()])
-  const data = {
-    todos: todos.value,
-    projects: projects.value,
-    settings: settings.value,
-    exportDate: new Date().toISOString()
+const saveProfile = async () => {
+  try {
+    if (settings.value) {
+      await updateSettings({
+        displayName: profileForm.value.displayName,
+        bio: profileForm.value.bio,
+        profileVisibility: profileForm.value.profileVisibility
+      })
+      editProfile.value = false
+      toast.value?.showSuccess('Profile Updated', 'Your profile information has been saved.')
+    }
+  } catch (error) {
+    toast.value?.showError('Profile Update Failed', 'There was an error saving your profile. Please try again.')
+    console.error('Profile update failed:', error)
   }
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'todo-backup.json'
-  a.click()
-  URL.revokeObjectURL(url)
+}
+
+const handleSettingUpdate = async (updates: any) => {
+  try {
+    if (settings.value) {
+      // Save current state to history before updating
+      saveSettingsToHistory(JSON.parse(JSON.stringify(settings.value)))
+
+      await updateSettings(updates)
+      // Show success toast with undo option
+      toast.value?.showSuccess('Settings Updated', 'Your preferences have been saved successfully.', 8000)
+
+      // Add undo button to toast (this would need to be implemented in the Toast component)
+      // For now, we'll just show the success message
+    }
+  } catch (error) {
+    // Show error toast
+    toast.value?.showError('Update Failed', 'There was an error saving your settings. Please try again.')
+    console.error('Settings update failed:', error)
+  }
+}
+
+const saveSettingsToHistory = (currentSettings: UserSettings) => {
+  // Add current state to history
+  settingsHistory.value.unshift({ ...currentSettings })
+
+  // Limit history size
+  if (settingsHistory.value.length > maxHistorySize) {
+    settingsHistory.value = settingsHistory.value.slice(0, maxHistorySize)
+  }
+}
+
+const undoLastChange = async () => {
+  if (settingsHistory.value.length > 0) {
+    try {
+      const previousSettings = settingsHistory.value.shift()
+      if (previousSettings && settings.value) {
+        await updateSettings(previousSettings)
+        toast.value?.showInfo('Settings Restored', 'Your previous settings have been restored.')
+      }
+    } catch (error) {
+      toast.value?.showError('Undo Failed', 'There was an error restoring your settings.')
+      console.error('Undo failed:', error)
+    }
+  } else {
+    toast.value?.showWarning('Nothing to Undo', 'No previous settings found to restore.')
+  }
+}
+
+const canUndo = computed(() => settingsHistory.value.length > 0)
+
+const handleExport = async () => {
+  await exportData()
+}
+
+const handleImport = async () => {
+  // Trigger file input for import
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (event) => {
+    await importData(event)
+  }
+  input.click()
+}
+
+const handleClear = async () => {
+  // Show confirmation dialog before clearing
+  if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+    // Clear all data logic would go here
+    console.log('Clearing all data...')
+  }
+}
+
+const handleDisconnect = () => {
+  // Show confirmation dialog
+  if (confirm('Are you sure you want to disconnect your Telegram account? You will lose access to your data.')) {
+    // Disconnect logic would go here
+    console.log('Disconnecting account...')
+  }
+}
+
+const handleExportRequest = () => {
+  // Request data export
+  console.log('Requesting data export...')
+}
+
+const handleDeletionRequest = () => {
+  // Show confirmation dialog
+  if (confirm('Are you sure you want to permanently delete all your data? This action cannot be undone.')) {
+    console.log('Requesting data deletion...')
+  }
+}
+
+const showConfirmationDialog = (config: typeof dialogConfig.value) => {
+  dialogConfig.value = { ...config }
+  confirmationDialog.value?.show()
+}
+
+const handleDialogConfirm = () => {
+  // Handle confirmation based on current dialog context
+  console.log('Dialog confirmed')
+}
+
+const handleDialogCancel = () => {
+  // Handle cancellation
+  console.log('Dialog cancelled')
+}
+
+const exportData = async () => {
+  try {
+    toast.value?.showInfo('Exporting Data', 'Preparing your data for download...')
+    await Promise.all([fetchTodos(), fetchProjects(), fetchSettings()])
+    const data = {
+      todos: todos.value,
+      projects: projects.value,
+      settings: settings.value,
+      exportDate: new Date().toISOString()
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `todo-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.value?.showSuccess('Export Complete', 'Your data has been downloaded successfully.')
+  } catch (error) {
+    toast.value?.showError('Export Failed', 'There was an error exporting your data. Please try again.')
+    console.error('Export failed:', error)
+  }
 }
 
 const importData = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) return
-  const text = await file.text()
-  const data = JSON.parse(text)
-  // Import projects first
-  for (const project of data.projects || []) {
-    try {
-      await createProject({ name: project.name, color: project.color })
-    } catch (e) {
-      // Skip if exists
+
+  try {
+    toast.value?.showInfo('Importing Data', 'Processing your backup file...')
+    const text = await file.text()
+    const data = JSON.parse(text)
+
+    // Validate data structure
+    if (!data.todos && !data.projects && !data.settings) {
+      throw new Error('Invalid backup file format')
     }
-  }
-  // Then todos
-  for (const todo of data.todos || []) {
-    try {
-      await createTodo({
-        text: todo.text,
-        description: todo.description,
-        priority: todo.priority,
-        projectId: todo.projectId,
-        dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined
-      })
-    } catch (e) {
-      console.error('Failed to import todo:', e)
+
+    // Import projects first
+    if (data.projects) {
+      for (const project of data.projects) {
+        try {
+          await createProject({ name: project.name, color: project.color })
+        } catch (e) {
+          console.warn('Project already exists:', project.name)
+        }
+      }
     }
-  }
-  // Settings
-  if (data.settings) {
-    await updateSettings(data.settings)
+
+    // Then todos
+    if (data.todos) {
+      for (const todo of data.todos) {
+        try {
+          await createTodo({
+            text: todo.text,
+            description: todo.description,
+            priority: todo.priority,
+            projectId: todo.projectId,
+            dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined
+          })
+        } catch (e) {
+          console.error('Failed to import todo:', e)
+        }
+      }
+    }
+
+    // Settings
+    if (data.settings) {
+      await updateSettings(data.settings)
+    }
+
+    toast.value?.showSuccess('Import Complete', 'Your data has been imported successfully.')
+  } catch (error) {
+    toast.value?.showError('Import Failed', 'There was an error importing your data. Please check the file format and try again.')
+    console.error('Import failed:', error)
   }
 }
 
-const toggleSync = async () => {
-  if (settings.value) {
-    await updateSettings({ notificationsEnabled: !settings.value.notificationsEnabled })
-  }
+const openHelp = () => {
+  window.open('https://example.com/help', '_blank')
 }
 
+const contactSupport = () => {
+  window.open('https://t.me/support', '_blank')
+}
+
+// Initialize
 onMounted(async () => {
-  const { $telegram } = useNuxtApp()
-
   const waitForTelegram = (): Promise<void> => {
     return new Promise((resolve) => {
       if ($telegram?.isReady && $telegram?.user) {
@@ -370,68 +612,20 @@ onMounted(async () => {
   }
 
   await waitForTelegram()
-
   await fetchSettings()
+
+  // Initialize profile form
+  if (settings.value) {
+    profileForm.value = {
+      displayName: settings.value.displayName || '',
+      bio: settings.value.bio || '',
+      profileVisibility: settings.value.profileVisibility || 'private'
+    }
+  }
 
   // Set initial locale from settings
   if (settings.value?.language) {
     await i18nSetLocale(settings.value.language as 'ru' | 'en')
   }
 })
-
-const pushNotifications = computed({
-  get: () => settings.value?.notificationsEnabled ?? true,
-  set: async (value: boolean) => {
-    await updateSettings({ notificationsEnabled: value })
-  }
-})
-
-const emailAlerts = computed({
-  get: () => settings.value?.dailyNotifications ?? false,
-  set: async (value: boolean) => {
-    await updateSettings({ dailyNotifications: value })
-  }
-})
-
-const taskReminders = computed({
-  get: () => settings.value?.notifyOnOverdue ?? true,
-  set: async (value: boolean) => {
-    await updateSettings({ notifyOnOverdue: value })
-  }
-})
-
-const { theme, setTheme } = useTheme()
-const selectedTheme = computed({
-  get: () => theme.value,
-  set: (value) => setTheme(value)
-})
-
-const themes = ref<Theme[]>([
-  {
-    value: 'light',
-    name: 'Light Mode',
-    description: 'Clean and bright interface',
-    icon: 'fas fa-sun text-yellow-500'
-  },
-  {
-    value: 'dark',
-    name: 'Dark Mode',
-    description: 'Easy on the eyes in low light',
-    icon: 'fas fa-moon text-blue-500'
-  },
-  {
-    value: 'auto',
-    name: 'Auto Mode',
-    description: 'Follows system preference',
-    icon: 'fas fa-adjust text-gray-500'
-  }
-])
-
-const openHelp = () => {
-  window.open('https://example.com/help', '_blank')
-}
-
-const contactSupport = () => {
-  window.open('https://t.me/support', '_blank')
-}
 </script>
