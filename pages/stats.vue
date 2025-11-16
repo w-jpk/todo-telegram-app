@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-50 pb-20">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <div class="fixed top-0 w-full bg-white shadow-sm z-50">
+    <div class="fixed top-0 w-full bg-white dark:bg-gray-800 shadow-sm z-50">
       <div class="flex items-center justify-between px-4 py-3">
-        <h1 class="text-xl font-bold text-gray-900">Stats</h1>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Stats</h1>
         <div class="flex items-center space-x-3">
           <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <i class="fas fa-user text-white text-sm"></i>
@@ -24,7 +24,7 @@
           :key="period"
           :class="{
             'bg-blue-500 text-white': activePeriod === period,
-            'bg-white text-gray-600': activePeriod !== period
+            'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400': activePeriod !== period
           }"
           class="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
           @click="activePeriod = period"
@@ -35,27 +35,27 @@
 
       <!-- Overview Cards -->
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-white rounded-xl p-4 shadow-sm">
-          <div class="text-2xl font-bold text-gray-900">{{ totalCompleted }}</div>
-          <div class="text-sm text-gray-600">Tasks Completed</div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCompleted }}</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Tasks Completed</div>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-blue-500">{{ completionRate }}%</div>
-          <div class="text-sm text-gray-600">Completion Rate</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</div>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-green-500">{{ averageDaily }}</div>
-          <div class="text-sm text-gray-600">Daily Average</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Daily Average</div>
         </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-purple-500">{{ currentStreak }}</div>
-          <div class="text-sm text-gray-600">Current Streak</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Current Streak</div>
         </div>
       </div>
 
       <!-- Completion Rate Chart -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Tasks by Priority</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
         <div class="relative h-32">
           <svg viewBox="0 0 300 120" class="w-full h-full">
             <rect v-for="(priority, index) in priorityStats" :key="priority.level" :x="index * 50 + 20" :y="100 - (priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :width="30" :height="(priority.total * 80 / Math.max(...priorityStats.map(p => p.total), 1))" :fill="priority.color" />
@@ -65,8 +65,8 @@
       </div>
 
       <!-- Category Distribution -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Tasks by Category</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Tasks by Category</h3>
         <div class="flex items-center justify-between">
           <div class="relative w-32 h-32">
             <svg viewBox="0 0 120 120" class="w-full h-full">
@@ -87,8 +87,8 @@
       </div>
 
       <!-- Priority Level Analytics -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Tasks by Priority</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
         <div class="space-y-3">
           <div v-for="priority in priorityStats" :key="priority.level" class="flex items-center space-x-3">
             <div class="w-16 text-sm text-gray-600">{{ priority.level }}</div>
@@ -105,8 +105,8 @@
       </div>
 
       <!-- Daily Progress Heatmap -->
-      <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Daily Activity</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Daily Activity</h3>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="day in heatmapData" :key="day.date" class="text-center">
             <div class="text-xs text-gray-500 mb-1">{{ day.dayName }}</div>
@@ -140,8 +140,8 @@
       </div>
 
       <!-- Weekly Comparison -->
-      <div class="bg-white rounded-xl p-4 shadow-sm">
-        <h3 class="font-medium text-gray-900 mb-4">Completion Overview</h3>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Completion Overview</h3>
         <div class="relative h-28">
           <svg viewBox="0 0 300 100" class="w-full h-full">
             <rect x="50" :y="80 - (chartData.completed * 60 / Math.max(chartData.total, 1))" width="50" :height="(chartData.completed * 60 / Math.max(chartData.total, 1))" fill="#3b82f6" />

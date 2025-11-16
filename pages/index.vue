@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 pb-20">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
     <AppHeader v-show="!isModalOpen" @menu-click="handleMenuClick" />
 
@@ -30,7 +30,7 @@
       <div v-if="loading && filteredTasks.length === 0" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent">
         </div>
-        <p class="mt-4 text-gray-600 text-sm">Загрузка задач...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400 text-sm">Загрузка задач...</p>
       </div>
 
       <!-- Task List -->
