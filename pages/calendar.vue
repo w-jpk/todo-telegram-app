@@ -175,6 +175,7 @@ const {
 } = useTodos()
 
 const { projects, fetchProjects } = useProjects()
+const { fetchSettings } = useSettings()
 
 const currentDate = ref(new Date())
 const showTaskModal = ref(false)
@@ -342,6 +343,6 @@ const toggleTask = async (id: string) => {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchProjects(), fetchTodos()])
+  await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
 })
 </script>

@@ -96,6 +96,7 @@ const {
 } = useTodos()
 
 const { projects, fetchProjects } = useProjects()
+const { settings, fetchSettings } = useSettings()
 
 const { $telegram } = useNuxtApp()
 const userId = computed(() => $telegram?.user?.id || null)
@@ -288,7 +289,8 @@ onMounted(async () => {
 
   await Promise.all([
     fetchProjects(),
-    fetchTodos()
+    fetchTodos(),
+    fetchSettings()
   ])
 })
 </script>
