@@ -144,15 +144,15 @@
         <h3 class="font-medium text-gray-900 mb-4">Completion Overview</h3>
         <div class="relative h-28">
           <svg viewBox="0 0 300 100" class="w-full h-full">
-            <rect x="50" :y="80 - (completedTodos.length * 60 / Math.max(todos.value.length, 1))" width="50" :height="(completedTodos.length * 60 / Math.max(todos.value.length, 1))" fill="#3b82f6" />
-            <rect x="150" :y="80 - (activeTodos.length * 60 / Math.max(todos.value.length, 1))" width="50" :height="(activeTodos.length * 60 / Math.max(todos.value.length, 1))" fill="#ef4444" />
+            <rect x="50" :y="80 - (chartData.completed * 60 / Math.max(chartData.total, 1))" width="50" :height="(chartData.completed * 60 / Math.max(chartData.total, 1))" fill="#3b82f6" />
+            <rect x="150" :y="80 - (chartData.pending * 60 / Math.max(chartData.total, 1))" width="50" :height="(chartData.pending * 60 / Math.max(chartData.total, 1))" fill="#ef4444" />
             <text x="75" y="90" text-anchor="middle" class="text-xs fill-gray-600">Completed</text>
             <text x="175" y="90" text-anchor="middle" class="text-xs fill-gray-600">Pending</text>
           </svg>
         </div>
         <div class="flex justify-between mt-3 text-xs text-gray-600">
-          <span>{{ completedTodos.length }} completed</span>
-          <span>{{ activeTodos.length }} pending</span>
+          <span>{{ chartData.completed }} completed</span>
+          <span>{{ chartData.pending }} pending</span>
         </div>
       </div>
     </div>
@@ -351,6 +351,20 @@ const heatmapData = computed(() => {
   }
 
   return days
+})
+
+const chartData = computed(() => {
+
+  return {
+
+    total: todos.value.length,
+
+    completed: completedTodos.value.length,
+
+    pending: activeTodos.value.length
+
+  }
+
 })
 
 const getHeatmapColor = (intensity: number) => {
