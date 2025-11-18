@@ -1,15 +1,8 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Project } from '~/types/todo'
 
-export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
+export default defineCachedEventHandler(async (event) => {
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   try {
     const pool = getDbPool()
@@ -37,5 +30,11 @@ export default defineEventHandler(async (event) => {
       message: error.message || 'Failed to fetch projects'
     })
   }
+}, {
+ maxAge: 60, // Cache for 1 minute (projects change less frequently)
+ getKey: (event) => {
+   const userId = getHeader(event, 'x-telegram-user-id')
+   return `projects:${userId}`
+ }
 })
 

@@ -61,7 +61,8 @@ export default defineEventHandler(async (event) => {
             })
             .join('\n')
           
-          const message = `🌅 <b>Доброе утро! 📅 Напоминание о задачах на завтра</b>\n\n${todoList}\n\n✨ <i>У вас ${todosResult.rows.length} задач на завтра. Не забудьте их выполнить!</i>`
+          const dayText = daysBefore === 1 ? 'завтра' : `через ${daysBefore} ${daysBefore === 1 ? 'день' : daysBefore < 5 ? 'дня' : 'дней'}`
+          const message = `🌅 <b>Доброе утро! 📅 Напоминание о задачах ${dayText}</b>\n\n${todoList}\n\n✨ <i>У вас ${todosResult.rows.length} задач ${dayText}. Не забудьте их выполнить!</i>`
           
           try {
             await $fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {

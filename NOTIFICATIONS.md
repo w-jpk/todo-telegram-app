@@ -39,7 +39,7 @@
 
 **Расписание:**
 - **Ежедневные уведомления**: каждый день в 9:00 UTC
-- **Напоминания**: каждый день в 9:00 UTC
+- **Напоминания**: каждый день в 7:00 UTC (10:00 МСК)
 - **Просроченные задачи**: каждый день в 9:00 UTC
 
 **В режиме разработки:**
@@ -65,7 +65,7 @@ node .output/server/index.mjs
 ```
 ✅ Notification scheduler initialized
    - Daily notifications: every day at 9:00 AM UTC
-   - Reminders: every day at 9:00 AM UTC
+   - Reminders: every day at 7:00 AM UTC (10:00 MSK)
    - Overdue notifications: every day at 9:00 AM UTC
 ```
 
@@ -100,7 +100,7 @@ node .output/server/index.mjs
 ```
 
 **Настройки:**
-- По умолчанию: напоминания за 1 и 3 дня до дедлайна
+- По умолчанию: напоминания за 1 день до дедлайна
 - Можно настроить в настройках пользователя
 
 ### 3. Уведомления о просроченных задачах (`/api/notifications/overdue`)
@@ -157,7 +157,7 @@ Body: {
   "notificationsEnabled": true,
   "dailyNotifications": true,
   "dailyNotificationTime": "09:00:00",
-  "reminderDaysBefore": [1, 3],
+  "reminderDaysBefore": [1],
   "notifyOnCreate": false,
   "notifyOnUpdate": false,
   "notifyOnOverdue": true,
@@ -258,7 +258,7 @@ CREATE TABLE user_settings (
   notifications_enabled BOOLEAN DEFAULT TRUE,
   daily_notifications BOOLEAN DEFAULT TRUE,
   daily_notification_time TIME DEFAULT '09:00:00',
-  reminder_days_before INTEGER[] DEFAULT ARRAY[1, 3],
+  reminder_days_before INTEGER[] DEFAULT ARRAY[1],
   notify_on_create BOOLEAN DEFAULT FALSE,
   notify_on_update BOOLEAN DEFAULT FALSE,
   notify_on_overdue BOOLEAN DEFAULT TRUE,
@@ -297,7 +297,7 @@ curl -X PUT https://your-domain.com/api/settings \
   -d '{
     "dailyNotifications": true,
     "dailyNotificationTime": "08:00:00",
-    "reminderDaysBefore": [1, 2, 3]
+    "reminderDaysBefore": [1]
   }'
 ```
 

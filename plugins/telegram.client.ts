@@ -46,9 +46,9 @@ export default defineNuxtPlugin(() => {
     // Create reactive state for Telegram data
     const telegramState = reactive({
       webApp: null as any,
-      user: savedData?.user || null as any,
+      user: savedData?.user as any,
       initData: savedData?.initData || '',
-      initDataUnsafe: savedData?.initDataUnsafe || {} as any,
+      initDataUnsafe: savedData?.initDataUnsafe || {},
       isReady: savedData ? true : false
     })
     
@@ -142,6 +142,7 @@ export default defineNuxtPlugin(() => {
     }
   }
   
+  // Server-side: return empty state
   return {
     provide: {
       telegram: {

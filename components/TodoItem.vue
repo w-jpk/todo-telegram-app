@@ -40,7 +40,7 @@
         @click.stop="toggleComplete"
         :class="{
           'text-blue-500 bg-blue-500/20 border-blue-500': todo.completed,
-          'text-gray-400 border-gray-400 bg-transparent': !todo.completed
+          'text-gray-400 dark:text-gray-500 border-gray-400 dark:border-gray-500 bg-transparent': !todo.completed
         }"
         class="w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0 mt-0.5"
       >
@@ -53,13 +53,21 @@
       <div class="flex-1 min-w-0">
         <!-- Title -->
         <p
-          class="text-base font-medium break-words mb-1"
+          class="text-base font-medium break-words mb-1 flex items-center gap-2"
           :class="{
-            'line-through text-gray-500': todo.completed,
+            'line-through text-gray-500 dark:text-gray-400': todo.completed,
             'text-telegram-text': !todo.completed
           }"
         >
           {{ todo.text }}
+          <!-- Recurring task indicator -->
+          <span
+            v-if="todo.isRecurring"
+            class="text-xs text-blue-500 dark:text-blue-400 shrink-0"
+            title="Повторяющаяся задача"
+          >
+            🔄
+          </span>
         </p>
         
         <!-- Description -->
@@ -67,7 +75,7 @@
           v-if="todo.description"
           class="text-sm mb-2"
           :class="{
-            'text-gray-600': todo.completed,
+            'text-gray-600 dark:text-gray-400': todo.completed,
             'text-telegram-subtitle-text': !todo.completed
           }"
         >
@@ -87,7 +95,7 @@
             <span 
               class="text-xs"
               :class="{
-                'text-gray-600': todo.completed,
+                'text-gray-600 dark:text-gray-400': todo.completed,
                 'text-telegram-subtitle-text': !todo.completed
               }"
             >
@@ -106,14 +114,83 @@
             <span
               class="text-xs"
               :class="{
-                'text-gray-600': todo.completed,
+                'text-gray-600 dark:text-gray-400': todo.completed,
                 'text-telegram-subtitle-text': !todo.completed && !isOverdue,
-                'text-red-500': isOverdue && !todo.completed
+                'text-red-500 dark:text-red-400': isOverdue && !todo.completed
               }"
             >
               {{ formatDateShort(todo.dueDate) }}
             </span>
           </template>
+        </div>
+
+        <!-- Tags -->
+        <div v-if="todo.tags && todo.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
+          <span
+            v-for="tag in todo.tags"
+            :key="tag.id"
+            class="px-2 py-1 rounded-full text-xs font-medium text-white"
+            :style="{ backgroundColor: tag.color }"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
+
+        <!-- Subtasks -->
+        <div v-if="todo.subtasks && todo.subtasks.length > 0" class="mt-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-telegram-subtitle-text font-medium">
+              Подзадачи ({{ completedSubtasksCount }}/{{ todo.subtasks.length }})
+            </span>
+            <button
+              @click.stop="toggleSubtasksExpanded"
+              class="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              {{ subtasksExpanded ? 'Свернуть' : 'Развернуть' }}
+            </button>
+          </div>
+
+          <div v-if="subtasksExpanded" class="space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+            <div
+              v-for="subtask in todo.subtasks"
+              :key="subtask.id"
+              class="flex items-start gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+            >
+              <button
+                @click.stop="toggleSubtaskComplete(subtask.id)"
+                :class="{
+                  'text-green-500 bg-green-500/20 border-green-500': subtask.completed,
+                  'text-gray-400 dark:text-gray-500 border-gray-400 dark:border-gray-500 bg-transparent': !subtask.completed
+                }"
+                class="w-4 h-4 rounded-full border flex items-center justify-center cursor-pointer transition-colors shrink-0"
+              >
+                <svg v-if="subtask.completed" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              </button>
+
+              <div class="flex-1 min-w-0">
+                <p
+                  class="text-sm break-words"
+                  :class="{
+                    'line-through text-gray-500 dark:text-gray-400': subtask.completed,
+                    'text-telegram-text': !subtask.completed
+                  }"
+                >
+                  {{ subtask.text }}
+                </p>
+              </div>
+
+              <button
+                @click.stop="deleteSubtask(subtask.id)"
+                class="text-red-500 hover:text-red-600 transition-colors p-1"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -177,6 +254,7 @@ try {
 }
 
 const showDeleteButton = ref(false)
+const subtasksExpanded = ref(false)
 
 // Swipe functionality
 const todoCard = ref<HTMLElement | null>(null)
@@ -255,8 +333,13 @@ const toggleComplete = async () => {
   emit('update', props.todo.id, newCompleted)
   
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -282,8 +365,13 @@ const performDelete = async (showConfirm: boolean = true) => {
   emit('delete', props.todo.id)
   
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
   
   swipeOffset.value = 0
@@ -319,6 +407,35 @@ const getPriorityClass = (priority: TodoPriority) => {
       return 'text-blue-500'
     default:
       return 'text-telegram-hint'
+  }
+}
+
+const completedSubtasksCount = computed(() => {
+  return props.todo.subtasks?.filter(subtask => subtask.completed).length || 0
+})
+
+const toggleSubtasksExpanded = () => {
+  subtasksExpanded.value = !subtasksExpanded.value
+}
+
+const toggleSubtaskComplete = async (subtaskId: string) => {
+  const subtask = props.todo.subtasks?.find(s => s.id === subtaskId)
+  if (!subtask || !updateTodoFn) return
+
+  try {
+    await updateTodoFn(subtaskId, { completed: !subtask.completed })
+  } catch (e) {
+    console.warn('Failed to update subtask:', e)
+  }
+}
+
+const deleteSubtask = async (subtaskId: string) => {
+  if (!deleteTodoFn) return
+
+  try {
+    await deleteTodoFn(subtaskId)
+  } catch (e) {
+    console.warn('Failed to delete subtask:', e)
   }
 }
 

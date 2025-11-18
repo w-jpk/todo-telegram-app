@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Status Filters -->
-    <div class="flex bg-telegram-secondary-bg rounded-xl p-1">
+    <div class="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
       <button
         v-for="filterOption in filters"
         :key="filterOption.value"
@@ -9,8 +9,8 @@
         class="flex-1 py-2 px-1 rounded-xl text-sm font-medium transition-all touch-manipulation cursor-pointer"
         :class="
           currentFilter === filterOption.value
-            ? 'bg-telegram-section-bg shadow-sm text-telegram-button'
-            : 'text-telegram-hint'
+            ? 'bg-white dark:bg-gray-800 shadow-sm text-blue-500 dark:text-blue-400'
+            : 'text-gray-600 dark:text-gray-400'
         "
       >
         {{ filterOption.label }}
@@ -19,27 +19,27 @@
 
     <!-- Date Filter -->
     <div>
-      <h3 class="text-sm font-medium text-telegram-text mb-3">
+      <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
         Фильтр по датам
       </h3>
       <div class="grid grid-cols-2 gap-4">
         <div class="relative">
-          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-telegram-hint pointer-events-none z-10" />
+          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
           <input
             :value="formatDateInput(dateFrom)"
             @change="handleDateFromChange"
             type="date"
-            class="w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-telegram-secondary-bg text-sm focus:outline-none focus:ring-2 focus:ring-telegram-button text-telegram-text touch-manipulation"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 touch-manipulation"
             placeholder="От"
           />
         </div>
         <div class="relative">
-          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-telegram-hint pointer-events-none z-10" />
+          <Calendar :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
           <input
             :value="formatDateInput(dateTo)"
             @change="handleDateToChange"
             type="date"
-            class="w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-telegram-secondary-bg text-sm focus:outline-none focus:ring-2 focus:ring-telegram-button text-telegram-text touch-manipulation"
+            class="w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 touch-manipulation"
             placeholder="До"
           />
         </div>
@@ -48,7 +48,7 @@
       <button
         v-if="dateFrom || dateTo"
         @click="clearDateFilter"
-        class="mt-3 text-xs text-telegram-hint hover:text-telegram-text transition-colors touch-manipulation"
+        class="mt-3 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors touch-manipulation"
       >
         Очистить фильтр даты
       </button>

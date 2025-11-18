@@ -1,15 +1,8 @@
-import { getDbPool } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Todo, CreateTodoDto } from '~/types/todo'
 
 export default defineEventHandler(async (event) => {
-  const userId = getHeader(event, 'x-telegram-user-id')
-  
-  if (!userId) {
-    throw createError({
-      statusCode: 401,
-      message: 'User ID is required'
-    })
-  }
+  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   const body = await readBody<CreateTodoDto>(event)
   
@@ -80,17 +73,24 @@ export default defineEventHandler(async (event) => {
     
     // Create todo
     const result = await pool.query(
-      `INSERT INTO todos (user_id, project_id, text, description, completed, priority, due_date, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `INSERT INTO todos (user_id, project_id, parent_id, text, description, completed, priority, due_date, recurrence_type, recurrence_interval, recurrence_end_date, recurrence_days_of_week, recurrence_day_of_month, is_recurring, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
       [
         userId,
         projectId,
+        body.parentId || null,
         body.text.trim(),
         body.description?.trim() || null,
         false,
         body.priority || 'none',
-        body.dueDate || null
+        body.dueDate || null,
+        body.recurrenceRule?.type || null,
+        body.recurrenceRule?.interval || null,
+        body.recurrenceRule?.endDate || null,
+        body.recurrenceRule?.daysOfWeek || null,
+        body.recurrenceRule?.dayOfMonth || null,
+        !!body.recurrenceRule
       ]
     )
     
@@ -115,6 +115,41 @@ export default defineEventHandler(async (event) => {
     }
     
     const row = result.rows[0]
+
+    // Handle tags if provided
+    let tags: any[] = []
+    if (body.tagIds && body.tagIds.length > 0) {
+      // Insert todo-tag relationships using parameterized queries to prevent SQL injection
+      for (const tagId of body.tagIds) {
+        await pool.query(
+          'INSERT INTO todo_tags (todo_id, tag_id) VALUES ($1, $2)',
+          [row.id, tagId]
+        )
+      }
+
+      // Get tag details
+      const tagsResult = await pool.query(
+        'SELECT * FROM tags WHERE id = ANY($1)',
+        [body.tagIds]
+      )
+      tags = tagsResult.rows.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        color: tag.color,
+        userId: parseInt(tag.user_id),
+        createdAt: tag.created_at,
+        updatedAt: tag.updated_at
+      }))
+    }
+
+    const recurrenceRule = row.is_recurring ? {
+      type: row.recurrence_type,
+      interval: row.recurrence_interval,
+      endDate: row.recurrence_end_date || undefined,
+      daysOfWeek: row.recurrence_days_of_week || undefined,
+      dayOfMonth: row.recurrence_day_of_month || undefined
+    } : undefined
+
     const todo: Todo = {
       id: row.id,
       text: row.text,
@@ -123,6 +158,11 @@ export default defineEventHandler(async (event) => {
       priority: row.priority || 'none',
       userId: parseInt(row.user_id),
       projectId: row.project_id || undefined,
+      parentId: row.parent_id || undefined,
+      subtasks: [],
+      tags,
+      recurrenceRule,
+      isRecurring: row.is_recurring,
       project: project || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
