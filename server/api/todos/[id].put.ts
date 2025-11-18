@@ -59,8 +59,52 @@ export default defineEventHandler(async (event) => {
       updates.push(`due_date = $${paramIndex++}`)
       values.push(body.dueDate || null)
     }
-    
-    if (updates.length === 0) {
+
+    if (body.recurrenceRule !== undefined) {
+      if (body.recurrenceRule) {
+        updates.push(`recurrence_type = $${paramIndex++}`)
+        updates.push(`recurrence_interval = $${paramIndex++}`)
+        updates.push(`recurrence_end_date = $${paramIndex++}`)
+        updates.push(`recurrence_days_of_week = $${paramIndex++}`)
+        updates.push(`recurrence_day_of_month = $${paramIndex++}`)
+        updates.push(`is_recurring = $${paramIndex++}`)
+        values.push(body.recurrenceRule.type)
+        values.push(body.recurrenceRule.interval)
+        values.push(body.recurrenceRule.endDate || null)
+        values.push(body.recurrenceRule.daysOfWeek || null)
+        values.push(body.recurrenceRule.dayOfMonth || null)
+        values.push(true)
+      } else {
+        updates.push(`recurrence_type = $${paramIndex++}`)
+        updates.push(`recurrence_interval = $${paramIndex++}`)
+        updates.push(`recurrence_end_date = $${paramIndex++}`)
+        updates.push(`recurrence_days_of_week = $${paramIndex++}`)
+        updates.push(`recurrence_day_of_month = $${paramIndex++}`)
+        updates.push(`is_recurring = $${paramIndex++}`)
+        values.push(null, null, null, null, null, false)
+      }
+    }
+
+    // Handle tags update separately
+    if (body.tagIds !== undefined) {
+      // Delete existing tag relationships
+      await pool.query(
+        'DELETE FROM todo_tags WHERE todo_id = $1',
+        [id]
+      )
+
+      // Insert new tag relationships using parameterized queries to prevent SQL injection
+      if (body.tagIds.length > 0) {
+        for (const tagId of body.tagIds) {
+          await pool.query(
+            'INSERT INTO todo_tags (todo_id, tag_id) VALUES ($1, $2)',
+            [id, tagId]
+          )
+        }
+      }
+    }
+
+    if (updates.length === 0 && body.tagIds === undefined && body.recurrenceRule === undefined) {
       throw createError({
         statusCode: 400,
         message: 'No fields to update'
@@ -102,6 +146,30 @@ export default defineEventHandler(async (event) => {
     }
     
     const row = result.rows[0]
+
+    // Get tags for the todo
+    const tagsResult = await pool.query(
+      'SELECT t.* FROM tags t INNER JOIN todo_tags tt ON t.id = tt.tag_id WHERE tt.todo_id = $1',
+      [row.id]
+    )
+
+    const tags = tagsResult.rows.map(tag => ({
+      id: tag.id,
+      name: tag.name,
+      color: tag.color,
+      userId: parseInt(tag.user_id),
+      createdAt: tag.created_at,
+      updatedAt: tag.updated_at
+    }))
+
+    const recurrenceRule = row.is_recurring ? {
+      type: row.recurrence_type,
+      interval: row.recurrence_interval,
+      endDate: row.recurrence_end_date || undefined,
+      daysOfWeek: row.recurrence_days_of_week || undefined,
+      dayOfMonth: row.recurrence_day_of_month || undefined
+    } : undefined
+
     const todo: Todo = {
       id: row.id,
       text: row.text,
@@ -111,6 +179,9 @@ export default defineEventHandler(async (event) => {
       userId: parseInt(row.user_id),
       projectId: row.project_id || undefined,
       project: project || undefined,
+      tags,
+      recurrenceRule,
+      isRecurring: row.is_recurring,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       dueDate: row.due_date || undefined

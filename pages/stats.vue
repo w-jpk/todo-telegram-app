@@ -7,14 +7,20 @@
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
     </div>
     <div v-else class="pt-16 pb-20 px-4">
-      <!-- Time Period Selector -->
-      <div class="flex space-x-2 mb-6 overflow-x-auto scrollbar-hide">
-        <button v-for="period in timePeriods" :key="period" :class="{
-          'bg-blue-500 text-white': activePeriod === period,
-          'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400': activePeriod !== period
-        }" class="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
-          @click="activePeriod = period">
-          {{ period }}
+      <!-- Time Period Selector and Export -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
+          <button v-for="period in timePeriods" :key="period" :class="{
+            'bg-blue-500 text-white': activePeriod === period,
+            'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400': activePeriod !== period
+          }" class="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
+            @click="activePeriod = period">
+            {{ period }}
+          </button>
+        </div>
+        <button @click="exportStats"
+          class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-green-600 transition-colors">
+          <i class="fas fa-download mr-2"></i>Export
         </button>
       </div>
 
@@ -195,7 +201,7 @@
       </div>
 
       <!-- Completion Overview Line Chart -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
         <h3 class="font-medium text-gray-900 dark:text-white mb-4">Completion Overview</h3>
         <div class="relative h-32">
           <svg viewBox="0 0 300 120" class="w-full h-full" aria-label="Completion Overview Line Chart">
@@ -257,6 +263,52 @@
           </span>
         </div>
       </div>
+
+      <!-- Productivity Trends -->
+      <!-- <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Productivity Trends</h3>
+        <div class="relative h-40">
+          <svg viewBox="0 0 300 140" class="w-full h-full" aria-label="Productivity Trends Chart">
+            <defs>
+              <linearGradient id="productivityGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.3" />
+                <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.05" />
+              </linearGradient>
+            </defs>
+
+            
+            <line x1="0" y1="20" x2="300" y2="20" stroke="#e5e7eb" stroke-width="1" class="dark:stroke-gray-600" />
+            <line x1="0" y1="50" x2="300" y2="50" stroke="#e5e7eb" stroke-width="1" class="dark:stroke-gray-600" />
+            <line x1="0" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1" class="dark:stroke-gray-600" />
+            <line x1="0" y1="110" x2="300" y2="110" stroke="#e5e7eb" stroke-width="1" class="dark:stroke-gray-600" />
+
+          
+            <polygon :points="`20,130 ${productivityTrendPoints} 280,130`" fill="url(#productivityGradient)"
+              class="transition-all duration-500" />
+
+         
+            <polyline :points="productivityTrendPoints" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"
+              stroke-linejoin="round" class="drop-shadow-sm" />
+
+          
+            <circle v-for="(point, index) in productivityTrendData" :key="'productivity-' + index"
+              :cx="20 + index * (260 / Math.max(productivityTrendData.length - 1, 1))"
+              :cy="130 - (point.value * 100 / Math.max(...productivityTrendData.map(d => d.value), 1))"
+              r="4" fill="#10b981" stroke="#ffffff" stroke-width="2" class="drop-shadow-sm" />
+          </svg>
+        </div>
+        <div class="flex justify-center mt-4">
+          <span class="flex items-center text-sm">
+            <div class="w-4 h-4 bg-emerald-500 rounded-full mr-2 shadow-sm"></div>
+            <span class="text-gray-700 dark:text-gray-300 font-medium">Productivity Score</span>
+          </span>
+        </div>
+        <div class="mt-4 text-center">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Productivity score based on task completion rate and consistency over time
+          </p>
+        </div>
+      </div> -->
     </div>
 
     <!-- Bottom Navigation -->
@@ -268,6 +320,7 @@
 import { ref, computed } from 'vue'
 import type { Todo } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
+import BottomNavigation from '~/components/BottomNavigation.vue'
 
 interface CategoryStat {
   name: string
@@ -315,6 +368,22 @@ const {
   mostProductiveCount,
   getHeatmapColor
 } = useStats(todos as any, projects as any)
+
+// Productivity trend data (mock data for demonstration)
+const productivityTrendData = computed(() => {
+  // Generate productivity scores based on completion patterns
+  const days = activePeriod.value === 'Week' ? 7 : activePeriod.value === 'Month' ? 30 : 90
+  return Array.from({ length: days }, (_, i) => ({
+    day: i + 1,
+    value: Math.random() * 100 + 20 // Mock productivity score 20-120
+  }))
+})
+
+const productivityTrendPoints = computed(() => {
+  return productivityTrendData.value.map((point, index) =>
+    `${20 + index * (260 / Math.max(productivityTrendData.value.length - 1, 1))},${130 - (point.value * 100 / Math.max(...productivityTrendData.value.map(d => d.value), 1))}`
+  ).join(' ')
+})
 
 
 const exportStats = () => {

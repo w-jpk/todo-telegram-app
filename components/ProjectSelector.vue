@@ -102,8 +102,13 @@ const openCreateModal = () => {
   isProjectModalOpen.value = true
   
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 

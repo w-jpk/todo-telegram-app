@@ -10,8 +10,15 @@ export const useSettings = () => {
 
   // Get headers for API requests
   const getHeaders = () => {
+    // In dev mode, use default test user ID if not available
+    const effectiveUserId = userId.value || (process.dev ? 123456789 : null)
+    
+    if (!effectiveUserId) {
+      throw new Error('User ID is not available. Please wait for Telegram initialization.')
+    }
+
     const headers: Record<string, string> = {
-      'x-telegram-user-id': userId.value?.toString() || ''
+      'x-telegram-user-id': effectiveUserId.toString()
     }
 
     // Encode JSON if there is data
@@ -24,7 +31,8 @@ export const useSettings = () => {
 
   // Fetch settings
   const fetchSettings = async () => {
-    if (!userId.value) return
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return
 
     loading.value = true
     error.value = null
@@ -46,7 +54,8 @@ export const useSettings = () => {
 
   // Update settings
   const updateSettings = async (settingsData: UpdateUserSettingsDto) => {
-    if (!userId.value) return null
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return null
 
     loading.value = true
     error.value = null

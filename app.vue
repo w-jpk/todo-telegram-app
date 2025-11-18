@@ -1,5 +1,13 @@
 <template>
   <div class="tg-viewport">
+    <!-- Skip Links for Accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded z-50">
+      Skip to main content
+    </a>
+    <a href="#navigation" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-40 bg-blue-600 text-white px-4 py-2 rounded z-50">
+      Skip to navigation
+    </a>
+
     <NuxtPage />
   </div>
 </template>

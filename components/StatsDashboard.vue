@@ -3,15 +3,15 @@
     <div class="flex justify-between items-center">
       <div class="text-center">
         <div class="text-2xl font-bold">{{ todayTasksCount }}</div>
-        <div class="text-sm opacity-90">Tasks Today</div>
+        <div class="text-sm opacity-90">{{ $t('home.tasksToday') }}</div>
       </div>
       <div class="text-center">
         <div class="text-2xl font-bold">{{ completedTodayCount }}</div>
-        <div class="text-sm opacity-90">Completed</div>
+        <div class="text-sm opacity-90">{{ $t('home.completed') }}</div>
       </div>
       <div class="text-center">
         <div class="text-2xl font-bold">{{ pendingTodayCount }}</div>
-        <div class="text-sm opacity-90">Pending</div>
+        <div class="text-sm opacity-90">{{ $t('home.pending') }}</div>
       </div>
     </div>
     <div class="mt-3 bg-white bg-opacity-20 rounded-full h-2">

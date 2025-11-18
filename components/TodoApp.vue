@@ -136,8 +136,13 @@ const openModal = () => {
   isModalOpen.value = true
 
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -158,8 +163,13 @@ const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
   closeModal()
 
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -169,8 +179,13 @@ const handleUpdate = (id: string, completed: boolean) => {
 
 const handleDelete = (id: string) => {
   // Already handled in TodoItem component
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -179,8 +194,13 @@ const handleEdit = (todo: Todo) => {
   isModalOpen.value = true
 
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -195,8 +215,13 @@ const handleDateChange = (from: Date | null, to: Date | null) => {
 
 const handleClearCompleted = () => {
   // Already handled in TodoFilters component
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 

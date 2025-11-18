@@ -1,7 +1,7 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { UserSettings } from '~/types/todo'
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
   
   try {
@@ -17,16 +17,15 @@ export default defineEventHandler(async (event) => {
         `INSERT INTO user_settings (
           user_id, notifications_enabled, daily_notifications, daily_notification_time,
           reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue,
-          vibration_enabled, default_priority, default_sort_by, auto_archive_completed,
-          archive_after_days, show_completed_tasks, confirm_delete_task, theme,
-          font_size, animations_enabled, compact_view, language, date_format,
-          time_format, auto_sync, sync_frequency, backup_frequency, data_retention_days,
-          analytics_enabled, crash_reporting_enabled, data_encryption_enabled,
-          profile_visibility
+          timezone, theme, language, vibration_enabled, default_priority, default_sort_by,
+          auto_archive_completed, archive_after_days, show_completed_tasks, confirm_delete_task,
+          font_size, animations_enabled, compact_view, date_format, time_format,
+          auto_sync, sync_frequency, backup_frequency, data_retention_days,
+          analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility
         ) VALUES (
           $1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE,
-          TRUE, 'medium', 'dueDate', FALSE, 30, TRUE, TRUE, 'light',
-          'medium', TRUE, FALSE, 'en', 'DD/MM/YYYY', '24h',
+          'UTC', 'light', 'en', TRUE, 'medium', 'dueDate',
+          FALSE, 30, TRUE, TRUE, 'medium', TRUE, FALSE, 'DD/MM/YYYY', '24h',
           TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE, 'private'
         ) RETURNING *`,
         [userId]
@@ -141,6 +140,12 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       message: error.message || 'Failed to fetch user settings'
     })
+  }
+}, {
+  maxAge: 300, // Cache for 5 minutes (settings change moderately frequently)
+  getKey: (event) => {
+    const userId = getHeader(event, 'x-telegram-user-id')
+    return `settings:${userId}`
   }
 })
 

@@ -4,7 +4,7 @@
     <AppHeader v-show="!isModalOpen" @menu-click="handleMenuClick" />
 
     <!-- Content Area -->
-    <div class="pt-16 pb-20 px-4">
+    <main id="main-content" class="pt-16 pb-20 px-4" role="main">
       <!-- Quick Stats Dashboard -->
       <StatsDashboard
         :today-tasks-count="todayTasksCount"
@@ -14,26 +14,29 @@
       />
 
       <!-- Search Bar -->
-      <div class="mb-6" role="search">
-        <label for="task-search" class="sr-only">Search tasks</label>
+      <div class="mb-6" role="search" aria-label="Task search">
+        <label for="task-search" class="sr-only">{{ $t('home.searchPlaceholder') }}</label>
         <div class="relative">
           <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
           <input
             id="task-search"
             v-model="searchQuery"
             type="text"
-            placeholder="Search tasks..."
+            :placeholder="$t('home.searchPlaceholder')"
             class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
-            aria-describedby="search-help"
+            :aria-describedby="'search-help'"
             autocomplete="off"
+            aria-label="Search tasks"
+            @keydown.escape="searchQuery = ''"
           />
         </div>
-        <div id="search-help" class="sr-only">Type to search through your tasks</div>
+        <div id="search-help" class="sr-only">{{ $t('home.searchHelp') }}</div>
       </div>
 
       <!-- Add New Task -->
       <QuickAddTask
         v-model="newTask"
+        :placeholder="$t('home.addTaskPlaceholder')"
         @add-click="openModal"
       />
 
@@ -45,40 +48,73 @@
       />
 
       <!-- Loading State -->
-      <div v-if="loading && filteredTasks.length === 0" class="text-center py-12">
+      <div v-if="loading && (!filteredTasks || filteredTasks.length === 0)" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent">
         </div>
-        <p class="mt-4 text-gray-600 dark:text-gray-400 text-sm">Загрузка задач...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400 text-sm">{{ $t('home.loadingTasks') }}</p>
       </div>
 
       <!-- Task List -->
       <TaskList
-        v-else-if="filteredTasks.length > 0"
+        v-else-if="filteredTasks && filteredTasks.length > 0"
         :tasks="filteredTasks as Todo[]"
+        :selected-tasks="selectedTasks"
+        :show-checkboxes="showBulkMode"
         @toggle="toggleTask"
         @edit="handleEdit"
+        @reorder="handleReorder"
+        @update:selectedTasks="selectedTasks = $event"
       />
+
+      <!-- Load More Button -->
+      <div v-if="hasNextPage && filteredTasks && filteredTasks.length > 0 && !loading" class="text-center py-4">
+        <button
+          @click="loadNextPage"
+          class="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="loading"
+        >
+          {{ $t('home.loadMore') }}
+        </button>
+      </div>
 
       <!-- Empty State -->
       <EmptyState
         v-else
-        :title="activeCategory === 'All' ? 'No tasks yet' : activeCategory === 'Today' ? 'No tasks for today' : `No ${activeCategory} tasks`"
-        :subtitle="activeCategory === 'All' ? 'Add your first task above' : 'Change filter to see other tasks'"
+        :title="activeCategory === $t('home.allTasks') ? $t('home.noTasksYet') : activeCategory === $t('home.todayTasks') ? $t('home.noTasksForToday') : $t('home.noTasksForCategory', { category: activeCategory?.toLowerCase() || 'unknown' })"
+        :subtitle="activeCategory === $t('home.allTasks') ? $t('home.addFirstTask') : $t('home.changeFilter')"
       />
 
       <!-- Progress Visualization -->
       <ProgressBar :percentage="completionPercentage" />
-    </div>
+    </main>
 
     <!-- Floating Action Button -->
     <FloatingActionButton v-show="!isModalOpen" @click="openModal" />
+
+    <!-- Bulk Actions -->
+    <BulkActions
+      v-if="showBulkMode"
+      :selected-tasks="selectedTasks"
+      :total-tasks="filteredTasks ? filteredTasks.length : 0"
+      @select-all="selectAllTasks"
+      @clear-selection="clearTaskSelection"
+      @mark-completed="bulkMarkCompleted"
+      @mark-incomplete="bulkMarkIncomplete"
+      @delete-selected="bulkDeleteTasks"
+    />
 
     <!-- Todo Modal -->
     <TodoModal :is-open="isModalOpen" :todo="selectedTodo" :projects="projects as readonly Project[]"
       @close="closeModal" @save="handleSaveTodo" @project-created="handleProjectCreated" />
 
-    <!-- Bottom Navigation -->
-    <BottomNavigation v-show="!isModalOpen" />
+    <nav id="navigation" aria-label="Main navigation">
+      <ClientOnly>
+        <BottomNavigation v-show="!isModalOpen" />
+        <template #fallback>
+          <div class="fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 h-16"></div>
+        </template>
+      </ClientOnly>
+    </nav>
 
     <!-- Toast Notifications -->
     <Toast ref="toast" />
@@ -98,6 +134,8 @@ import TaskList from '~/components/TaskList.vue'
 import EmptyState from '~/components/EmptyState.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import FloatingActionButton from '~/components/FloatingActionButton.vue'
+import BulkActions from '~/components/BulkActions.vue'
+import BottomNavigation from '~/components/BottomNavigation.vue'
 import Toast from '~/components/Toast.vue'
 
 interface Category {
@@ -111,30 +149,40 @@ const {
   filter,
   loading,
   error,
+  currentPage,
+  hasNextPage,
+  totalCount,
+  pageSize,
   filteredTodos,
   fetchTodos,
+  loadNextPage,
+  resetPagination,
   createTodo,
   updateTodo,
+  deleteTodo,
   setFilter
 } = useTodos()
 
 const { projects, fetchProjects } = useProjects()
 const { settings, fetchSettings } = useSettings()
+const { t } = useI18n()
 
 const { $telegram } = useNuxtApp()
 const userId = computed(() => $telegram?.user?.id || null)
 
 const newTask = ref('')
-const activeCategory = ref('All')
+const activeCategory = ref<string>('')
 const isModalOpen = ref(false)
 const selectedTodo = ref<Todo | null>(null)
 const toast = ref()
 const searchQuery = ref('')
+const selectedTasks = ref<string[]>([])
+const showBulkMode = ref(false)
 
 const categories = computed<Category[]>(() => {
   const baseCategories = [
-    { name: 'All', icon: 'fas fa-list' },
-    { name: 'Today', icon: 'fas fa-calendar-day' }
+    { name: t('home.allTasks'), icon: 'fas fa-list' },
+    { name: t('home.todayTasks'), icon: 'fas fa-calendar-day' }
   ]
 
   // Add user projects as categories
@@ -160,27 +208,28 @@ const todayTasks = computed(() => {
   })
 })
 
-const todayTasksCount = computed(() => todayTasks.value.length)
-const completedTodayCount = computed(() => todayTasks.value.filter(t => t.completed).length)
-const pendingTodayCount = computed(() => todayTasks.value.filter(t => !t.completed).length)
+const todayTasksCount = computed(() => todayTasks.value?.length || 0)
+const completedTodayCount = computed(() => todayTasks.value?.filter(t => t.completed).length || 0)
+const pendingTodayCount = computed(() => todayTasks.value?.filter(t => !t.completed).length || 0)
 
 const completionPercentage = computed(() => {
-  if (todayTasks.value.length === 0) return 0
-  return Math.round((completedTodayCount.value / todayTasks.value.length) * 100)
+  const total = todayTasks.value?.length || 0
+  if (total === 0) return 0
+  return Math.round((completedTodayCount.value / total) * 100)
 })
 
 const filteredTasks = computed(() => {
   let result = todos.value // Use raw todos instead of pre-filtered
 
   // Apply category filter
-  if (activeCategory.value === 'Today') {
+  if (activeCategory.value === t('home.todayTasks')) {
     const todayStr = formatDateISO(today.value)
     result = result.filter(task => {
       if (!task.dueDate) return false
       const taskDateStr = formatDateISO(task.dueDate)
       return taskDateStr === todayStr
     })
-  } else if (activeCategory.value !== 'All') {
+  } else if (activeCategory.value && activeCategory.value !== t('home.allTasks')) {
     result = result.filter(task => {
       if (!task.project) return false
       return task.project.name === activeCategory.value
@@ -216,8 +265,13 @@ const filteredTasks = computed(() => {
 const openModal = () => {
   selectedTodo.value = null
   isModalOpen.value = true
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
@@ -230,20 +284,25 @@ const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
   try {
     if (selectedTodo.value) {
       await updateTodo(selectedTodo.value.id, data as UpdateTodoDto)
-      toast.value?.showSuccess('Task Updated', 'Your task has been updated successfully.')
+      toast.value?.showSuccess(t('home.taskUpdated'), t('home.taskUpdatedDesc'))
     } else {
       await createTodo(data as CreateTodoDto)
-      toast.value?.showSuccess('Task Created', 'Your new task has been created successfully.')
+      toast.value?.showSuccess(t('home.taskCreated'), t('home.taskCreatedDesc'))
     }
     closeModal()
     newTask.value = ''
-    if (process.client && (window as any).Telegram?.WebApp) {
-      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+      try {
+        (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+      } catch (error) {
+        // HapticFeedback might not be supported in all Telegram WebApp versions
+        console.debug('HapticFeedback not supported:', error)
+      }
     }
   } catch (error) {
     toast.value?.showError(
-      'Save Failed',
-      'There was an error saving your task. Please try again.'
+      t('home.saveFailed'),
+      t('home.saveFailedDesc')
     )
     console.error('Error saving todo:', error)
   }
@@ -257,20 +316,28 @@ const toggleTask = async (id: string) => {
   const newCompleted = !task.completed
 
   // Haptic feedback
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 
   try {
     await updateTodo(id, { completed: newCompleted })
     toast.value?.showSuccess(
-      newCompleted ? 'Task Completed' : 'Task Uncompleted',
-      `Task "${task.text}" has been ${newCompleted ? 'completed' : 'marked as incomplete'}.`
+      newCompleted ? t('home.taskCompleted') : t('home.taskUncompleted'),
+      t('home.taskToggleDesc', {
+        task: task.text,
+        action: newCompleted ? t('common.completed').toLowerCase() : t('common.pending').toLowerCase()
+      })
     )
   } catch (error) {
     toast.value?.showError(
-      'Update Failed',
-      'There was an error updating the task. Please try again.'
+      t('home.updateFailed'),
+      t('home.updateFailedDesc')
     )
     console.error('Error toggling task:', error)
   }
@@ -279,13 +346,74 @@ const toggleTask = async (id: string) => {
 const handleEdit = (todo: Todo) => {
   selectedTodo.value = todo
   isModalOpen.value = true
-  if (process.client && (window as any).Telegram?.WebApp) {
-    (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+  if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+    try {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+    } catch (error) {
+      // HapticFeedback might not be supported in all Telegram WebApp versions
+      console.debug('HapticFeedback not supported:', error)
+    }
   }
 }
 
 const handleProjectCreated = async (project: Project) => {
   await fetchProjects()
+}
+
+const handleReorder = (reorderedTasks: Todo[]) => {
+  // For now, just show a toast that reorder is not persisted
+  // In a full implementation, this would update the order in the database
+  toast.value?.showInfo(t('home.tasksReordered'), t('home.reorderNotSaved'))
+}
+
+const selectAllTasks = () => {
+  selectedTasks.value = filteredTasks.value?.map(task => task.id) || []
+}
+
+const clearTaskSelection = () => {
+  selectedTasks.value = []
+}
+
+const bulkMarkCompleted = async (taskIds: string[]) => {
+  try {
+    // Update each task individually (in a real app, you'd have a bulk API endpoint)
+    for (const taskId of taskIds) {
+      await updateTodo(taskId, { completed: true })
+    }
+    selectedTasks.value = []
+    toast.value?.showSuccess(t('bulk.tasksMarkedCompleted'), t('bulk.bulkOperationSuccess'))
+  } catch (error) {
+    toast.value?.showError(t('bulk.bulkOperationFailed'), t('bulk.tryAgain'))
+    console.error('Error in bulk mark completed:', error)
+  }
+}
+
+const bulkMarkIncomplete = async (taskIds: string[]) => {
+  try {
+    for (const taskId of taskIds) {
+      await updateTodo(taskId, { completed: false })
+    }
+    selectedTasks.value = []
+    toast.value?.showSuccess(t('bulk.tasksMarkedIncomplete'), t('bulk.bulkOperationSuccess'))
+  } catch (error) {
+    toast.value?.showError(t('bulk.bulkOperationFailed'), t('bulk.tryAgain'))
+    console.error('Error in bulk mark incomplete:', error)
+  }
+}
+
+const bulkDeleteTasks = async (taskIds: string[]) => {
+  try {
+    // In a real implementation, you'd have a bulk delete API
+    // For now, delete individually using the composable
+    for (const taskId of taskIds) {
+      await deleteTodo(taskId)
+    }
+    selectedTasks.value = []
+    toast.value?.showSuccess(t('bulk.tasksDeleted'), t('bulk.bulkOperationSuccess'))
+  } catch (error) {
+    toast.value?.showError(t('bulk.bulkOperationFailed'), t('bulk.tryAgain'))
+    console.error('Error in bulk delete:', error)
+  }
 }
 
 const handleMenuClick = () => {
@@ -295,7 +423,8 @@ const handleMenuClick = () => {
 
 const handleKeyboardShortcuts = (event: KeyboardEvent) => {
   // Don't trigger shortcuts when typing in inputs
-  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+  const target = event.target as HTMLElement
+  if (!target || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
     return
   }
 
@@ -331,6 +460,9 @@ const handleKeyboardShortcuts = (event: KeyboardEvent) => {
 
 
 onMounted(async () => {
+  // Initialize active category with localized "All"
+  activeCategory.value = t('home.allTasks')
+
   // Add keyboard shortcuts
   document.addEventListener('keydown', handleKeyboardShortcuts)
 
@@ -338,11 +470,19 @@ onMounted(async () => {
 
   const waitForTelegram = (): Promise<void> => {
     return new Promise((resolve) => {
+      // If already ready with user, resolve immediately
       if ($telegram?.isReady && $telegram?.user) {
         resolve()
         return
       }
 
+      // If we have user from plugin (including test user in dev), resolve
+      if ($telegram?.user) {
+        resolve()
+        return
+      }
+
+      // Otherwise, wait for Telegram WebApp to load
       const checkInterval = setInterval(() => {
         if ((window as any).Telegram?.WebApp) {
           const tg = (window as any).Telegram.WebApp
@@ -355,16 +495,19 @@ onMounted(async () => {
             }
             clearInterval(checkInterval)
             resolve()
-          } else if ($telegram?.user) {
-            clearInterval(checkInterval)
-            resolve()
+            return
           }
-        } else if ($telegram?.user) {
+        }
+        
+        // Check if plugin has set user data
+        if ($telegram?.user) {
           clearInterval(checkInterval)
           resolve()
+          return
         }
       }, 100)
 
+      // Resolve after timeout (even if Telegram not loaded, plugin may have test user)
       setTimeout(() => {
         clearInterval(checkInterval)
         resolve()
@@ -374,6 +517,7 @@ onMounted(async () => {
 
   await waitForTelegram()
 
+  // Authenticate user if we have user data
   if ($telegram?.user) {
     try {
       await $fetch('/api/auth/telegram', {
@@ -388,11 +532,17 @@ onMounted(async () => {
     }
   }
 
-  await Promise.all([
-    fetchProjects(),
-    fetchTodos(),
-    fetchSettings()
-  ])
+  // Only fetch data if user is authenticated
+  if (userId.value) {
+    resetPagination()
+    await Promise.all([
+      fetchProjects(),
+      fetchTodos(1, false),
+      fetchSettings()
+    ])
+  } else {
+    console.warn('User ID not available, skipping data fetch')
+  }
 })
 
 onUnmounted(() => {

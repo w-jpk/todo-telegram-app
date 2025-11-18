@@ -29,13 +29,39 @@ CREATE TABLE IF NOT EXISTS todos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+  parent_id UUID REFERENCES todos(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
   description TEXT,
   completed BOOLEAN DEFAULT FALSE,
   priority VARCHAR(10) DEFAULT 'none' CHECK (priority IN ('none', 'low', 'medium', 'high')),
   due_date TIMESTAMP,
+  recurrence_type VARCHAR(20) CHECK (recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')),
+  recurrence_interval INTEGER DEFAULT 1,
+  recurrence_end_date TIMESTAMP,
+  recurrence_days_of_week INTEGER[],
+  recurrence_day_of_month INTEGER,
+  is_recurring BOOLEAN DEFAULT FALSE,
+  recurrence_parent_id UUID REFERENCES todos(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create tags table
+CREATE TABLE IF NOT EXISTS tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(50) NOT NULL,
+  color VARCHAR(7) DEFAULT '#6366f1',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, name)
+);
+
+-- Create todo_tags junction table
+CREATE TABLE IF NOT EXISTS todo_tags (
+  todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+  tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (todo_id, tag_id)
 );
 
 -- Create user_settings table
@@ -61,6 +87,12 @@ CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
 CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
 CREATE INDEX IF NOT EXISTS idx_todos_priority ON todos(priority);
 CREATE INDEX IF NOT EXISTS idx_todos_project_id ON todos(project_id);
+CREATE INDEX IF NOT EXISTS idx_todos_parent_id ON todos(parent_id);
+CREATE INDEX IF NOT EXISTS idx_todos_is_recurring ON todos(is_recurring);
+CREATE INDEX IF NOT EXISTS idx_todos_recurrence_parent_id ON todos(recurrence_parent_id);
+CREATE INDEX IF NOT EXISTS idx_tags_user_id ON tags(user_id);
+CREATE INDEX IF NOT EXISTS idx_todo_tags_todo_id ON todo_tags(todo_id);
+CREATE INDEX IF NOT EXISTS idx_todo_tags_tag_id ON todo_tags(tag_id);
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_settings_notifications ON user_settings(notifications_enabled, daily_notifications);
 

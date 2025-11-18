@@ -1,10 +1,15 @@
 import type { Todo, CreateTodoDto, UpdateTodoDto, TodoFilter } from '~/types/todo'
+import { useRecurringTasks } from './useRecurringTasks'
 
 export const useTodos = () => {
   const todos = useState<Todo[]>('todos:list', () => [])
   const filter = useState<TodoFilter>('todos:filter', () => 'all')
   const loading = useState<boolean>('todos:loading', () => false)
   const error = useState<string | null>('todos:error', () => null)
+  const currentPage = useState<number>('todos:currentPage', () => 1)
+  const hasNextPage = useState<boolean>('todos:hasNextPage', () => true)
+  const totalCount = useState<number>('todos:totalCount', () => 0)
+  const pageSize = useState<number>('todos:pageSize', () => 50)
 
   const { $telegram } = useNuxtApp()
   const userId = computed(() => $telegram?.user?.id || null)
@@ -28,36 +33,72 @@ export const useTodos = () => {
 
   // Get headers for API requests
   const getHeaders = () => {
-  const headers: Record<string, string> = {
-    'x-telegram-user-id': userId.value?.toString() || ''
+    // In dev mode, use default test user ID if not available
+    const effectiveUserId = userId.value || (process.dev ? 123456789 : null)
+    
+    if (!effectiveUserId) {
+      throw new Error('User ID is not available. Please wait for Telegram initialization.')
+    }
+
+    const headers: Record<string, string> = {
+      'x-telegram-user-id': effectiveUserId.toString()
+    }
+
+    // Закодируй JSON, если есть данные
+    if ($telegram?.user) {
+      headers['x-telegram-user-data'] = encodeURIComponent(JSON.stringify($telegram.user))
+    }
+
+    return headers
   }
 
-  // Закодируй JSON, если есть данные
-  if ($telegram?.user) {
-    headers['x-telegram-user-data'] = encodeURIComponent(JSON.stringify($telegram.user))
-  }
-
-  return headers
-}
-
-  // Fetch todos
-  const fetchTodos = async () => {
-    if (!userId.value) return
+  // Fetch todos with pagination
+  const fetchTodos = async (page: number = 1, append: boolean = false) => {
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return
 
     loading.value = true
     error.value = null
 
     try {
-      const { data } = await $fetch<{ data: Todo[] }>('/api/todos', {
+      const { data, pagination } = await $fetch<{
+        data: Todo[],
+        pagination: {
+          page: number,
+          limit: number,
+          total: number,
+          totalPages: number,
+          hasNext: boolean,
+          hasPrev: boolean
+        }
+      }>('/api/todos', {
         method: 'GET',
-        headers: getHeaders()
+        headers: getHeaders(),
+        query: {
+          page,
+          limit: pageSize.value
+        }
       })
-      todos.value = data.map(todo => ({
+
+      const processedTodos = data.map(todo => ({
         ...todo,
         createdAt: new Date(todo.createdAt),
         updatedAt: new Date(todo.updatedAt),
         dueDate: todo.dueDate ? new Date(todo.dueDate) : undefined
       }))
+
+      if (append) {
+        todos.value = [...todos.value, ...processedTodos]
+      } else {
+        todos.value = processedTodos
+      }
+
+      currentPage.value = pagination.page
+      hasNextPage.value = pagination.hasNext
+      totalCount.value = pagination.total
+
+      // Process recurring tasks to generate new instances if needed
+      await processRecurringTasks(todos.value)
     } catch (err: any) {
       const errorMessage = err.data?.message || err.message || 'Failed to fetch todos'
       error.value = errorMessage
@@ -67,9 +108,24 @@ export const useTodos = () => {
     }
   }
 
+  // Load next page
+  const loadNextPage = async () => {
+    if (hasNextPage.value && !loading.value) {
+      await fetchTodos(currentPage.value + 1, true)
+    }
+  }
+
+  // Reset pagination
+  const resetPagination = () => {
+    currentPage.value = 1
+    hasNextPage.value = true
+    totalCount.value = 0
+  }
+
   // Create todo
   const createTodo = async (todoData: CreateTodoDto) => {
-    if (!userId.value) return null
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return null
 
     loading.value = true
     error.value = null
@@ -100,9 +156,12 @@ export const useTodos = () => {
     }
   }
 
+  const { processRecurringTasks } = useRecurringTasks(createTodo)
+
   // Update todo
   const updateTodo = async (id: string, todoData: UpdateTodoDto) => {
-    if (!userId.value) return null
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return null
 
     loading.value = true
     error.value = null
@@ -141,7 +200,8 @@ export const useTodos = () => {
 
   // Delete todo
   const deleteTodo = async (id: string) => {
-    if (!userId.value) return false
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return false
 
     loading.value = true
     error.value = null
@@ -166,7 +226,8 @@ export const useTodos = () => {
 
   // Clear completed todos
   const clearCompleted = async () => {
-    if (!userId.value) return false
+    // In dev mode, allow requests even if userId is not set (server will use default)
+    if (!userId.value && !process.dev) return false
 
     loading.value = true
     error.value = null
@@ -199,11 +260,17 @@ export const useTodos = () => {
     filter: readonly(filter),
     loading: readonly(loading),
     error: readonly(error),
+    currentPage: readonly(currentPage),
+    hasNextPage: readonly(hasNextPage),
+    totalCount: readonly(totalCount),
+    pageSize: readonly(pageSize),
     activeTodos,
     completedTodos,
     filteredTodos,
     activeCount,
     fetchTodos,
+    loadNextPage,
+    resetPagination,
     createTodo,
     updateTodo,
     deleteTodo,

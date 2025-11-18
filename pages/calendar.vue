@@ -8,20 +8,53 @@
       <!-- Month Navigation -->
       <div class="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 mb-4">
         <div class="flex items-center justify-between">
-          <button @click="previousMonth" class="p-2 cursor-pointer" aria-label="Previous month">
-            <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
-          </button>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white" aria-live="polite">
-            {{ currentMonthYear }}
-          </h2>
-          <button @click="nextMonth" class="p-2 cursor-pointer" aria-label="Next month">
-            <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
-          </button>
+          <div class="flex items-center space-x-2">
+            <button @click="previousMonth" class="p-2 cursor-pointer" aria-label="Previous month">
+              <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
+            </button>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white" aria-live="polite">
+              {{ currentMonthYear }}
+            </h2>
+            <button @click="nextMonth" class="p-2 cursor-pointer" aria-label="Next month">
+              <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
+            </button>
+          </div>
+
+          <!-- View Toggle -->
+          <!-- <div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button @click="calendarView = 'month'" :class="{
+              'bg-white dark:bg-gray-600 text-gray-900 dark:text-white': calendarView === 'month',
+              'text-gray-600 dark:text-gray-400': calendarView !== 'month'
+            }" class="px-3 py-1 text-sm font-medium rounded-md transition-colors" aria-label="Month view">
+              Month
+            </button>
+            <button @click="calendarView = 'week'" :class="{
+              'bg-white dark:bg-gray-600 text-gray-900 dark:text-white': calendarView === 'week',
+              'text-gray-600 dark:text-gray-400': calendarView !== 'week'
+            }" class="px-3 py-1 text-sm font-medium rounded-md transition-colors" aria-label="Week view">
+              Week
+            </button>
+          </div> -->
         </div>
       </div>
 
-      <!-- Category Filter Bar -->
-      <div class="px-4 mb-4">
+      <!-- Search and Filter Bar -->
+      <div class="px-4 mb-4 space-y-3">
+        <!-- Search Input -->
+        <div role="search" aria-label="Search tasks in calendar">
+          <label for="calendar-search" class="sr-only">Search tasks</label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              aria-hidden="true"></i>
+            <input id="calendar-search" v-model="searchQuery" type="text" placeholder="Search tasks..."
+              class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
+              aria-describedby="calendar-search-help" autocomplete="off" @keydown.escape="searchQuery = ''" />
+          </div>
+          <div id="calendar-search-help" class="sr-only">Search through your calendar tasks by title or description
+          </div>
+        </div>
+
+        <!-- Category Filters -->
         <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
           <button v-for="category in filterCategories" :key="category.name" :class="{
             'bg-blue-500 dark:bg-blue-600 text-white': activeFilter === category.name,
@@ -50,20 +83,28 @@
           <!-- Calendar Days -->
           <div class="grid grid-cols-7">
             <div v-for="date in calendarDays" :key="date.key" :class="{
-              'bg-gray-400 dark:bg-gray-600 text-white': date.isToday,
+              'bg-blue-500 dark:bg-blue-600 text-white': date.isToday,
               'text-gray-400 dark:text-gray-500': !date.isCurrentMonth,
               'text-gray-900 dark:text-white': date.isCurrentMonth && !date.isToday
             }"
-              class="relative p-3 h-16 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+              class="flex flex-col relative p-2 min-h-15 border-b border-r border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               @click="selectDate(date)" role="gridcell"
               :aria-label="`${date.day}, ${getTasksForDate(date.fullDate).length} tasks`">
-              <div class="text-sm font-medium">{{ date.day }}</div>
-              <div class="absolute bottom-1 right-1 flex items-center space-x-1">
-                <div v-for="task in getTasksForDate(date.fullDate).slice(0, 3)" :key="task.id"
-                  :style="{ backgroundColor: getTaskDotColor(task) }" class="w-2 h-2 rounded-full"></div>
-                <span v-if="getTasksForDate(date.fullDate).length > 3" class="text-xs text-gray-600 dark:text-gray-400">
-                  +{{ getTasksForDate(date.fullDate).length - 3 }}
-                </span>
+              <div class="text-sm font-medium mb-1">{{ date.day }}</div>
+              <div class="flex space-x-1 justify-end">
+                <div v-for="task in getTasksForDate(date.fullDate).slice(0, 2)" :key="task.id"
+                  class="items-center text-xs">
+                  <div :class="{
+                    'bg-green-400': task.completed,
+                    'bg-red-400': task.priority === 'high' && !task.completed,
+                    'bg-yellow-400': task.priority === 'medium' && !task.completed,
+                    'bg-blue-400': task.priority === 'low' && !task.completed,
+                    'bg-gray-400': task.priority === 'none' && !task.completed
+                  }" class="w-1.5 h-1.5 rounded-full"></div>
+                </div>
+                <div v-if="getTasksForDate(date.fullDate).length > 2" class="text-xs text-gray-500 dark:text-gray-400">
+                  +{{ getTasksForDate(date.fullDate).length - 2 }} more
+                </div>
               </div>
             </div>
           </div>
@@ -169,6 +210,7 @@ import { ref, computed, onMounted } from 'vue'
 import type { Todo, Project, CreateTodoDto, UpdateTodoDto } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
 import TodoModal from '~/components/TodoModal.vue'
+import BottomNavigation from '~/components/BottomNavigation.vue'
 import { formatDateISO, formatMonthYear, formatFullDate } from '~/utils/date'
 
 interface CalendarDate {
@@ -202,6 +244,7 @@ const activeFilter = ref('All')
 const showTodoModal = ref(false)
 const selectedTodo = ref<Todo | null>(null)
 const searchQuery = ref('')
+const calendarView = ref<'month' | 'week'>('month')
 
 const weekDays = computed(() => {
   const locale = settings.value?.language || 'en'
@@ -432,3 +475,9 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.min-h-15{
+  min-height: 3.5rem;
+}
+</style>

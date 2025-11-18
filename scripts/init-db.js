@@ -61,11 +61,19 @@ async function createTables() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+        parent_id UUID REFERENCES todos(id) ON DELETE CASCADE,
         text TEXT NOT NULL,
         description TEXT,
         completed BOOLEAN DEFAULT FALSE,
         priority VARCHAR(10) DEFAULT 'none' CHECK (priority IN ('none', 'low', 'medium', 'high')),
         due_date TIMESTAMP,
+        recurrence_type VARCHAR(20) CHECK (recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly')),
+        recurrence_interval INTEGER DEFAULT 1,
+        recurrence_end_date TIMESTAMP,
+        recurrence_days_of_week INTEGER[],
+        recurrence_day_of_month INTEGER,
+        is_recurring BOOLEAN DEFAULT FALSE,
+        recurrence_parent_id UUID REFERENCES todos(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -101,7 +109,46 @@ async function createTables() {
       console.log('ℹ️  Columns may already exist or update skipped');
     }
 
+    // Add new columns to existing todos table if they don't exist (for recurring tasks and subtasks)
+    try {
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES todos(id) ON DELETE CASCADE`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_type VARCHAR(20) CHECK (recurrence_type IN ('daily', 'weekly', 'monthly', 'yearly'))`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_interval INTEGER DEFAULT 1`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_end_date TIMESTAMP`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_days_of_week INTEGER[]`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_day_of_month INTEGER`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT FALSE`);
+      await pool.query(`ALTER TABLE todos ADD COLUMN IF NOT EXISTS recurrence_parent_id UUID REFERENCES todos(id) ON DELETE CASCADE`);
+      console.log('✅ Updated todos table with recurring task columns');
+    } catch (error) {
+      console.log('ℹ️  Columns may already exist or update skipped');
+    }
+
     console.log('📊 Creating indexes...');
+
+    // Create tags table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tags (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name VARCHAR(50) NOT NULL,
+        color VARCHAR(7) DEFAULT '#6366f1',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, name)
+      )
+    `);
+    console.log('✅ Created tags table');
+
+    // Create todo_tags junction table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS todo_tags (
+        todo_id UUID NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
+        tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+        PRIMARY KEY (todo_id, tag_id)
+      )
+    `);
+    console.log('✅ Created todo_tags table');
 
     // Create indexes for todos table
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_user_id ON todos(user_id)`);
@@ -109,9 +156,19 @@ async function createTables() {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_priority ON todos(priority)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_project_id ON todos(project_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_parent_id ON todos(parent_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_is_recurring ON todos(is_recurring)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_todos_recurrence_parent_id ON todos(recurrence_parent_id)`);
 
     // Create indexes for projects table
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`);
+
+    // Create indexes for tags table
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tags_user_id ON tags(user_id)`);
+
+    // Create indexes for todo_tags table
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_todo_tags_todo_id ON todo_tags(todo_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_todo_tags_tag_id ON todo_tags(tag_id)`);
 
     // Create indexes for user_settings table
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_settings_notifications ON user_settings(notifications_enabled, daily_notifications)`);
@@ -148,12 +205,47 @@ async function createTables() {
       console.log(`✅ Created default settings for ${settingsResult.rowCount} users`);
     }
 
+    // Ensure test user exists in dev mode
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        await pool.query(`
+          INSERT INTO users (id, first_name, last_name, username, language_code, is_premium, created_at, updated_at)
+          VALUES (123456789, 'Test', 'User', 'testuser', 'ru', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          ON CONFLICT (id) DO UPDATE SET 
+            updated_at = CURRENT_TIMESTAMP
+        `);
+        console.log('✅ Test user (123456789) ensured');
+
+        // Create default project for test user
+        await pool.query(`
+          INSERT INTO projects (id, user_id, name, color, created_at, updated_at)
+          SELECT gen_random_uuid(), 123456789, 'Inbox', '#2481cc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          WHERE NOT EXISTS (
+            SELECT 1 FROM projects WHERE user_id = 123456789 AND name = 'Inbox'
+          )
+        `);
+        console.log('✅ Test user default project ensured');
+
+        // Create default settings for test user
+        await pool.query(`
+          INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language, created_at, updated_at)
+          VALUES (123456789, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'ru', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          ON CONFLICT (user_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+        `);
+        console.log('✅ Test user default settings ensured');
+      } catch (error) {
+        console.warn('⚠️  Could not ensure test user:', error);
+      }
+    }
+
     console.log('🎉 Database initialization completed successfully!');
     console.log('');
     console.log('📋 Tables created:');
     console.log('  - users');
     console.log('  - projects');
     console.log('  - todos');
+    console.log('  - tags');
+    console.log('  - todo_tags');
     console.log('  - user_settings');
     console.log('');
     console.log('🔍 Indexes created:');
@@ -162,7 +254,13 @@ async function createTables() {
     console.log('  - idx_todos_due_date');
     console.log('  - idx_todos_priority');
     console.log('  - idx_todos_project_id');
+    console.log('  - idx_todos_parent_id');
+    console.log('  - idx_todos_is_recurring');
+    console.log('  - idx_todos_recurrence_parent_id');
     console.log('  - idx_projects_user_id');
+    console.log('  - idx_tags_user_id');
+    console.log('  - idx_todo_tags_todo_id');
+    console.log('  - idx_todo_tags_tag_id');
     console.log('  - idx_user_settings_notifications');
 
   } catch (error) {
