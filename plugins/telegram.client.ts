@@ -58,32 +58,31 @@ export default defineNuxtPlugin(() => {
       
       if (tg) {
         try {
+          // Initialize WebApp
           tg.ready()
           tg.expand()
 
-          // Set header color for Telegram Mini App
-          if (tg.setHeaderColor) {
-            tg.setHeaderColor('bg_color')
-          }
-          
           // Get user from initData (prefer fresh data from Telegram SDK)
           const user = tg.initDataUnsafe?.user || telegramState.user
           const initData = tg.initData || telegramState.initData
           const initDataUnsafe = tg.initDataUnsafe || telegramState.initDataUnsafe
-          
+
           telegramState.webApp = tg
           telegramState.user = user
           telegramState.initData = initData
           telegramState.initDataUnsafe = initDataUnsafe
           telegramState.isReady = true
-          
+
+          // Note: Header color setting removed to avoid WebAppHeaderColorInvalid error
+          // Telegram will use default theme colors
+
           // Save to sessionStorage if we have user data
           if (user) {
             saveUserData(user, initData, initDataUnsafe)
           }
-          
+
           console.log('Telegram WebApp initialized:', { user })
-          
+
           // Listen for updates
           tg.onEvent('viewportChanged', () => {
             // Update user data if it changes

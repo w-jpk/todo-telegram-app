@@ -69,8 +69,7 @@ export default defineNuxtConfig({
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
-        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-        { name: 'theme-color', content: '#ffffff' }
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
       ],
       script: [
         {
