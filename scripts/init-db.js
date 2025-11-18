@@ -205,38 +205,6 @@ async function createTables() {
       console.log(`✅ Created default settings for ${settingsResult.rowCount} users`);
     }
 
-    // Ensure test user exists in dev mode
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        await pool.query(`
-          INSERT INTO users (id, first_name, last_name, username, language_code, is_premium, created_at, updated_at)
-          VALUES (123456789, 'Test', 'User', 'testuser', 'ru', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          ON CONFLICT (id) DO UPDATE SET 
-            updated_at = CURRENT_TIMESTAMP
-        `);
-        console.log('✅ Test user (123456789) ensured');
-
-        // Create default project for test user
-        await pool.query(`
-          INSERT INTO projects (id, user_id, name, color, created_at, updated_at)
-          SELECT gen_random_uuid(), 123456789, 'Inbox', '#2481cc', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-          WHERE NOT EXISTS (
-            SELECT 1 FROM projects WHERE user_id = 123456789 AND name = 'Inbox'
-          )
-        `);
-        console.log('✅ Test user default project ensured');
-
-        // Create default settings for test user
-        await pool.query(`
-          INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language, created_at, updated_at)
-          VALUES (123456789, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'ru', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          ON CONFLICT (user_id) DO UPDATE SET updated_at = CURRENT_TIMESTAMP
-        `);
-        console.log('✅ Test user default settings ensured');
-      } catch (error) {
-        console.warn('⚠️  Could not ensure test user:', error);
-      }
-    }
 
     console.log('🎉 Database initialization completed successfully!');
     console.log('');

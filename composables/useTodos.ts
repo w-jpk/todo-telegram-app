@@ -33,15 +33,12 @@ export const useTodos = () => {
 
   // Get headers for API requests
   const getHeaders = () => {
-    // In dev mode, use default test user ID if not available
-    const effectiveUserId = userId.value || (process.dev ? 123456789 : null)
-    
-    if (!effectiveUserId) {
+    if (!userId.value) {
       throw new Error('User ID is not available. Please wait for Telegram initialization.')
     }
 
     const headers: Record<string, string> = {
-      'x-telegram-user-id': effectiveUserId.toString()
+      'x-telegram-user-id': userId.value.toString()
     }
 
     // Закодируй JSON, если есть данные
@@ -54,8 +51,7 @@ export const useTodos = () => {
 
   // Fetch todos with pagination
   const fetchTodos = async (page: number = 1, append: boolean = false) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return
+    if (!userId.value) return
 
     loading.value = true
     error.value = null
@@ -124,8 +120,7 @@ export const useTodos = () => {
 
   // Create todo
   const createTodo = async (todoData: CreateTodoDto) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return null
+    if (!userId.value) return null
 
     loading.value = true
     error.value = null
@@ -160,8 +155,7 @@ export const useTodos = () => {
 
   // Update todo
   const updateTodo = async (id: string, todoData: UpdateTodoDto) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return null
+    if (!userId.value) return null
 
     loading.value = true
     error.value = null
@@ -200,8 +194,7 @@ export const useTodos = () => {
 
   // Delete todo
   const deleteTodo = async (id: string) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return false
+    if (!userId.value) return false
 
     loading.value = true
     error.value = null
@@ -226,8 +219,7 @@ export const useTodos = () => {
 
   // Clear completed todos
   const clearCompleted = async () => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return false
+    if (!userId.value) return false
 
     loading.value = true
     error.value = null

@@ -432,16 +432,9 @@ const handleSave = () => {
 
 const getHeaders = () => {
   const { $telegram } = useNuxtApp()
-  // In dev mode, use default test user ID if not available
-  const userId = $telegram?.user?.id || (process.dev ? 123456789 : null)
-  
+  const userId = $telegram?.user?.id
+
   if (!userId) {
-    if (process.dev) {
-      // In dev mode, still allow with default test user
-      return {
-        'x-telegram-user-id': '123456789'
-      }
-    }
     console.error('User ID is not available')
     throw new Error('User ID is required')
   }

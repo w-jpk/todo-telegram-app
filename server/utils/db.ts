@@ -280,18 +280,12 @@ export async function initializeDatabaseSchema(): Promise<void> {
 
 /**
  * Validates and parses userId from header
- * In dev mode, uses default test user ID (123456789) if header is not provided
  * @param userIdHeader - The userId header value
  * @returns Parsed userId as number
  * @throws createError if userId is invalid
  */
 export function validateUserId(userIdHeader: string | null | undefined): number {
-  // In dev mode, use default test user ID if header is not provided
   if (!userIdHeader) {
-    if (process.dev) {
-      console.warn('⚠️  Dev mode: No user ID header provided, using default test user ID: 123456789')
-      return 123456789
-    }
     throw createError({
       statusCode: 401,
       message: 'User ID is required'

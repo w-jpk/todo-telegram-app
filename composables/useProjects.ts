@@ -11,15 +11,12 @@ export const useProjects = () => {
 
   // Get headers for API requests
   const getHeaders = () => {
-    // In dev mode, use default test user ID if not available
-    const effectiveUserId = userId.value || (process.dev ? 123456789 : null)
-    
-    if (!effectiveUserId) {
+    if (!userId.value) {
       throw new Error('User ID is not available. Please wait for Telegram initialization.')
     }
 
     const headers: Record<string, string> = {
-      'x-telegram-user-id': effectiveUserId.toString()
+      'x-telegram-user-id': userId.value.toString()
     }
 
     if ($telegram?.user) {
@@ -31,8 +28,7 @@ export const useProjects = () => {
 
   // Fetch projects
   const fetchProjects = async () => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return
+    if (!userId.value) return
 
     loading.value = true
     error.value = null
@@ -55,8 +51,7 @@ export const useProjects = () => {
 
   // Create project
   const createProject = async (projectData: CreateProjectDto) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return null
+    if (!userId.value) return null
 
     loading.value = true
     error.value = null
@@ -88,8 +83,7 @@ export const useProjects = () => {
 
   // Update project
   const updateProject = async (id: string, projectData: UpdateProjectDto) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return null
+    if (!userId.value) return null
 
     loading.value = true
     error.value = null
@@ -127,8 +121,7 @@ export const useProjects = () => {
 
   // Delete project
   const deleteProject = async (id: string) => {
-    // In dev mode, allow requests even if userId is not set (server will use default)
-    if (!userId.value && !process.dev) return false
+    if (!userId.value) return false
 
     loading.value = true
     error.value = null

@@ -44,27 +44,13 @@ export default defineNuxtPlugin(() => {
     const savedData = loadUserData()
     
     // Create reactive state for Telegram data
-    // In dev mode, always use test user ID 123456789 to match server-side default
-    const devTestUser = process.dev ? {
-      id: 123456789,
-      first_name: 'Test',
-      last_name: 'User',
-      username: 'testuser',
-      language_code: 'ru'
-    } : null
-
     const telegramState = reactive({
       webApp: null as any,
-      user: savedData?.user || devTestUser as any,
+      user: savedData?.user as any,
       initData: savedData?.initData || '',
-      initDataUnsafe: savedData?.initDataUnsafe || (devTestUser ? { user: devTestUser } : {}) as any,
-      isReady: savedData ? true : (process.dev ? true : false)
+      initDataUnsafe: savedData?.initDataUnsafe || {},
+      isReady: savedData ? true : false
     })
-
-    // In dev mode, log the test user info
-    if (process.dev && devTestUser && !savedData) {
-      console.log('🔧 Dev mode: Using test user', devTestUser)
-    }
     
     // Function to initialize Telegram WebApp
     const initTelegram = () => {

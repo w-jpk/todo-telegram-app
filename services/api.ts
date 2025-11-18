@@ -5,7 +5,7 @@ class ApiService {
 
   private getHeaders() {
     const { $telegram } = useNuxtApp()
-    const userId = $telegram?.user?.id || (process.dev ? 123456789 : null)
+    const userId = $telegram?.user?.id
 
     if (!userId) {
       throw new Error('User ID is not available')
