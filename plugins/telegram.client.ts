@@ -54,90 +54,54 @@ export default defineNuxtPlugin(() => {
     
     // Function to initialize Telegram WebApp
     const initTelegram = () => {
-      const tg = (window as any).Telegram?.WebApp
-      
-      if (tg) {
+      // Check if Telegram WebApp is available
+      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+        const tg = (window as any).Telegram.WebApp
+
         try {
-          // Initialize WebApp
-          tg.ready()
-          tg.expand()
+          // Modern initialization for Telegram WebApp v6.0+
+          if (tg.ready) {
+            tg.ready()
+          }
 
-          // Get user from initData (prefer fresh data from Telegram SDK)
-          const user = tg.initDataUnsafe?.user || telegramState.user
-          const initData = tg.initData || telegramState.initData
-          const initDataUnsafe = tg.initDataUnsafe || telegramState.initDataUnsafe
+          // Get user data safely
+          const user = tg.initDataUnsafe?.user
+          const initData = tg.initData || ''
+          const initDataUnsafe = tg.initDataUnsafe || {}
 
+          // Update state
           telegramState.webApp = tg
           telegramState.user = user
           telegramState.initData = initData
           telegramState.initDataUnsafe = initDataUnsafe
           telegramState.isReady = true
 
-          // Note: Header color setting removed to avoid WebAppHeaderColorInvalid error
-          // Telegram will use default theme colors
-
-          // Save to sessionStorage if we have user data
+          // Save user data if available
           if (user) {
             saveUserData(user, initData, initDataUnsafe)
           }
 
-          console.log('Telegram WebApp initialized:', { user })
+          console.log('Telegram WebApp initialized successfully')
 
-          // Listen for updates
-          tg.onEvent('viewportChanged', () => {
-            // Update user data if it changes
-            if (tg.initDataUnsafe?.user) {
-              telegramState.user = tg.initDataUnsafe.user
-              telegramState.initDataUnsafe = tg.initDataUnsafe
-              telegramState.initData = tg.initData || ''
-              // Save updated data
-              saveUserData(telegramState.user, telegramState.initData, telegramState.initDataUnsafe)
-            }
-          })
         } catch (error) {
           console.error('Error initializing Telegram WebApp:', error)
         }
-      }
-    }
-
-    // Try to initialize immediately
-    initTelegram()
-
-    // If SDK is not loaded yet, wait for it (even if we have restored data)
-    const tg = (window as any).Telegram?.WebApp
-    if (!tg) {
-      // Check if script is already loaded
-      const checkInterval = setInterval(() => {
-        if ((window as any).Telegram?.WebApp) {
-          initTelegram()
-          // Clear interval once SDK is loaded and initialized
-          if ((window as any).Telegram?.WebApp) {
-            clearInterval(checkInterval)
-          }
-        }
-      }, 50) // Check more frequently
-
-      // Stop checking after 5 seconds
-      setTimeout(() => {
-        clearInterval(checkInterval)
-        if (!(window as any).Telegram?.WebApp) {
-          console.warn('Telegram WebApp SDK not loaded after 5 seconds')
-        }
-      }, 5000)
-
-      // Also listen for script load event
-      const handleLoad = () => {
-        setTimeout(() => {
-          initTelegram()
-        }, 100)
-      }
-      
-      if (document.readyState === 'complete') {
-        handleLoad()
       } else {
-        window.addEventListener('load', handleLoad, { once: true })
+        console.warn('Telegram WebApp not available')
       }
     }
+
+    // Initialize Telegram WebApp when script is loaded
+    const initWhenReady = () => {
+      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+        initTelegram()
+      } else {
+        // Wait for script to load
+        setTimeout(initWhenReady, 100)
+      }
+    }
+
+    initWhenReady()
 
     return {
       provide: {
