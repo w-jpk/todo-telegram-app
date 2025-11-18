@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
        FROM users u
        LEFT JOIN user_settings s ON u.id = s.user_id
        WHERE (s.notifications_enabled IS NULL OR s.notifications_enabled = TRUE)
-       AND (s.reminder_days_before IS NOT NULL OR s.reminder_days_before = ARRAY[1, 3])`
+       AND (s.reminder_days_before IS NOT NULL OR s.reminder_days_before = ARRAY[1])`
     )
     
     const notifications = []
