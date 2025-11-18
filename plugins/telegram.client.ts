@@ -60,6 +60,11 @@ export default defineNuxtPlugin(() => {
         try {
           tg.ready()
           tg.expand()
+
+          // Set header color for Telegram Mini App
+          if (tg.setHeaderColor) {
+            tg.setHeaderColor('bg_color')
+          }
           
           // Get user from initData (prefer fresh data from Telegram SDK)
           const user = tg.initDataUnsafe?.user || telegramState.user
