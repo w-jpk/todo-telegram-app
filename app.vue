@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
+import { versionAtLeast, safeCallTelegramMethod } from '~/utils/telegram'
 
 const { $telegram } = useNuxtApp()
 const { applyTheme } = useTheme()
@@ -39,10 +40,10 @@ onMounted(() => {
       const tg = (window as any).Telegram.WebApp
       
       // Expand the app to full height
-      tg.expand()
+      safeCallTelegramMethod(tg, 'expand')
       
-      // Enable closing confirmation
-      tg.enableClosingConfirmation()
+      // Enable closing confirmation only if supported (6.2+)
+      safeCallTelegramMethod(tg, 'enableClosingConfirmation', '6.2')
       
       // Log user info for debugging
       if (tg.initDataUnsafe?.user) {
@@ -50,7 +51,9 @@ onMounted(() => {
       }
       
       // Listen for viewport changes
-      tg.onEvent('viewportChanged', handleViewportChange)
+      if (typeof tg.onEvent === 'function') {
+        tg.onEvent('viewportChanged', handleViewportChange)
+      }
     }
     
     // Apply theme (will use saved preference or Telegram theme)

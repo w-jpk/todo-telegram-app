@@ -1,3 +1,5 @@
+import { versionAtLeast } from '~/utils/telegram'
+
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 export const useTheme = () => {
@@ -65,39 +67,57 @@ export const useTheme = () => {
       const tg = (window as any).Telegram.WebApp
       const tgTheme = tg.themeParams
       
+      // Get hex color values (not CSS variables)
+      let headerColor: string
+      let backgroundColor: string
+      
       if (isDark.value) {
         // Dark theme colors
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tgTheme.bg_color || '#1f2937')
+        headerColor = tgTheme.header_bg_color || tgTheme.bg_color || '#374151'
+        backgroundColor = tgTheme.bg_color || '#1f2937'
+        
+        document.documentElement.style.setProperty('--tg-theme-bg-color', backgroundColor)
         document.documentElement.style.setProperty('--tg-theme-text-color', tgTheme.text_color || '#f9fafb')
         document.documentElement.style.setProperty('--tg-theme-hint-color', tgTheme.hint_color || '#9ca3af')
         document.documentElement.style.setProperty('--tg-theme-link-color', tgTheme.link_color || '#60a5fa')
         document.documentElement.style.setProperty('--tg-theme-button-color', tgTheme.button_color || '#60a5fa')
         document.documentElement.style.setProperty('--tg-theme-button-text-color', tgTheme.button_text_color || '#ffffff')
         document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tgTheme.secondary_bg_color || '#374151')
-        document.documentElement.style.setProperty('--tg-theme-header-bg-color', tgTheme.header_bg_color || tgTheme.bg_color || '#374151')
+        document.documentElement.style.setProperty('--tg-theme-header-bg-color', headerColor)
         document.documentElement.style.setProperty('--tg-theme-section-bg-color', tgTheme.section_bg_color || tgTheme.bg_color || '#374151')
         document.documentElement.style.setProperty('--tg-theme-section-header-text-color', tgTheme.section_header_text_color || tgTheme.text_color || '#f9fafb')
         document.documentElement.style.setProperty('--tg-theme-subtitle-text-color', tgTheme.subtitle_text_color || tgTheme.hint_color || '#9ca3af')
         document.documentElement.style.setProperty('--tg-theme-destructive-text-color', tgTheme.destructive_text_color || '#f87171')
       } else {
         // Light theme colors
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tgTheme.bg_color || '#f9fafb')
+        headerColor = tgTheme.header_bg_color || tgTheme.bg_color || '#ffffff'
+        backgroundColor = tgTheme.bg_color || '#f9fafb'
+        
+        document.documentElement.style.setProperty('--tg-theme-bg-color', backgroundColor)
         document.documentElement.style.setProperty('--tg-theme-text-color', tgTheme.text_color || '#111827')
         document.documentElement.style.setProperty('--tg-theme-hint-color', tgTheme.hint_color || '#6b7280')
         document.documentElement.style.setProperty('--tg-theme-link-color', tgTheme.link_color || '#3b82f6')
         document.documentElement.style.setProperty('--tg-theme-button-color', tgTheme.button_color || '#3b82f6')
         document.documentElement.style.setProperty('--tg-theme-button-text-color', tgTheme.button_text_color || '#ffffff')
         document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tgTheme.secondary_bg_color || '#ffffff')
-        document.documentElement.style.setProperty('--tg-theme-header-bg-color', tgTheme.header_bg_color || tgTheme.bg_color || '#ffffff')
+        document.documentElement.style.setProperty('--tg-theme-header-bg-color', headerColor)
         document.documentElement.style.setProperty('--tg-theme-section-bg-color', tgTheme.section_bg_color || tgTheme.bg_color || '#ffffff')
         document.documentElement.style.setProperty('--tg-theme-section-header-text-color', tgTheme.section_header_text_color || tgTheme.text_color || '#111827')
         document.documentElement.style.setProperty('--tg-theme-subtitle-text-color', tgTheme.subtitle_text_color || tgTheme.hint_color || '#6b7280')
         document.documentElement.style.setProperty('--tg-theme-destructive-text-color', tgTheme.destructive_text_color || '#ef4444')
       }
       
-      // Update Telegram WebApp colors
-      tg.setHeaderColor('var(--tg-theme-header-bg-color)')
-      tg.setBackgroundColor('var(--tg-theme-bg-color)')
+      // Update Telegram WebApp colors only if API version supports it (6.1+)
+      // setHeaderColor and setBackgroundColor require hex colors, not CSS variables
+      if (versionAtLeast(tg, '6.1') && typeof tg.setHeaderColor === 'function' && typeof tg.setBackgroundColor === 'function') {
+        try {
+          tg.setHeaderColor(headerColor)
+          tg.setBackgroundColor(backgroundColor)
+        } catch (error) {
+          // Silently ignore errors if methods are not supported
+          console.warn('Telegram WebApp color methods not available:', error)
+        }
+      }
     }
   }
 
