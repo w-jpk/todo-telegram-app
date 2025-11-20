@@ -47,6 +47,22 @@
     "completed": "Выполнено",
     "pending": "В ожидании"
   },
+  "bulk": {
+    "selectedCount": "Выбрано: {count}",
+    "selectAll": "Выбрать все",
+    "clearSelection": "Снять выбор",
+    "markCompleted": "Отметить выполненными",
+    "markIncomplete": "Отметить активными",
+    "delete": "Удалить",
+    "enterMode": "Множественный выбор",
+    "exitMode": "Выйти из режима",
+    "tasksMarkedCompleted": "Задачи отмечены выполненными",
+    "tasksMarkedIncomplete": "Задачи снова активны",
+    "tasksDeleted": "Задачи удалены",
+    "bulkOperationSuccess": "Групповое действие выполнено",
+    "bulkOperationFailed": "Не удалось выполнить групповое действие",
+    "tryAgain": "Попробуйте ещё раз"
+  },
   "priority": {
     "none": "Нет",
     "low": "Низкий",

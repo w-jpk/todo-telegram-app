@@ -47,6 +47,30 @@
         @category-change="activeCategory = $event"
       />
 
+      <!-- Bulk mode toggle -->
+      <div
+        v-if="filteredTasks && filteredTasks.length"
+        class="flex justify-end mb-4"
+      >
+        <button
+          type="button"
+          @click="toggleBulkMode"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border dark:border-gray-600"
+          :class="showBulkMode
+            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-700'
+            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'"
+        >
+          <i
+            :class="showBulkMode ? 'fas fa-check-square' : 'fas fa-clone'"
+            class="text-xs"
+            aria-hidden="true"
+          ></i>
+          <span>
+            {{ showBulkMode ? $t('bulk.exitMode') : $t('bulk.enterMode') }}
+          </span>
+        </button>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading && (!filteredTasks || filteredTasks.length === 0)" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent">
@@ -95,7 +119,7 @@
 
     <!-- Bulk Actions -->
     <BulkActions
-      v-if="showBulkMode"
+      v-if="showBulkActions"
       :selected-tasks="selectedTasks"
       :total-tasks="filteredTasks ? filteredTasks.length : 0"
       @select-all="selectAllTasks"
@@ -124,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { Todo, CreateTodoDto, UpdateTodoDto, Project, TodoFilter } from '~/types/todo'
 import { formatDateISO, startOfDay } from '~/utils/date'
 import TodoModal from '~/components/TodoModal.vue'
@@ -180,6 +204,7 @@ const toast = ref()
 const searchQuery = ref('')
 const selectedTasks = ref<string[]>([])
 const showBulkMode = ref(false)
+const showBulkActions = computed(() => showBulkMode.value && selectedTasks.value.length > 0)
 
 const categories = computed<Category[]>(() => {
   const baseCategories = [
@@ -509,6 +534,13 @@ const handleReorder = (reorderedTasks: Todo[]) => {
   toast.value?.showInfo(t('home.tasksReordered'), t('home.reorderNotSaved'))
 }
 
+const toggleBulkMode = () => {
+  showBulkMode.value = !showBulkMode.value
+  if (!showBulkMode.value) {
+    selectedTasks.value = []
+  }
+}
+
 const selectAllTasks = () => {
   selectedTasks.value = filteredTasks.value?.map(task => task.id) || []
 }
@@ -725,5 +757,12 @@ onMounted(async () => {
 onUnmounted(() => {
   // Clean up keyboard shortcuts
   document.removeEventListener('keydown', handleKeyboardShortcuts)
+})
+
+watch(filteredTasks, (tasks) => {
+  if (!tasks || tasks.length === 0) {
+    showBulkMode.value = false
+    selectedTasks.value = []
+  }
 })
 </script>

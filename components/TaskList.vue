@@ -340,6 +340,7 @@ const emit = defineEmits<{
 const localTasks = ref<Todo[]>([...props.tasks])
 const scrollElement = ref<HTMLElement>()
 const expandedSubtasks = ref<Set<string>>(new Set())
+const virtualItemsCount = computed(() => localTasks.value.length)
 
 // Watch for changes in props.tasks and update localTasks
 watch(() => props.tasks, (newTasks) => {
@@ -348,12 +349,16 @@ watch(() => props.tasks, (newTasks) => {
 
 // Virtualizer for large lists
 const virtualizer = useVirtualizer({
-  count: localTasks.value.length,
+  count: virtualItemsCount,
   getScrollElement: () => scrollElement.value || null,
   estimateSize: () => 120, // Estimated height of each item
   overscan: 5
 })
 
+watch(virtualItemsCount, () => {
+  // Ensure virtualization recalculates positions when dataset changes
+  virtualizer.value?.measure?.()
+})
 
 const onDragEnd = () => {
   // Emit reorder event with new order

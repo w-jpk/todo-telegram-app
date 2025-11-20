@@ -47,6 +47,22 @@
     "completed": "Completed",
     "pending": "Pending"
   },
+  "bulk": {
+    "selectedCount": "Selected: {count}",
+    "selectAll": "Select all",
+    "clearSelection": "Clear",
+    "markCompleted": "Mark completed",
+    "markIncomplete": "Mark active",
+    "delete": "Delete",
+    "enterMode": "Multi-select",
+    "exitMode": "Exit multi-select",
+    "tasksMarkedCompleted": "Tasks marked as completed",
+    "tasksMarkedIncomplete": "Tasks marked as active",
+    "tasksDeleted": "Tasks removed",
+    "bulkOperationSuccess": "Bulk action applied",
+    "bulkOperationFailed": "Bulk action failed",
+    "tryAgain": "Please try again"
+  },
   "priority": {
     "none": "None",
     "low": "Low",
