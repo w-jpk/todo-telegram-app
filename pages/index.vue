@@ -55,16 +55,16 @@
       </div>
 
       <!-- Task List -->
-      <div v-else-if="filteredTasks && filteredTasks.length > 0" class="space-y-3">
-        <TodoItem
-          v-for="task in filteredTasks"
-          :key="task.id"
-          :todo="task as Todo"
-          @update="(id, completed) => toggleTask(id)"
-          @delete="(id) => handleDeleteTodo(id)"
-          @edit="handleEdit"
-        />
-      </div>
+      <TaskList
+        v-else-if="filteredTasks && filteredTasks.length > 0"
+        :tasks="filteredTasks as Todo[]"
+        :selected-tasks="selectedTasks"
+        :show-checkboxes="showBulkMode"
+        @toggle="toggleTask"
+        @edit="handleEdit"
+        @reorder="handleReorder"
+        @update:selectedTasks="selectedTasks = $event"
+      />
 
       <!-- Load More Button -->
       <div v-if="hasNextPage && filteredTasks && filteredTasks.length > 0 && !loading" class="text-center py-4">
@@ -130,7 +130,7 @@ import AppHeader from '~/components/AppHeader.vue'
 import StatsDashboard from '~/components/StatsDashboard.vue'
 import QuickAddTask from '~/components/QuickAddTask.vue'
 import CategoryFilters from '~/components/CategoryFilters.vue'
-import TodoItem from '~/components/TodoItem.vue'
+import TaskList from '~/components/TaskList.vue'
 import EmptyState from '~/components/EmptyState.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import FloatingActionButton from '~/components/FloatingActionButton.vue'
