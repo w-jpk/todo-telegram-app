@@ -50,13 +50,27 @@ export const useTodos = () => {
   }
 
   // Fetch todos with pagination
-  const fetchTodos = async (page: number = 1, append: boolean = false) => {
-    if (!userId.value) return
+  const fetchTodos = async (page: number = 1, append: boolean = false, retryCount: number = 0) => {
+    if (!userId.value) {
+      console.warn('[useTodos] User ID not available, cannot fetch todos')
+      return
+    }
 
     loading.value = true
     error.value = null
 
     try {
+      const headers = getHeaders()
+      
+      // Log for debugging in production
+      if (process.env.NODE_ENV === 'production' && retryCount === 0) {
+        console.log('[useTodos] Fetching todos:', {
+          userId: userId.value,
+          page,
+          headers: { 'x-telegram-user-id': headers['x-telegram-user-id'] }
+        })
+      }
+
       const { data, pagination } = await $fetch<{
         data: Todo[],
         pagination: {
@@ -69,7 +83,7 @@ export const useTodos = () => {
         }
       }>('/api/todos', {
         method: 'GET',
-        headers: getHeaders(),
+        headers,
         query: {
           page,
           limit: pageSize.value
@@ -95,10 +109,34 @@ export const useTodos = () => {
 
       // Process recurring tasks to generate new instances if needed
       await processRecurringTasks(todos.value)
+      
+      if (process.env.NODE_ENV === 'production') {
+        console.log('[useTodos] Successfully fetched todos:', {
+          count: data.length,
+          total: pagination.total,
+          userId: userId.value
+        })
+      }
     } catch (err: any) {
       const errorMessage = err.data?.message || err.message || 'Failed to fetch todos'
+      const statusCode = err.statusCode || err.status
+      
+      console.error('[useTodos] Error fetching todos:', {
+        error: errorMessage,
+        statusCode,
+        userId: userId.value,
+        retryCount,
+        errorDetails: err
+      })
+      
+      // Retry once if it's a 401 (unauthorized) and we have userId
+      if (statusCode === 401 && userId.value && retryCount === 0) {
+        console.log('[useTodos] Retrying fetch after 500ms...')
+        await new Promise(resolve => setTimeout(resolve, 500))
+        return fetchTodos(page, append, retryCount + 1)
+      }
+      
       error.value = errorMessage
-      console.error('Error fetching todos:', err)
     } finally {
       loading.value = false
     }

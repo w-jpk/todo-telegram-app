@@ -1,8 +1,20 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Todo } from '~/types/todo'
 
-export default defineCachedEventHandler(async (event) => {
-  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
+export default defineEventHandler(async (event) => {
+  // Get userId header - check both lowercase and original case
+  const userIdHeader = getHeader(event, 'x-telegram-user-id') || getHeader(event, 'X-Telegram-User-Id')
+  
+  // Log for debugging in production
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[Todos API] Request headers:', {
+      'x-telegram-user-id': userIdHeader,
+      'user-agent': getHeader(event, 'user-agent'),
+      'referer': getHeader(event, 'referer')
+    })
+  }
+  
+  const userId = validateUserId(userIdHeader)
   const query = getQuery(event)
 
   // Pagination parameters
@@ -148,20 +160,15 @@ export default defineCachedEventHandler(async (event) => {
       }
     }
   } catch (error: any) {
-    console.error('Error fetching todos:', error)
+    console.error('[Todos API] Error fetching todos:', {
+      error: error.message,
+      userId,
+      stack: error.stack
+    })
     throw createError({
       statusCode: 500,
       message: error.message || 'Failed to fetch todos'
     })
-  }
-}, {
-  maxAge: 30, // Cache for 30 seconds
-  getKey: (event) => {
-    const userId = getHeader(event, 'x-telegram-user-id')
-    const query = getQuery(event)
-    const page = query.page || '1'
-    const limit = query.limit || '50'
-    return `todos:${userId}:page${page}:limit${limit}` // Unique cache key per user and pagination
   }
 })
 

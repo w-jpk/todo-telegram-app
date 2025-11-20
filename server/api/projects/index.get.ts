@@ -1,8 +1,10 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Project } from '~/types/todo'
 
-export default defineCachedEventHandler(async (event) => {
-  const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
+export default defineEventHandler(async (event) => {
+  // Get userId header - check both lowercase and original case
+  const userIdHeader = getHeader(event, 'x-telegram-user-id') || getHeader(event, 'X-Telegram-User-Id')
+  const userId = validateUserId(userIdHeader)
   
   try {
     const pool = getDbPool()
@@ -30,11 +32,5 @@ export default defineCachedEventHandler(async (event) => {
       message: error.message || 'Failed to fetch projects'
     })
   }
-}, {
- maxAge: 60, // Cache for 1 minute (projects change less frequently)
- getKey: (event) => {
-   const userId = getHeader(event, 'x-telegram-user-id')
-   return `projects:${userId}`
- }
 })
 

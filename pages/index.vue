@@ -520,28 +520,62 @@ onMounted(async () => {
   // Authenticate user if we have user data
   if ($telegram?.user) {
     try {
-      await $fetch('/api/auth/telegram', {
+      const authResult = await $fetch('/api/auth/telegram', {
         method: 'POST',
         body: {
           user: $telegram.user,
           initData: $telegram.initData
         }
       })
-    } catch (error) {
-      console.error('Error authenticating user:', error)
+      
+      if (process.env.NODE_ENV === 'production') {
+        console.log('[Index] User authenticated:', {
+          userId: $telegram.user.id,
+          success: authResult?.success
+        })
+      }
+    } catch (error: any) {
+      console.error('[Index] Error authenticating user:', {
+        error: error.message,
+        statusCode: error.statusCode || error.status,
+        userId: $telegram?.user?.id
+      })
+      // Don't proceed if authentication fails
+      return
     }
+  } else {
+    console.warn('[Index] No Telegram user data available')
+    return
   }
+
+  // Wait a bit to ensure state is updated
+  await new Promise(resolve => setTimeout(resolve, 100))
 
   // Only fetch data if user is authenticated
   if (userId.value) {
+    if (process.env.NODE_ENV === 'production') {
+      console.log('[Index] Fetching user data for userId:', userId.value)
+    }
+    
     resetPagination()
-    await Promise.all([
-      fetchProjects(),
-      fetchTodos(1, false),
-      fetchSettings()
-    ])
+    try {
+      await Promise.all([
+        fetchProjects(),
+        fetchTodos(1, false),
+        fetchSettings()
+      ])
+      
+      if (process.env.NODE_ENV === 'production') {
+        console.log('[Index] Successfully loaded user data')
+      }
+    } catch (error: any) {
+      console.error('[Index] Error loading user data:', {
+        error: error.message,
+        userId: userId.value
+      })
+    }
   } else {
-    console.warn('User ID not available, skipping data fetch')
+    console.warn('[Index] User ID not available after authentication, skipping data fetch')
   }
 })
 
