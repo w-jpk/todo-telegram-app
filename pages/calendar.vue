@@ -4,7 +4,7 @@
     <!-- <AppHeader title="Calendar" v-show="!showTaskModal" /> -->
 
     <!-- Content Area -->
-    <div class="pt-16 pb-20">
+    <div class="pb-20">
       <!-- Month Navigation -->
       <div class="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 mb-4">
         <div class="flex items-center justify-between">

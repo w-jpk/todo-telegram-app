@@ -4,7 +4,7 @@
     <!-- <AppHeader v-show="!isModalOpen" @menu-click="handleMenuClick" /> -->
 
     <!-- Content Area -->
-    <main id="main-content" class="pt-16 pb-20 px-4" role="main">
+    <main id="main-content" class="pb-20 px-4" role="main">
       <!-- Quick Stats Dashboard -->
       <StatsDashboard
         :today-tasks-count="todayTasksCount"

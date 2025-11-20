@@ -4,7 +4,7 @@
     <!-- <AppHeader title="Settings" /> -->
 
     <!-- Content Area -->
-    <div class="pt-16 pb-20 px-4 max-w-2xl mx-auto">
+    <div class="pb-20 px-4 max-w-2xl mx-auto">
       <!-- Search Bar -->
       <div class="mb-6" role="search">
         <label for="settings-search" class="sr-only">Search settings</label>
