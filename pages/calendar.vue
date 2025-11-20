@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <AppHeader title="Calendar" v-show="!showTaskModal" />
+    <!-- <AppHeader title="Calendar" v-show="!showTaskModal" /> -->
 
     <!-- Content Area -->
     <div class="pt-16 pb-20">

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <AppHeader title="Stats" />
+    <!-- <AppHeader title="Stats" /> -->
     <!-- Content Area -->
     <div v-if="isLoading" class="pt-16 pb-20 px-4 flex justify-center items-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <AppHeader title="Settings" />
+    <!-- <AppHeader title="Settings" /> -->
 
     <!-- Content Area -->
     <div class="pt-16 pb-20 px-4 max-w-2xl mx-auto">

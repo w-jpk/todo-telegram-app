@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
     <!-- Header -->
-    <AppHeader v-show="!isModalOpen" @menu-click="handleMenuClick" />
+    <!-- <AppHeader v-show="!isModalOpen" @menu-click="handleMenuClick" /> -->
 
     <!-- Content Area -->
     <main id="main-content" class="pt-16 pb-20 px-4" role="main">
