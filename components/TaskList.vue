@@ -62,16 +62,91 @@
                     class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     {{ localTasks[virtualItem.index].description }}
                   </p>
+                  
+                  <!-- Tags -->
+                  <div v-if="localTasks[virtualItem.index].tags && localTasks[virtualItem.index].tags!.length > 0" class="flex flex-wrap gap-1 mb-2">
+                    <span
+                      v-for="tag in localTasks[virtualItem.index].tags!"
+                      :key="tag.id"
+                      class="px-2 py-1 rounded-full text-xs font-medium text-white"
+                      :style="{ backgroundColor: tag.color }"
+                    >
+                      {{ tag.name }}
+                    </span>
+                  </div>
+
+                  <!-- Subtasks -->
+                  <div v-if="localTasks[virtualItem.index].subtasks && localTasks[virtualItem.index].subtasks!.length > 0" class="mt-2 mb-2">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                        Подзадачи ({{ getCompletedSubtasksCount(localTasks[virtualItem.index]) }}/{{ localTasks[virtualItem.index].subtasks!.length }})
+                      </span>
+                      <button
+                        @click.stop="toggleSubtasksExpanded(localTasks[virtualItem.index].id)"
+                        class="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                      >
+                        {{ isSubtasksExpanded(localTasks[virtualItem.index].id) ? 'Свернуть' : 'Развернуть' }}
+                      </button>
+                    </div>
+
+                    <div v-if="isSubtasksExpanded(localTasks[virtualItem.index].id)" class="space-y-1.5 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                      <div
+                        v-for="subtask in localTasks[virtualItem.index].subtasks"
+                        :key="subtask.id"
+                        class="flex items-start gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                      >
+                        <button
+                          @click.stop="toggleSubtaskComplete(subtask.id)"
+                          :class="{
+                            'bg-green-500 border-green-500': subtask.completed,
+                            'border-gray-300 dark:border-gray-600': !subtask.completed
+                          }"
+                          class="w-4 h-4 rounded-full border flex items-center justify-center cursor-pointer transition-colors shrink-0 mt-0.5"
+                        >
+                          <i v-if="subtask.completed" class="fas fa-check text-white text-xs" aria-hidden="true"></i>
+                        </button>
+
+                        <div class="flex-1 min-w-0">
+                          <p
+                            class="text-sm break-words"
+                            :class="{
+                              'line-through text-gray-500 dark:text-gray-400': subtask.completed,
+                              'text-gray-900 dark:text-white': !subtask.completed
+                            }"
+                          >
+                            {{ subtask.text }}
+                          </p>
+                        </div>
+
+                        <button
+                          @click.stop="$emit('edit', subtask)"
+                          class="text-blue-500 hover:text-blue-600 transition-colors p-1"
+                          title="Редактировать подзадачу"
+                        >
+                          <i class="fas fa-edit text-xs" aria-hidden="true"></i>
+                        </button>
+
+                        <button
+                          @click.stop="deleteSubtask(subtask.id)"
+                          class="text-red-500 hover:text-red-600 transition-colors p-1"
+                          title="Удалить подзадачу"
+                        >
+                          <i class="fas fa-times text-xs" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                      <div v-if="localTasks[virtualItem.index].dueDate" :class="getDueDateColor(localTasks[virtualItem.index].dueDate!, localTasks[virtualItem.index].completed)"
+                      <div v-if="localTasks[virtualItem.index].dueDate" :class="getDueDateColor(localTasks[virtualItem.index].dueDate as Date, localTasks[virtualItem.index].completed)"
                         class="flex items-center space-x-1 text-xs">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>{{ formatDate(localTasks[virtualItem.index].dueDate!) }}</span>
+                        <span>{{ formatDate(localTasks[virtualItem.index].dueDate as Date) }}</span>
                       </div>
-                      <span v-if="localTasks[virtualItem.index].project" :class="getCategoryColor(localTasks[virtualItem.index].project!.name)"
+                      <span v-if="localTasks[virtualItem.index].project" :class="getCategoryColor(localTasks[virtualItem.index].project?.name || '')"
                         class="px-2 py-1 rounded-full text-xs font-medium">
-                        {{ localTasks[virtualItem.index].project!.name }}
+                        {{ localTasks[virtualItem.index].project?.name }}
                       </span>
                     </div>
                   </div>
@@ -143,6 +218,81 @@
                 class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                 {{ task.description }}
               </p>
+              
+              <!-- Tags -->
+              <div v-if="task.tags && task.tags.length > 0" class="flex flex-wrap gap-1 mb-2">
+                <span
+                  v-for="tag in task.tags"
+                  :key="tag.id"
+                  class="px-2 py-1 rounded-full text-xs font-medium text-white"
+                  :style="{ backgroundColor: tag.color }"
+                >
+                  {{ tag.name }}
+                </span>
+              </div>
+
+              <!-- Subtasks -->
+              <div v-if="task.subtasks && task.subtasks.length > 0" class="mt-2 mb-2">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                    Подзадачи ({{ getCompletedSubtasksCount(task) }}/{{ task.subtasks.length }})
+                  </span>
+                  <button
+                    @click.stop="toggleSubtasksExpanded(task.id)"
+                    class="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                  >
+                    {{ isSubtasksExpanded(task.id) ? 'Свернуть' : 'Развернуть' }}
+                  </button>
+                </div>
+
+                <div v-if="isSubtasksExpanded(task.id)" class="space-y-1.5 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                  <div
+                    v-for="subtask in task.subtasks"
+                    :key="subtask.id"
+                    class="flex items-start gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  >
+                    <button
+                      @click.stop="toggleSubtaskComplete(subtask.id)"
+                      :class="{
+                        'bg-green-500 border-green-500': subtask.completed,
+                        'border-gray-300 dark:border-gray-600': !subtask.completed
+                      }"
+                      class="w-4 h-4 rounded-full border flex items-center justify-center cursor-pointer transition-colors shrink-0 mt-0.5"
+                    >
+                      <i v-if="subtask.completed" class="fas fa-check text-white text-xs" aria-hidden="true"></i>
+                    </button>
+
+                    <div class="flex-1 min-w-0">
+                      <p
+                        class="text-sm break-words"
+                        :class="{
+                          'line-through text-gray-500 dark:text-gray-400': subtask.completed,
+                          'text-gray-900 dark:text-white': !subtask.completed
+                        }"
+                      >
+                        {{ subtask.text }}
+                      </p>
+                    </div>
+
+                    <button
+                      @click.stop="$emit('edit', subtask)"
+                      class="text-blue-500 hover:text-blue-600 transition-colors p-1"
+                      title="Редактировать подзадачу"
+                    >
+                      <i class="fas fa-edit text-xs" aria-hidden="true"></i>
+                    </button>
+
+                    <button
+                      @click.stop="deleteSubtask(subtask.id)"
+                      class="text-red-500 hover:text-red-600 transition-colors p-1"
+                      title="Удалить подзадачу"
+                    >
+                      <i class="fas fa-times text-xs" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                   <div v-if="task.dueDate" :class="getDueDateColor(task.dueDate, task.completed)"
@@ -183,10 +333,13 @@ const emit = defineEmits<{
   edit: [task: Todo]
   reorder: [tasks: Todo[]]
   'update:selectedTasks': [selectedTasks: string[]]
+  'toggle-subtask': [id: string]
+  'delete-subtask': [id: string]
 }>()
 
 const localTasks = ref<Todo[]>([...props.tasks])
 const scrollElement = ref<HTMLElement>()
+const expandedSubtasks = ref<Set<string>>(new Set())
 
 // Watch for changes in props.tasks and update localTasks
 watch(() => props.tasks, (newTasks) => {
@@ -249,5 +402,32 @@ const getCategoryColor = (category: string) => {
 
 const formatDate = (dateString: Date) => {
   return formatDateForDisplay(dateString)
+}
+
+// Subtasks functionality
+const getCompletedSubtasksCount = (task: Todo) => {
+  return task.subtasks?.filter(subtask => subtask.completed).length || 0
+}
+
+const isSubtasksExpanded = (taskId: string) => {
+  return expandedSubtasks.value.has(taskId)
+}
+
+const toggleSubtasksExpanded = (taskId: string) => {
+  if (expandedSubtasks.value.has(taskId)) {
+    expandedSubtasks.value.delete(taskId)
+  } else {
+    expandedSubtasks.value.add(taskId)
+  }
+}
+
+const toggleSubtaskComplete = async (subtaskId: string) => {
+  emit('toggle-subtask', subtaskId)
+}
+
+const deleteSubtask = async (subtaskId: string) => {
+  if (confirm('Вы уверены, что хотите удалить эту подзадачу?')) {
+    emit('delete-subtask', subtaskId)
+  }
 }
 </script>

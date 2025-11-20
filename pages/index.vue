@@ -64,6 +64,8 @@
         @edit="handleEdit"
         @reorder="handleReorder"
         @update:selectedTasks="selectedTasks = $event"
+        @toggle-subtask="toggleSubtask"
+        @delete-subtask="handleDeleteSubtask"
       />
 
       <!-- Load More Button -->
@@ -326,6 +328,50 @@ const handleDeleteTodo = async (id: string) => {
       t('home.deleteFailedDesc')
     )
     console.error('Error deleting todo:', error)
+  }
+}
+
+const toggleSubtask = async (id: string) => {
+  const subtask = todos.value.flatMap(t => t.subtasks || []).find(s => s.id === id)
+  if (!subtask) return
+
+  const newCompleted = !subtask.completed
+
+  try {
+    await updateTodo(id, { completed: newCompleted })
+    toast.value?.showSuccess(
+      newCompleted ? t('home.taskCompleted') : t('home.taskUncompleted'),
+      t('home.taskToggleDesc', {
+        task: subtask.text,
+        action: newCompleted ? t('common.completed').toLowerCase() : t('common.pending').toLowerCase()
+      })
+    )
+  } catch (error) {
+    toast.value?.showError(
+      t('home.updateFailed'),
+      t('home.updateFailedDesc')
+    )
+    console.error('Error toggling subtask:', error)
+  }
+}
+
+const handleDeleteSubtask = async (id: string) => {
+  try {
+    await deleteTodo(id)
+    toast.value?.showSuccess(t('home.taskDeleted'), t('home.taskDeletedDesc'))
+    if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+      try {
+        (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light')
+      } catch (error) {
+        console.debug('HapticFeedback not supported:', error)
+      }
+    }
+  } catch (error) {
+    toast.value?.showError(
+      t('home.deleteFailed'),
+      t('home.deleteFailedDesc')
+    )
+    console.error('Error deleting subtask:', error)
   }
 }
 
