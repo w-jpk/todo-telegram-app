@@ -196,6 +196,15 @@
 
           <!-- Footer -->
           <div class="flex gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
+            <!-- Delete button (only for existing tasks) -->
+            <button
+              v-if="todo"
+              @click="handleDelete"
+              :disabled="saving || deleting"
+              class="px-4 py-3 bg-red-500 dark:bg-red-600 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-red-600 dark:hover:bg-red-700"
+            >
+              {{ deleting ? $t('common.loading') : $t('common.delete') }}
+            </button>
             <button
               @click="handleClose"
               class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-medium active:opacity-80 transition-opacity touch-manipulation hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -204,7 +213,7 @@
             </button>
             <button
               @click="handleSave"
-              :disabled="!formData.text.trim() || saving"
+              :disabled="!formData.text.trim() || saving || deleting"
               class="flex-1 px-4 py-3 bg-blue-500 dark:bg-blue-600 text-white rounded-xl font-medium active:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation hover:bg-blue-600 dark:hover:bg-blue-700"
             >
               {{ saving ? $t('common.loading') : todo ? $t('common.save') : $t('common.create') }}
@@ -238,11 +247,13 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   save: [data: CreateTodoDto | UpdateTodoDto]
+  delete: [id: string]
   'project-created': [project: Project]
 }>()
 
 const titleInput = ref<HTMLInputElement | null>(null)
 const saving = ref(false)
+const deleting = ref(false)
 const subtasks = ref<Array<{ text: string }>>([])
 
 // Tags
@@ -315,8 +326,27 @@ watch(() => props.isOpen, async (newVal) => {
 })
 
 const handleClose = () => {
-  if (!saving.value) {
+  if (!saving.value && !deleting.value) {
     emit('close')
+  }
+}
+
+const handleDelete = async () => {
+  if (!props.todo || deleting.value) return
+  
+  if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
+    return
+  }
+  
+  deleting.value = true
+  
+  try {
+    emit('delete', props.todo.id)
+    handleClose()
+  } catch (error) {
+    console.error('Error deleting task:', error)
+  } finally {
+    deleting.value = false
   }
 }
 

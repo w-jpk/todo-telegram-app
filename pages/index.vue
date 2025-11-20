@@ -55,16 +55,16 @@
       </div>
 
       <!-- Task List -->
-      <TaskList
-        v-else-if="filteredTasks && filteredTasks.length > 0"
-        :tasks="filteredTasks as Todo[]"
-        :selected-tasks="selectedTasks"
-        :show-checkboxes="showBulkMode"
-        @toggle="toggleTask"
-        @edit="handleEdit"
-        @reorder="handleReorder"
-        @update:selectedTasks="selectedTasks = $event"
-      />
+      <div v-else-if="filteredTasks && filteredTasks.length > 0" class="space-y-3">
+        <TodoItem
+          v-for="task in filteredTasks"
+          :key="task.id"
+          :todo="task"
+          @update="(id, completed) => toggleTask(id)"
+          @delete="(id) => handleDeleteTodo(id)"
+          @edit="handleEdit"
+        />
+      </div>
 
       <!-- Load More Button -->
       <div v-if="hasNextPage && filteredTasks && filteredTasks.length > 0 && !loading" class="text-center py-4">
@@ -77,9 +77,9 @@
         </button>
       </div>
 
-      <!-- Empty State -->
+      <!-- Empty State - only show when not loading and no tasks -->
       <EmptyState
-        v-else
+        v-if="!loading && (!filteredTasks || filteredTasks.length === 0)"
         :title="activeCategory === $t('home.allTasks') ? $t('home.noTasksYet') : activeCategory === $t('home.todayTasks') ? $t('home.noTasksForToday') : $t('home.noTasksForCategory', { category: activeCategory?.toLowerCase() || 'unknown' })"
         :subtitle="activeCategory === $t('home.allTasks') ? $t('home.addFirstTask') : $t('home.changeFilter')"
       />
@@ -105,7 +105,7 @@
 
     <!-- Todo Modal -->
     <TodoModal :is-open="isModalOpen" :todo="selectedTodo" :projects="projects as readonly Project[]"
-      @close="closeModal" @save="handleSaveTodo" @project-created="handleProjectCreated" />
+      @close="closeModal" @save="handleSaveTodo" @delete="handleDeleteTodo" @project-created="handleProjectCreated" />
 
     <nav id="navigation" aria-label="Main navigation">
       <ClientOnly>
@@ -130,7 +130,7 @@ import AppHeader from '~/components/AppHeader.vue'
 import StatsDashboard from '~/components/StatsDashboard.vue'
 import QuickAddTask from '~/components/QuickAddTask.vue'
 import CategoryFilters from '~/components/CategoryFilters.vue'
-import TaskList from '~/components/TaskList.vue'
+import TodoItem from '~/components/TodoItem.vue'
 import EmptyState from '~/components/EmptyState.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import FloatingActionButton from '~/components/FloatingActionButton.vue'
@@ -305,6 +305,27 @@ const handleSaveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
       t('home.saveFailedDesc')
     )
     console.error('Error saving todo:', error)
+  }
+}
+
+const handleDeleteTodo = async (id: string) => {
+  try {
+    await deleteTodo(id)
+    toast.value?.showSuccess(t('home.taskDeleted'), t('home.taskDeletedDesc'))
+    closeModal()
+    if (process.client && (window as any).Telegram?.WebApp?.HapticFeedback?.impactOccurred) {
+      try {
+        (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium')
+      } catch (error) {
+        console.debug('HapticFeedback not supported:', error)
+      }
+    }
+  } catch (error) {
+    toast.value?.showError(
+      t('home.deleteFailed'),
+      t('home.deleteFailedDesc')
+    )
+    console.error('Error deleting todo:', error)
   }
 }
 

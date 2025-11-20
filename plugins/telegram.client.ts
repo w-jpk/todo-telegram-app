@@ -96,12 +96,37 @@ export default defineNuxtPlugin(() => {
       if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
         initTelegram()
       } else {
-        // Wait for script to load
-        setTimeout(initWhenReady, 100)
+        // Wait for script to load, but don't wait forever
+        const maxAttempts = 50 // 5 seconds max
+        let attempts = 0
+        const checkInterval = setInterval(() => {
+          attempts++
+          if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+            clearInterval(checkInterval)
+            initTelegram()
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval)
+            // If Telegram WebApp is not available but we have saved data, keep it
+            if (savedData?.user) {
+              console.log('[Telegram Plugin] Using saved user data, Telegram WebApp not available')
+              telegramState.isReady = true
+            } else {
+              console.warn('[Telegram Plugin] Telegram WebApp not available and no saved data')
+            }
+          }
+        }, 100)
       }
     }
 
+    // Start initialization immediately
     initWhenReady()
+    
+    // Also try to initialize after a short delay to catch late-loading scripts
+    setTimeout(() => {
+      if (!telegramState.isReady && typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
+        initTelegram()
+      }
+    }, 500)
 
     return {
       provide: {
