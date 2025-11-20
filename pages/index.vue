@@ -59,7 +59,7 @@
         <TodoItem
           v-for="task in filteredTasks"
           :key="task.id"
-          :todo="task"
+          :todo="task as Todo"
           @update="(id, completed) => toggleTask(id)"
           @delete="(id) => handleDeleteTodo(id)"
           @edit="handleEdit"
