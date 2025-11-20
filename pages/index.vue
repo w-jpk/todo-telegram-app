@@ -82,7 +82,7 @@
       <!-- Empty State - only show when not loading and no tasks -->
       <EmptyState
         v-if="!loading && (!filteredTasks || filteredTasks.length === 0)"
-        :title="activeCategory === $t('home.allTasks') ? $t('home.noTasksYet') : activeCategory === $t('home.todayTasks') ? $t('home.noTasksForToday') : $t('home.noTasksForCategory', { category: activeCategory?.toLowerCase() || 'unknown' })"
+        :title="getEmptyStateTitle()"
         :subtitle="activeCategory === $t('home.allTasks') ? $t('home.addFirstTask') : $t('home.changeFilter')"
       />
 
@@ -184,7 +184,9 @@ const showBulkMode = ref(false)
 const categories = computed<Category[]>(() => {
   const baseCategories = [
     { name: t('home.allTasks'), icon: 'fas fa-list' },
-    { name: t('home.todayTasks'), icon: 'fas fa-calendar-day' }
+    { name: t('home.todayTasks'), icon: 'fas fa-calendar-day' },
+    { name: t('home.tomorrowTasks'), icon: 'fas fa-calendar-alt' },
+    { name: t('home.upcomingTasks'), icon: 'fas fa-calendar-week' }
   ]
 
   // Add user projects as categories
@@ -201,12 +203,36 @@ const today = computed(() => {
   return startOfDay(new Date())
 })
 
+const tomorrow = computed(() => {
+  const tomorrowDate = new Date(today.value)
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+  return tomorrowDate
+})
+
 const todayTasks = computed(() => {
   const todayStr = formatDateISO(today.value)
   return todos.value.filter(task => {
     if (!task.dueDate) return false
     const taskDateStr = formatDateISO(task.dueDate)
     return taskDateStr === todayStr
+  })
+})
+
+const tomorrowTasks = computed(() => {
+  const tomorrowStr = formatDateISO(tomorrow.value)
+  return todos.value.filter(task => {
+    if (!task.dueDate) return false
+    const taskDateStr = formatDateISO(task.dueDate)
+    return taskDateStr === tomorrowStr
+  })
+})
+
+const upcomingTasks = computed(() => {
+  const todayStr = formatDateISO(today.value)
+  return todos.value.filter(task => {
+    if (!task.dueDate || task.completed) return false
+    const taskDateStr = formatDateISO(task.dueDate)
+    return taskDateStr > todayStr
   })
 })
 
@@ -230,6 +256,20 @@ const filteredTasks = computed(() => {
       if (!task.dueDate) return false
       const taskDateStr = formatDateISO(task.dueDate)
       return taskDateStr === todayStr
+    })
+  } else if (activeCategory.value === t('home.tomorrowTasks')) {
+    const tomorrowStr = formatDateISO(tomorrow.value)
+    result = result.filter(task => {
+      if (!task.dueDate) return false
+      const taskDateStr = formatDateISO(task.dueDate)
+      return taskDateStr === tomorrowStr
+    })
+  } else if (activeCategory.value === t('home.upcomingTasks')) {
+    const todayStr = formatDateISO(today.value)
+    result = result.filter(task => {
+      if (!task.dueDate || task.completed) return false
+      const taskDateStr = formatDateISO(task.dueDate)
+      return taskDateStr > todayStr
     })
   } else if (activeCategory.value && activeCategory.value !== t('home.allTasks')) {
     result = result.filter(task => {
@@ -261,8 +301,44 @@ const filteredTasks = computed(() => {
     )
   }
 
+  // Sort: priority first, then newest first (by created_at DESC), then by due_date
+  result = [...result].sort((a, b) => {
+    // First sort by priority
+    const priorityOrder = { high: 1, medium: 2, low: 3, none: 4 }
+    const priorityDiff = (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4)
+    if (priorityDiff !== 0) return priorityDiff
+
+    // Then sort by newest first (created_at DESC)
+    const dateA = a.createdAt.getTime()
+    const dateB = b.createdAt.getTime()
+    const dateDiff = dateB - dateA
+    if (dateDiff !== 0) return dateDiff
+
+    // Finally sort by due_date (earlier first)
+    if (a.dueDate && b.dueDate) {
+      return a.dueDate.getTime() - b.dueDate.getTime()
+    }
+    if (a.dueDate) return -1
+    if (b.dueDate) return 1
+    return 0
+  })
+
   return result
 })
+
+const getEmptyStateTitle = () => {
+  if (activeCategory.value === t('home.allTasks')) {
+    return t('home.noTasksYet')
+  } else if (activeCategory.value === t('home.todayTasks')) {
+    return t('home.noTasksForToday')
+  } else if (activeCategory.value === t('home.tomorrowTasks')) {
+    return t('home.noTasksForTomorrow')
+  } else if (activeCategory.value === t('home.upcomingTasks')) {
+    return t('home.noTasksForUpcoming')
+  } else {
+    return t('home.noTasksForCategory', { category: activeCategory.value?.toLowerCase() || 'unknown' })
+  }
+}
 
 const openModal = () => {
   selectedTodo.value = null

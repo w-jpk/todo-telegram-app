@@ -182,8 +182,16 @@
     "pending": "Pending",
     "allTasks": "All",
     "todayTasks": "Today",
+    "tomorrowTasks": "Tomorrow",
+    "upcomingTasks": "Upcoming",
+    "noTasksForTomorrow": "No tasks for tomorrow",
+    "noTasksForUpcoming": "No upcoming tasks",
     "addTaskPlaceholder": "Add a new task...",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "taskDeleted": "Task Deleted",
+    "taskDeletedDesc": "The task has been deleted successfully.",
+    "deleteFailed": "Delete Failed",
+    "deleteFailedDesc": "There was an error deleting the task. Please try again."
   },
   "warnings": {
     "telegramRequired": "To use the application, you need to open it through Telegram Mini App.",

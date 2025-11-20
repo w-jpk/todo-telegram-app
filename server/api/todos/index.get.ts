@@ -64,6 +64,7 @@ export default defineEventHandler(async (event) => {
          END,
          t.due_date NULLS LAST,
          t.created_at DESC
+       -- Sort: priority first, then due_date, then newest first
        LIMIT $2 OFFSET $3`,
       [userId, limit, offset]
     )

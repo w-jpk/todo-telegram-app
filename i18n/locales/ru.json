@@ -182,8 +182,16 @@
     "pending": "Ожидает",
     "allTasks": "Все",
     "todayTasks": "Сегодня",
+    "tomorrowTasks": "Завтра",
+    "upcomingTasks": "Предстоящие",
+    "noTasksForTomorrow": "Нет задач на завтра",
+    "noTasksForUpcoming": "Нет предстоящих задач",
     "addTaskPlaceholder": "Добавить новую задачу...",
-    "loadMore": "Загрузить еще"
+    "loadMore": "Загрузить еще",
+    "taskDeleted": "Задача удалена",
+    "taskDeletedDesc": "Задача была успешно удалена.",
+    "deleteFailed": "Удаление не удалось",
+    "deleteFailedDesc": "Произошла ошибка при удалении задачи. Попробуйте еще раз."
   },
   "warnings": {
     "telegramRequired": "Для работы приложения необходимо открыть его через Telegram Mini App.",
