@@ -349,7 +349,7 @@ watch(() => props.tasks, (newTasks) => {
 
 // Virtualizer for large lists
 const virtualizer = useVirtualizer({
-  count: virtualItemsCount,
+  count: virtualItemsCount.value,
   getScrollElement: () => scrollElement.value || null,
   estimateSize: () => 120, // Estimated height of each item
   overscan: 5
