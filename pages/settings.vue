@@ -21,6 +21,7 @@
             class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
             aria-describedby="search-help"
             autocomplete="off"
+            aria-label="Search through settings"
           />
         </div>
         <div id="search-help" class="sr-only">
@@ -59,7 +60,7 @@
           tabindex="0"
           @keydown.enter="openUserProfile"
           @keydown.space.prevent="openUserProfile"
-          aria-label="Open user profile"
+          aria-label="Open user profile in Telegram"
         >
           <div
             class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:bg-blue-600 transition-colors"
@@ -153,10 +154,11 @@
           </div>
           <button
             @click="saveProfile"
-            class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            :disabled="savingProfile"
+            class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-describedby="save-help"
           >
-            Save Profile
+            {{ savingProfile ? "Saving..." : "Save Profile" }}
           </button>
           <div id="save-help" class="sr-only">Save your profile changes</div>
         </div>
@@ -359,6 +361,7 @@ import PrivacySettings from "~/components/PrivacySettings.vue";
 // Reactive data
 const searchQuery = ref("");
 const editProfile = ref(false);
+const savingProfile = ref(false);
 const profileForm = ref({
   displayName: "",
   bio: "",
@@ -379,7 +382,7 @@ const dialogConfig = ref({
 
 // Settings history for undo functionality
 const settingsHistory = ref<UserSettings[]>([]);
-const maxHistorySize = 10;
+const maxHistorySize = 5; // Reduced for memory efficiency
 
 // Composables
 const { locale, locales, setLocale: i18nSetLocale } = useI18n();
@@ -476,6 +479,12 @@ const filteredSections = computed(() => {
   );
 });
 
+// TODO: This file is too large (952 lines). Consider splitting into:
+// - ProfileSection.vue
+// - SettingsSections.vue
+// - SupportSection.vue
+// - settingsMethods.js for shared logic
+
 // Methods
 const setLocale = async (newLocale: "ru" | "en") => {
   await i18nSetLocale(newLocale);
@@ -491,11 +500,29 @@ const openUserProfile = () => {
 };
 
 const saveProfile = async () => {
+  if (savingProfile.value) return; // Prevent double submission
+
   try {
+    savingProfile.value = true;
+
+    // Input validation
+    const displayName = profileForm.value.displayName?.trim();
+    const bio = profileForm.value.bio?.trim();
+
+    if (displayName && displayName.length > 50) {
+      toast.value?.showError("Invalid Input", "Display name must be 50 characters or less.");
+      return;
+    }
+
+    if (bio && bio.length > 500) {
+      toast.value?.showError("Invalid Input", "Bio must be 500 characters or less.");
+      return;
+    }
+
     if (settings.value) {
       await updateSettings({
-        displayName: profileForm.value.displayName,
-        bio: profileForm.value.bio,
+        displayName: displayName || undefined,
+        bio: bio || undefined,
         profileVisibility: profileForm.value.profileVisibility,
       });
       editProfile.value = false;
@@ -510,31 +537,42 @@ const saveProfile = async () => {
       "There was an error saving your profile. Please try again."
     );
     console.error("Profile update failed:", error);
+  } finally {
+    savingProfile.value = false;
   }
 };
 
 const handleSettingUpdate = async (updates: any) => {
+  if (!settings.value) {
+    console.warn("No settings available for update");
+    return;
+  }
+
+  if (!updates || Object.keys(updates).length === 0) {
+    console.warn("No updates provided");
+    return;
+  }
+
   try {
-    if (settings.value) {
-      // Save current state to history before updating
-      saveSettingsToHistory(JSON.parse(JSON.stringify(settings.value)));
+    // Save current state to history before updating
+    saveSettingsToHistory(JSON.parse(JSON.stringify(settings.value)));
 
-      await updateSettings(updates);
-      // Show success toast with undo option
-      toast.value?.showSuccess(
-        "Settings Updated",
-        "Your preferences have been saved successfully.",
-        8000
-      );
+    await updateSettings(updates);
+    // Show success toast with undo option
+    toast.value?.showSuccess(
+      "Settings Updated",
+      "Your preferences have been saved successfully.",
+      8000
+    );
 
-      // Add undo button to toast (this would need to be implemented in the Toast component)
-      // For now, we'll just show the success message
-    }
-  } catch (error) {
-    // Show error toast
+    // Add undo button to toast (this would need to be implemented in the Toast component)
+    // For now, we'll just show the success message
+  } catch (error: any) {
+    // Show error toast with more specific message
+    const errorMessage = error?.data?.message || error?.message || "Unknown error occurred";
     toast.value?.showError(
       "Update Failed",
-      "There was an error saving your settings. Please try again."
+      `There was an error saving your settings: ${errorMessage}. Please try again.`
     );
     console.error("Settings update failed:", error);
   }
@@ -679,7 +717,14 @@ const exportData = async (format: string = "json") => {
         },
       });
 
-      const jsonString = JSON.stringify(data, null, 2);
+      // Remove sensitive information from export
+      const sanitizedData = {
+        ...data,
+        userId: undefined, // Remove userId for privacy
+        exportedAt: data.exportedAt
+      };
+
+      const jsonString = JSON.stringify(sanitizedData, null, 2);
       const blob = new Blob([jsonString], { type: "application/json" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -711,6 +756,17 @@ const exportData = async (format: string = "json") => {
 const importData = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];
   if (!file) return;
+
+  // File validation
+  if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    toast.value?.showError("File Too Large", "Please select a file smaller than 10MB.");
+    return;
+  }
+
+  if (!file.name.toLowerCase().endsWith('.json')) {
+    toast.value?.showError("Invalid File Type", "Please select a valid JSON file.");
+    return;
+  }
 
   try {
     toast.value?.showInfo("Importing Data", "Processing your backup file...");
@@ -750,30 +806,39 @@ const importData = async (event: Event) => {
 };
 
 const openHelp = () => {
-  window.open("https://example.com/help", "_blank");
+  // TODO: Replace with actual help URL from config
+  window.open("https://telegram.org/support", "_blank");
 };
 
 const clearAllData = async () => {
   try {
     toast.value?.showInfo("Clearing Data", "Removing all your data...");
 
-    // For now, implement a basic clear that removes all todos
-    // In a full implementation, this would need to clear todos, projects, and tags
-    // Since there are no bulk delete endpoints, this would require individual API calls
+    const userId = $telegram?.user?.id?.toString();
+    if (!userId) {
+      throw new Error("User ID not available");
+    }
+
+    const headers = {
+      "x-telegram-user-id": userId,
+    };
+
+    let deletedCount = 0;
+    let errorCount = 0;
 
     // Clear all todos by getting all todos and deleting them one by one
-    // This is a simplified implementation - in production you'd want bulk operations
+    // TODO: Implement bulk delete API endpoint for better performance
     const allTodos = [...todos.value];
     for (const todo of allTodos) {
       try {
         await $fetch(`/api/todos/${todo.id}`, {
           method: "DELETE",
-          headers: {
-            "x-telegram-user-id": $telegram?.user?.id?.toString() || "",
-          },
+          headers,
         });
+        deletedCount++;
       } catch (error) {
         console.warn(`Failed to delete todo ${todo.id}:`, error);
+        errorCount++;
       }
     }
 
@@ -783,24 +848,25 @@ const clearAllData = async () => {
       try {
         await $fetch(`/api/projects/${project.id}`, {
           method: "DELETE",
-          headers: {
-            "x-telegram-user-id": $telegram?.user?.id?.toString() || "",
-          },
+          headers,
         });
+        deletedCount++;
       } catch (error) {
         console.warn(`Failed to delete project ${project.id}:`, error);
+        errorCount++;
       }
     }
-
-    // Note: Tags deletion would require similar individual calls
-    // For now, we'll focus on todos and projects
 
     // Refresh data
     await Promise.all([fetchTodos(), fetchProjects()]);
 
+    const message = errorCount > 0
+      ? `Data cleared with ${errorCount} errors. ${deletedCount} items deleted.`
+      : "All your tasks and projects have been permanently deleted.";
+
     toast.value?.showSuccess(
       "Data Cleared",
-      "All your tasks and projects have been permanently deleted."
+      message
     );
   } catch (error) {
     toast.value?.showError(
@@ -825,7 +891,20 @@ const disconnectAccount = async () => {
 
     // Clear local storage or any cached data
     if (typeof localStorage !== 'undefined') {
-      localStorage.clear();
+      // Clear all app-related localStorage keys
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('todo-') || key.startsWith('settings') || key.startsWith('theme'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    }
+
+    // Clear session storage if used
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.clear();
     }
 
     toast.value?.showSuccess(
@@ -845,7 +924,8 @@ const disconnectAccount = async () => {
 };
 
 const contactSupport = () => {
-  window.open("https://t.me/support", "_blank");
+  // TODO: Replace with actual support channel from config
+  window.open("https://telegram.org/support", "_blank");
 };
 
 // Initialize
@@ -905,20 +985,25 @@ onMounted(async () => {
 
   // Only fetch settings if user is authenticated
   if ($telegram?.user?.id) {
-    await fetchSettings();
+    try {
+      await fetchSettings();
 
-    // Initialize profile form
-    if (settings.value) {
-      profileForm.value = {
-        displayName: settings.value.displayName || "",
-        bio: settings.value.bio || "",
-        profileVisibility: settings.value.profileVisibility || "private",
-      };
-    }
+      // Initialize profile form and locale in parallel if possible
+      if (settings.value) {
+        profileForm.value = {
+          displayName: settings.value.displayName || "",
+          bio: settings.value.bio || "",
+          profileVisibility: settings.value.profileVisibility || "private",
+        };
 
-    // Set initial locale from settings
-    if (settings.value?.language) {
-      await i18nSetLocale(settings.value.language as "ru" | "en");
+        // Set initial locale from settings
+        if (settings.value?.language) {
+          await i18nSetLocale(settings.value.language as "ru" | "en");
+        }
+      }
+    } catch (error) {
+      console.error("Error initializing settings:", error);
+      // Continue with defaults if settings fetch fails
     }
   } else {
     console.warn("User ID not available, skipping settings fetch");
