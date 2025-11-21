@@ -24,15 +24,20 @@ interface HeatmapDay {
 
 export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any[]>, settings?: Ref<any>) => {
   const { t } = useI18n()
-  const activePeriod = ref(t('stats.weekly'))
-  const timePeriods = computed(() => [t('stats.daily'), t('stats.weekly'), t('stats.monthly')])
+  // Store period as key ('daily', 'weekly', 'monthly') instead of translated string
+  const activePeriod = ref<'daily' | 'weekly' | 'monthly'>('weekly')
+  const timePeriods = computed(() => [
+    { key: 'daily' as const, label: t('stats.daily') },
+    { key: 'weekly' as const, label: t('stats.weekly') },
+    { key: 'monthly' as const, label: t('stats.monthly') }
+  ])
 
   const periodStart = computed(() => {
     const now = new Date()
     const period = activePeriod.value
-    if (period === t('stats.daily')) return new Date(now.getTime() - 24 * 60 * 60 * 1000)
-    if (period === t('stats.weekly')) return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    if (period === t('stats.monthly')) return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    if (period === 'daily') return new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    if (period === 'weekly') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    if (period === 'monthly') return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     return new Date(0)
   })
 
@@ -66,7 +71,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const averageDaily = computed(() => {
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
     const recentCompleted = periodFilteredTodos.value.filter(t => t.completed).length
     return (recentCompleted / periodDays).toFixed(1)
   })
@@ -77,7 +82,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
     today.setHours(0, 0, 0, 0)
 
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
 
     for (let i = 0; i < periodDays; i++) {
       const checkDate = new Date(today)
@@ -201,7 +206,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
   const heatmapData = computed(() => {
     const days: HeatmapDay[] = []
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
     const today = new Date()
     const locale = settings?.value?.language || 'en'
 
@@ -232,7 +237,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
   const chartData = computed(() => {
     const days = []
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
 
     for (let i = periodDays - 1; i >= 0; i--) {
       const date = new Date()
@@ -284,7 +289,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const heatmapGridClass = computed(() => {
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
     if (periodDays <= 7) return 'grid-cols-7'
     if (periodDays <= 14) return 'grid-cols-7'
     return 'grid-cols-10'
@@ -312,7 +317,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
     const currentRate = currentTotal > 0 ? (currentCompleted / currentTotal) * 100 : 0
 
     const period = activePeriod.value
-    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
+    const periodDays = period === 'weekly' ? 7 : period === 'monthly' ? 30 : 1
     const prevPeriodStart = new Date(periodStart.value)
     prevPeriodStart.setDate(prevPeriodStart.getDate() - periodDays)
 

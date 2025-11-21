@@ -10,12 +10,12 @@
       <!-- Time Period Selector and Export -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
-          <button v-for="period in timePeriods" :key="period" :class="{
-            'bg-blue-500 text-white': activePeriod === period,
-            'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400': activePeriod !== period
+          <button v-for="period in timePeriods" :key="period.key" :class="{
+            'bg-blue-500 text-white': activePeriod === period.key,
+            'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400': activePeriod !== period.key
           }" class="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm cursor-pointer"
-            @click="activePeriod = period">
-            {{ period }}
+            @click="activePeriod = period.key">
+            {{ period.label }}
           </button>
         </div>
         <button @click="exportStats"
@@ -184,8 +184,8 @@
             <i :class="completionTrend >= 0 ? 'fas fa-chart-line text-green-300' : 'fas fa-chart-line text-red-300'"
               class="mt-0.5"></i>
             <p class="text-sm">{{ completionTrend >= 0 
-              ? $t('stats.trendImproved', { percent: Math.abs(completionTrend), period: activePeriod.toLowerCase() })
-              : $t('stats.trendDecreased', { percent: Math.abs(completionTrend), period: activePeriod.toLowerCase() }) }}</p>
+              ? $t('stats.trendImproved', { percent: Math.abs(completionTrend), period: $t(`stats.${activePeriod}`) })
+              : $t('stats.trendDecreased', { percent: Math.abs(completionTrend), period: $t(`stats.${activePeriod}`) }) }}</p>
           </div>
           <div v-if="mostProductiveCategory" class="flex items-start space-x-2">
             <i class="fas fa-star text-yellow-300 mt-0.5"></i>

@@ -318,17 +318,19 @@ const calendarDays = computed(() => {
 const filteredTodos = computed(() => {
   let filtered = todos.value
 
-  if (activeFilter.value === t('calendar.active')) {
+  // Compare by translated name - find the matching category
+  const activeFilterName = activeFilter.value
+  if (activeFilterName === t('calendar.active')) {
     filtered = filtered.filter(todo => !todo.completed)
-  } else if (activeFilter.value === t('common.completed')) {
+  } else if (activeFilterName === t('common.completed')) {
     filtered = filtered.filter(todo => todo.completed)
-  } else if (activeFilter.value === t('calendar.highPriority')) {
+  } else if (activeFilterName === t('calendar.highPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'high')
-  } else if (activeFilter.value === t('calendar.mediumPriority')) {
+  } else if (activeFilterName === t('calendar.mediumPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'medium')
-  } else if (activeFilter.value === t('calendar.lowPriority')) {
+  } else if (activeFilterName === t('calendar.lowPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'low')
-  } else if (activeFilter.value !== t('calendar.all')) {
+  } else if (activeFilterName !== t('calendar.all')) {
     // Filter by project name
     filtered = filtered.filter(todo => {
       if (!todo.project) return false
