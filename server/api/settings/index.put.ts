@@ -34,19 +34,20 @@ export default defineEventHandler(async (event) => {
       values.push(body.reminderDaysBefore)
     }
     
-    if (body.notifyOnCreate !== undefined) {
-      updates.push(`notify_on_create = $${paramIndex++}`)
-      values.push(body.notifyOnCreate)
-    }
-    
-    if (body.notifyOnUpdate !== undefined) {
-      updates.push(`notify_on_update = $${paramIndex++}`)
-      values.push(body.notifyOnUpdate)
-    }
-    
     if (body.notifyOnOverdue !== undefined) {
       updates.push(`notify_on_overdue = $${paramIndex++}`)
       values.push(body.notifyOnOverdue)
+    }
+    
+    // Advanced notifications
+    if (body.quietHoursStart !== undefined) {
+      updates.push(`quiet_hours_start = $${paramIndex++}`)
+      values.push(body.quietHoursStart)
+    }
+    
+    if (body.quietHoursEnd !== undefined) {
+      updates.push(`quiet_hours_end = $${paramIndex++}`)
+      values.push(body.quietHoursEnd)
     }
     
     if (body.timezone !== undefined) {
@@ -65,120 +66,125 @@ export default defineEventHandler(async (event) => {
     }
 
     // Advanced notifications
-    if ((body as any).vibrationEnabled !== undefined) {
+    if (body.vibrationEnabled !== undefined) {
       updates.push(`vibration_enabled = $${paramIndex++}`)
-      values.push((body as any).vibrationEnabled)
+      values.push(body.vibrationEnabled)
     }
 
     // App behavior
-    if ((body as any).defaultPriority !== undefined) {
+    if (body.defaultPriority !== undefined) {
       updates.push(`default_priority = $${paramIndex++}`)
-      values.push((body as any).defaultPriority)
+      values.push(body.defaultPriority)
     }
 
-    if ((body as any).defaultSortBy !== undefined) {
+    if (body.defaultSortBy !== undefined) {
       updates.push(`default_sort_by = $${paramIndex++}`)
-      values.push((body as any).defaultSortBy)
+      values.push(body.defaultSortBy)
     }
 
-    if ((body as any).autoArchiveCompleted !== undefined) {
+    if (body.autoArchiveCompleted !== undefined) {
       updates.push(`auto_archive_completed = $${paramIndex++}`)
-      values.push((body as any).autoArchiveCompleted)
+      values.push(body.autoArchiveCompleted)
     }
 
-    if ((body as any).archiveAfterDays !== undefined) {
+    if (body.archiveAfterDays !== undefined) {
       updates.push(`archive_after_days = $${paramIndex++}`)
-      values.push((body as any).archiveAfterDays)
+      values.push(body.archiveAfterDays)
     }
 
-    if ((body as any).showCompletedTasks !== undefined) {
+    if (body.showCompletedTasks !== undefined) {
       updates.push(`show_completed_tasks = $${paramIndex++}`)
-      values.push((body as any).showCompletedTasks)
+      values.push(body.showCompletedTasks)
     }
 
-    if ((body as any).confirmDeleteTask !== undefined) {
+    if (body.confirmDeleteTask !== undefined) {
       updates.push(`confirm_delete_task = $${paramIndex++}`)
-      values.push((body as any).confirmDeleteTask)
+      values.push(body.confirmDeleteTask)
     }
 
     // Appearance
-    if ((body as any).fontSize !== undefined) {
+    if (body.accentColor !== undefined) {
+      updates.push(`accent_color = $${paramIndex++}`)
+      values.push(body.accentColor)
+    }
+
+    if (body.fontSize !== undefined) {
       updates.push(`font_size = $${paramIndex++}`)
-      values.push((body as any).fontSize)
+      values.push(body.fontSize)
     }
 
-    if ((body as any).animationsEnabled !== undefined) {
+    if (body.animationsEnabled !== undefined) {
       updates.push(`animations_enabled = $${paramIndex++}`)
-      values.push((body as any).animationsEnabled)
+      values.push(body.animationsEnabled)
     }
 
-    if ((body as any).compactView !== undefined) {
+    if (body.compactView !== undefined) {
       updates.push(`compact_view = $${paramIndex++}`)
-      values.push((body as any).compactView)
+      values.push(body.compactView)
     }
 
     // Language & Region
-    if ((body as any).dateFormat !== undefined) {
+    if (body.dateFormat !== undefined) {
       updates.push(`date_format = $${paramIndex++}`)
-      values.push((body as any).dateFormat)
+      values.push(body.dateFormat)
     }
 
-    if ((body as any).timeFormat !== undefined) {
+    if (body.timeFormat !== undefined) {
       updates.push(`time_format = $${paramIndex++}`)
-      values.push((body as any).timeFormat)
+      values.push(body.timeFormat)
     }
 
     // Data & Sync
-    if ((body as any).autoSync !== undefined) {
+    if (body.autoSync !== undefined) {
       updates.push(`auto_sync = $${paramIndex++}`)
-      values.push((body as any).autoSync)
+      values.push(body.autoSync)
     }
 
-    if ((body as any).syncFrequency !== undefined) {
+    if (body.syncFrequency !== undefined) {
       updates.push(`sync_frequency = $${paramIndex++}`)
-      values.push((body as any).syncFrequency)
+      values.push(body.syncFrequency)
     }
 
-    if ((body as any).backupFrequency !== undefined) {
+    if (body.backupFrequency !== undefined) {
       updates.push(`backup_frequency = $${paramIndex++}`)
-      values.push((body as any).backupFrequency)
+      values.push(body.backupFrequency)
     }
 
-    if ((body as any).dataRetentionDays !== undefined) {
+    if (body.dataRetentionDays !== undefined) {
       updates.push(`data_retention_days = $${paramIndex++}`)
-      values.push((body as any).dataRetentionDays)
+      values.push(body.dataRetentionDays)
     }
 
     // Privacy & Security
-    if ((body as any).analyticsEnabled !== undefined) {
+    if (body.analyticsEnabled !== undefined) {
       updates.push(`analytics_enabled = $${paramIndex++}`)
-      values.push((body as any).analyticsEnabled)
+      values.push(body.analyticsEnabled)
     }
 
-    if ((body as any).crashReportingEnabled !== undefined) {
+    if (body.crashReportingEnabled !== undefined) {
       updates.push(`crash_reporting_enabled = $${paramIndex++}`)
-      values.push((body as any).crashReportingEnabled)
+      values.push(body.crashReportingEnabled)
     }
 
-    if ((body as any).dataEncryptionEnabled !== undefined) {
+    if (body.dataEncryptionEnabled !== undefined) {
       updates.push(`data_encryption_enabled = $${paramIndex++}`)
-      values.push((body as any).dataEncryptionEnabled)
+      values.push(body.dataEncryptionEnabled)
     }
 
     // Profile
-    if ((body as any).displayName !== undefined) {
+    if (body.displayName !== undefined) {
       updates.push(`display_name = $${paramIndex++}`)
-      values.push((body as any).displayName)
+      values.push(body.displayName)
     }
 
-    if ((body as any).bio !== undefined) {
+    if (body.bio !== undefined) {
       updates.push(`bio = $${paramIndex++}`)
-      values.push((body as any).bio)
+      values.push(body.bio)
     }
 
-    if ((body as any).profileVisibility !== undefined) {
+    if (body.profileVisibility !== undefined) {
       updates.push(`profile_visibility = $${paramIndex++}`)
-      values.push((body as any).profileVisibility)
+      values.push(body.profileVisibility)
     }
     
     if (updates.length === 0) {
@@ -202,8 +208,8 @@ export default defineEventHandler(async (event) => {
     if (existing.rows.length === 0) {
       // Create default settings first
       await pool.query(
-        `INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language)
-         VALUES ($1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'en')`,
+        `INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_overdue, theme, language, accent_color)
+         VALUES ($1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], TRUE, 'light', 'en', '#3B82F6')`,
         [userId]
       )
     }
@@ -224,10 +230,10 @@ export default defineEventHandler(async (event) => {
       dailyNotifications: row.daily_notifications,
       dailyNotificationTime: row.daily_notification_time,
       reminderDaysBefore: row.reminder_days_before || [1, 3],
-      notifyOnCreate: row.notify_on_create,
-      notifyOnUpdate: row.notify_on_update,
       notifyOnOverdue: row.notify_on_overdue,
       // Advanced notifications
+      quietHoursStart: row.quiet_hours_start,
+      quietHoursEnd: row.quiet_hours_end,
       vibrationEnabled: row.vibration_enabled ?? true,
       // App behavior
       defaultPriority: row.default_priority || 'medium',
@@ -239,6 +245,7 @@ export default defineEventHandler(async (event) => {
       // Appearance
       timezone: row.timezone || 'UTC',
       theme: row.theme || 'light',
+      accentColor: row.accent_color || '#3B82F6',
       fontSize: row.font_size || 'medium',
       animationsEnabled: row.animations_enabled ?? true,
       compactView: row.compact_view ?? false,
@@ -256,7 +263,11 @@ export default defineEventHandler(async (event) => {
       crashReportingEnabled: row.crash_reporting_enabled ?? true,
       dataEncryptionEnabled: row.data_encryption_enabled ?? true,
       // Profile
+      displayName: row.display_name,
+      bio: row.bio,
       profileVisibility: row.profile_visibility || 'private',
+      // Data & Sync
+      lastBackupDate: row.last_backup_date,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }

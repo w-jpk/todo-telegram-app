@@ -1,15 +1,13 @@
-import { Client } from 'pg'
-import { validateUserId } from '~/server/utils/db'
+import { getDbPool, validateUserId } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
 
-  const client = new Client(process.env.DATABASE_URL)
-  await client.connect()
+  const pool = getDbPool()
 
   try {
     // Get all todos for the user
-    const todosResult = await client.query(
+    const todosResult = await pool.query(
       `SELECT
         t.id, t.text, t.description, t.completed, t.priority, t.user_id,
         t.project_id, t.parent_id, t.created_at, t.updated_at, t.due_date,
@@ -76,6 +74,12 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'Content-Type', 'text/csv')
     setHeader(event, 'Content-Disposition', `attachment; filename="todo-export-${new Date().toISOString().split('T')[0]}.csv"`)
 
+    // Update last backup date
+    await pool.query(
+      'UPDATE user_settings SET last_backup_date = CURRENT_TIMESTAMP WHERE user_id = $1',
+      [userId]
+    )
+
     return csvContent
   } catch (error) {
     console.error('CSV export error:', error)
@@ -83,7 +87,5 @@ export default defineEventHandler(async (event) => {
       statusCode: 500,
       message: 'Failed to export CSV data'
     })
-  } finally {
-    await client.end()
   }
 })

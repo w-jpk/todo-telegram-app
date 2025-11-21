@@ -208,6 +208,13 @@ async function initializeSchema(pool: Pool) {
       await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS crash_reporting_enabled BOOLEAN DEFAULT TRUE`)
       await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS data_encryption_enabled BOOLEAN DEFAULT TRUE`)
       await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS profile_visibility VARCHAR(20) DEFAULT 'private'`)
+      // Add missing columns for UI features
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS quiet_hours_start TIME`)
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS quiet_hours_end TIME`)
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS accent_color VARCHAR(7) DEFAULT '#3B82F6'`)
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS display_name VARCHAR(50)`)
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS bio TEXT`)
+      await client.query(`ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS last_backup_date TIMESTAMP`)
       console.log('✅ Updated user_settings table with additional columns')
     } catch (error) {
       console.log('ℹ️  Some columns may already exist or update skipped')
@@ -232,20 +239,22 @@ async function initializeSchema(pool: Pool) {
     await client.query(`
       INSERT INTO user_settings (
         user_id, notifications_enabled, daily_notifications, daily_notification_time,
-        reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue,
+        reminder_days_before, notify_on_overdue,
         timezone, theme, language, vibration_enabled, default_priority, default_sort_by,
         auto_archive_completed, archive_after_days, show_completed_tasks, confirm_delete_task,
         font_size, animations_enabled, compact_view, date_format, time_format,
         auto_sync, sync_frequency, backup_frequency, data_retention_days,
-        analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility
+        analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility,
+        accent_color
       )
       SELECT
-        id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE,
+        id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], TRUE,
         'UTC', 'light', 'en', TRUE, 'medium', 'dueDate',
         FALSE, 30, TRUE, TRUE,
         'medium', TRUE, FALSE, 'DD/MM/YYYY', '24h',
         TRUE, 'daily', 'weekly', 365,
-        TRUE, TRUE, TRUE, 'private'
+        TRUE, TRUE, TRUE, 'private',
+        '#3B82F6'
       FROM users
       WHERE NOT EXISTS (
         SELECT 1 FROM user_settings WHERE user_settings.user_id = users.id

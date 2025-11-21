@@ -18,17 +18,19 @@ export default defineEventHandler(async (event) => {
       await pool.query(
         `INSERT INTO user_settings (
           user_id, notifications_enabled, daily_notifications, daily_notification_time,
-          reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue,
+          reminder_days_before, notify_on_overdue,
           timezone, theme, language, vibration_enabled, default_priority, default_sort_by,
           auto_archive_completed, archive_after_days, show_completed_tasks, confirm_delete_task,
           font_size, animations_enabled, compact_view, date_format, time_format,
           auto_sync, sync_frequency, backup_frequency, data_retention_days,
-          analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility
+          analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility,
+          accent_color
         ) VALUES (
-          $1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE,
+          $1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], TRUE,
           'UTC', 'light', 'en', TRUE, 'medium', 'dueDate',
           FALSE, 30, TRUE, TRUE, 'medium', TRUE, FALSE, 'DD/MM/YYYY', '24h',
-          TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE, 'private'
+          TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE, 'private',
+          '#3B82F6'
         ) RETURNING *`,
         [userId]
       )
@@ -46,10 +48,10 @@ export default defineEventHandler(async (event) => {
         dailyNotifications: row.daily_notifications,
         dailyNotificationTime: row.daily_notification_time,
         reminderDaysBefore: row.reminder_days_before || [1, 3],
-        notifyOnCreate: row.notify_on_create,
-        notifyOnUpdate: row.notify_on_update,
         notifyOnOverdue: row.notify_on_overdue,
         // Advanced notifications
+        quietHoursStart: row.quiet_hours_start,
+        quietHoursEnd: row.quiet_hours_end,
         vibrationEnabled: row.vibration_enabled ?? true,
         // App behavior
         defaultPriority: row.default_priority || 'medium',
@@ -61,6 +63,7 @@ export default defineEventHandler(async (event) => {
         // Appearance
         timezone: row.timezone || 'UTC',
         theme: row.theme || 'light',
+        accentColor: row.accent_color || '#3B82F6',
         fontSize: row.font_size || 'medium',
         animationsEnabled: row.animations_enabled ?? true,
         compactView: row.compact_view ?? false,
@@ -78,7 +81,11 @@ export default defineEventHandler(async (event) => {
         crashReportingEnabled: row.crash_reporting_enabled ?? true,
         dataEncryptionEnabled: row.data_encryption_enabled ?? true,
         // Profile
+        displayName: row.display_name,
+        bio: row.bio,
         profileVisibility: row.profile_visibility || 'private',
+        // Data & Sync
+        lastBackupDate: row.last_backup_date,
         createdAt: row.created_at,
         updatedAt: row.updated_at
       }
@@ -96,10 +103,10 @@ export default defineEventHandler(async (event) => {
       dailyNotifications: row.daily_notifications,
       dailyNotificationTime: row.daily_notification_time,
       reminderDaysBefore: row.reminder_days_before || [1, 3],
-      notifyOnCreate: row.notify_on_create,
-      notifyOnUpdate: row.notify_on_update,
       notifyOnOverdue: row.notify_on_overdue,
       // Advanced notifications
+      quietHoursStart: row.quiet_hours_start,
+      quietHoursEnd: row.quiet_hours_end,
       vibrationEnabled: row.vibration_enabled ?? true,
       // App behavior
       defaultPriority: row.default_priority || 'medium',
@@ -111,6 +118,7 @@ export default defineEventHandler(async (event) => {
       // Appearance
       timezone: row.timezone || 'UTC',
       theme: row.theme || 'light',
+      accentColor: row.accent_color || '#3B82F6',
       fontSize: row.font_size || 'medium',
       animationsEnabled: row.animations_enabled ?? true,
       compactView: row.compact_view ?? false,
@@ -128,7 +136,11 @@ export default defineEventHandler(async (event) => {
       crashReportingEnabled: row.crash_reporting_enabled ?? true,
       dataEncryptionEnabled: row.data_encryption_enabled ?? true,
       // Profile
+      displayName: row.display_name,
+      bio: row.bio,
       profileVisibility: row.profile_visibility || 'private',
+      // Data & Sync
+      lastBackupDate: row.last_backup_date,
       createdAt: row.created_at,
       updatedAt: row.updated_at
     }

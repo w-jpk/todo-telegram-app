@@ -113,14 +113,11 @@ export interface UserSettings {
   dailyNotifications: boolean
   dailyNotificationTime: string // HH:mm:ss format
   reminderDaysBefore: number[]
-  notifyOnCreate: boolean
-  notifyOnUpdate: boolean
   notifyOnOverdue: boolean
 
   // Advanced notifications
   quietHoursStart?: string // HH:mm format
   quietHoursEnd?: string // HH:mm format
-  notificationSound?: string
   vibrationEnabled: boolean
 
   // App behavior
@@ -148,8 +145,8 @@ export interface UserSettings {
   autoSync: boolean
   syncFrequency: SyncFrequency
   backupFrequency: BackupFrequency
-  lastBackupDate?: Date
   dataRetentionDays: number
+  lastBackupDate?: Date
 
   // Privacy & Security
   analyticsEnabled: boolean
@@ -171,11 +168,11 @@ export interface UpdateUserSettingsDto {
   dailyNotifications?: boolean
   dailyNotificationTime?: string
   reminderDaysBefore?: number[]
-  notifyOnCreate?: boolean
-  notifyOnUpdate?: boolean
   notifyOnOverdue?: boolean
 
   // Advanced notifications
+  quietHoursStart?: string
+  quietHoursEnd?: string
   vibrationEnabled?: boolean
 
   // App behavior
@@ -204,6 +201,7 @@ export interface UpdateUserSettingsDto {
   syncFrequency?: SyncFrequency
   backupFrequency?: BackupFrequency
   dataRetentionDays?: number
+  lastBackupDate?: Date
 
   // Privacy & Security
   analyticsEnabled?: boolean

@@ -99,7 +99,7 @@ export default defineEventHandler(async (event) => {
       message: 'Failed to import data'
     })
   } finally {
-    await client.end()
+    client.release()
   }
 })
 
