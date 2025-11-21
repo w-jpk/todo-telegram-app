@@ -2,34 +2,34 @@
   <div v-if="localSettings" class="space-y-6">
     <!-- Task Defaults -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Task Defaults</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.behavior.taskDefaults') }}</h3>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default Priority</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.behavior.defaultPriority') }}</label>
           <select
             v-model="localSettings.defaultPriority"
             @change="updateSetting('defaultPriority', localSettings.defaultPriority)"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="none">No Priority</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+            <option value="none">{{ $t('settings.behavior.noPriority') }}</option>
+            <option value="low">{{ $t('stats.low') }}</option>
+            <option value="medium">{{ $t('stats.medium') }}</option>
+            <option value="high">{{ $t('stats.high') }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default Sort By</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.behavior.defaultSortBy') }}</label>
           <select
             v-model="localSettings.defaultSortBy"
             @change="updateSetting('defaultSortBy', localSettings.defaultSortBy)"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="dueDate">Due Date</option>
-            <option value="priority">Priority</option>
-            <option value="createdAt">Created Date</option>
-            <option value="text">Alphabetical</option>
+            <option value="dueDate">{{ $t('settings.behavior.dueDate') }}</option>
+            <option value="priority">{{ $t('settings.behavior.priority') }}</option>
+            <option value="createdAt">{{ $t('settings.behavior.createdAt') }}</option>
+            <option value="text">{{ $t('settings.behavior.alphabetical') }}</option>
           </select>
         </div>
       </div>
@@ -37,13 +37,13 @@
 
     <!-- Auto-Archive Settings -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Auto-Archive</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.behavior.autoArchive') }}</h3>
 
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-Archive Completed Tasks</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Automatically archive completed tasks after a period</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.behavior.autoArchiveCompleted') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.behavior.autoArchiveCompletedDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -54,7 +54,7 @@
         </div>
 
         <div v-if="localSettings.autoArchiveCompleted">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Archive After (Days)</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.behavior.archiveAfterDays') }}</label>
           <input
             type="number"
             v-model.number="localSettings.archiveAfterDays"
@@ -69,13 +69,13 @@
 
     <!-- UI Behavior -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">UI Behavior</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.behavior.uiBehavior') }}</h3>
 
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Show Completed Tasks</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Display completed tasks in the main list</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.behavior.showCompletedTasks') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.behavior.showCompletedTasksDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -87,8 +87,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Task Deletion</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Show confirmation dialog before deleting tasks</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.behavior.confirmDeleteTask') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.behavior.confirmDeleteTaskDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -105,6 +105,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { UserSettings } from '~/types/todo'
+
+const { t } = useI18n()
 
 interface Props {
   settings: UserSettings | null

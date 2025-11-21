@@ -2,7 +2,7 @@
   <div v-if="localSettings" class="space-y-6">
     <!-- Language Selection -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Language</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.language.language') }}</h3>
 
       <div class="space-y-3">
         <div
@@ -31,11 +31,11 @@
 
     <!-- Date & Time Format -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Date & Time Format</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.language.dateTimeFormat') }}</h3>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Format</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.language.dateFormat') }}</label>
           <select
             v-model="localSettings.dateFormat"
             @change="updateSetting('dateFormat', localSettings.dateFormat)"
@@ -48,7 +48,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time Format</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.language.timeFormat') }}</label>
           <select
             v-model="localSettings.timeFormat"
             @change="updateSetting('timeFormat', localSettings.timeFormat)"
@@ -63,10 +63,10 @@
 
     <!-- Timezone -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Timezone</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.language.timezone') }}</h3>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Timezone</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.language.currentTimezone') }}</label>
         <select
           v-model="localSettings.timezone"
           @change="updateSetting('timezone', localSettings.timezone)"
@@ -80,7 +80,7 @@
           <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
         </select>
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Current time: {{ currentTime }}
+          {{ $t('settings.language.currentTime') }}: {{ currentTime }}
         </p>
       </div>
     </div>
@@ -90,6 +90,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import type { UserSettings } from '~/types/todo'
+
+const { t } = useI18n()
 
 interface Props {
   settings: UserSettings | null
@@ -102,9 +104,9 @@ const emit = defineEmits<{
 
 const localSettings = ref<UserSettings | null>(null)
 
-const availableLanguages = ref([
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский' }
+const availableLanguages = computed(() => [
+  { code: 'en', name: t('settings.language.english'), nativeName: 'English' },
+  { code: 'ru', name: t('settings.language.russian'), nativeName: 'Русский' }
 ])
 
 const currentTime = computed(() => {

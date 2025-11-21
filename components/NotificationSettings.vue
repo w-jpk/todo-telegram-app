@@ -2,13 +2,13 @@
   <div v-if="localSettings" class="space-y-6">
     <!-- Basic Notifications -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Basic Notifications</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.notifications.basicNotifications') }}</h3>
 
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Push Notifications</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Receive notifications for tasks and reminders</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.notifications.pushNotifications') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.notifications.pushNotificationsDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -20,8 +20,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Daily Summary</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Get a daily overview of your tasks</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.notifications.dailySummary') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.notifications.dailySummaryDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -33,8 +33,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Overdue Reminders</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Notify when tasks become overdue</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.notifications.overdueReminders') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.notifications.overdueRemindersDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -48,11 +48,11 @@
 
     <!-- Advanced Notifications -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Advanced Settings</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.notifications.advancedSettings') }}</h3>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Daily Notification Time</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.notifications.dailyNotificationTime') }}</label>
           <input
             type="time"
             v-model="localSettings.dailyNotificationTime"
@@ -62,10 +62,10 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quiet Hours</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.notifications.quietHours') }}</label>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Start</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('settings.notifications.quietHoursStart') }}</label>
               <input
                 type="time"
                 v-model="localSettings.quietHoursStart"
@@ -74,7 +74,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">End</label>
+              <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ $t('settings.notifications.quietHoursEnd') }}</label>
               <input
                 type="time"
                 v-model="localSettings.quietHoursEnd"
@@ -87,8 +87,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Vibration</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Vibrate device for notifications</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.notifications.vibration') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.notifications.vibrationDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -105,6 +105,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { UserSettings } from '~/types/todo'
+
+const { t } = useI18n()
 
 interface Props {
   settings: UserSettings | null

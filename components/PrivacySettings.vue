@@ -2,13 +2,13 @@
   <div v-if="localSettings" class="space-y-6">
     <!-- Analytics & Tracking -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Analytics & Tracking</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.privacy.analyticsTracking') }}</h3>
 
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Analytics</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Help improve the app by sharing anonymous usage data</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.privacy.usageAnalytics') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.privacy.usageAnalyticsDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -20,8 +20,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Crash Reporting</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Automatically report crashes to help fix issues</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.privacy.crashReporting') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.privacy.crashReportingDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -35,13 +35,13 @@
 
     <!-- Data Security -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Data Security</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.privacy.dataSecurity') }}</h3>
 
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Data Encryption</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Encrypt sensitive data stored locally</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.privacy.dataEncryption') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.privacy.dataEncryptionDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -55,9 +55,9 @@
           <div class="flex items-start space-x-3">
             <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
             <div>
-              <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">Data Privacy</h4>
+              <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">{{ $t('settings.privacy.dataPrivacy') }}</h4>
               <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                Your data is stored locally on your device. We never transmit your personal information or task data to external servers without your explicit consent.
+                {{ $t('settings.privacy.dataPrivacyDesc') }}
               </p>
             </div>
           </div>
@@ -67,15 +67,15 @@
 
     <!-- Account Management -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Account Management</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.privacy.accountManagement') }}</h3>
 
       <div class="space-y-4">
         <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div class="flex items-center justify-between">
             <div>
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white">Telegram Account</h4>
+              <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ $t('settings.privacy.telegramAccount') }}</h4>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Connected as {{ userDisplayName }}
+                {{ $t('settings.privacy.connectedAs') }} {{ userDisplayName }}
               </p>
             </div>
             <div class="text-green-500">
@@ -90,7 +90,7 @@
             class="w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center space-x-2"
           >
             <i class="fas fa-sign-out-alt"></i>
-            <span>Disconnect Account</span>
+            <span>{{ $t('settings.privacy.disconnectAccount') }}</span>
           </button>
         </div>
       </div>
@@ -98,32 +98,32 @@
 
     <!-- Data Rights -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Your Data Rights</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.privacy.dataRights') }}</h3>
 
       <div class="space-y-3">
         <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Data Export</h4>
+          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ $t('settings.privacy.dataExport') }}</h4>
           <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-            You can export all your data at any time. This includes tasks, projects, and settings.
+            {{ $t('settings.privacy.dataExportDesc') }}
           </p>
           <button
             @click="requestDataExport"
             class="px-3 py-1.5 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
           >
-            Request Export
+            {{ $t('settings.privacy.requestExport') }}
           </button>
         </div>
 
         <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Data Deletion</h4>
+          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">{{ $t('settings.privacy.dataDeletion') }}</h4>
           <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
-            You can permanently delete all your data from our systems.
+            {{ $t('settings.privacy.dataDeletionDesc') }}
           </p>
           <button
             @click="requestDataDeletion"
             class="px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
           >
-            Request Deletion
+            {{ $t('settings.privacy.requestDeletion') }}
           </button>
         </div>
       </div>
@@ -134,6 +134,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import type { UserSettings } from '~/types/todo'
+
+const { t } = useI18n()
 
 interface Props {
   settings: UserSettings | null

@@ -17,7 +17,7 @@
             id="settings-search"
             v-model="searchQuery"
             type="text"
-            placeholder="Search settings..."
+            :placeholder="$t('settings.searchPlaceholder')"
             class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
             aria-describedby="search-help"
             autocomplete="off"
@@ -40,7 +40,7 @@
             id="profile-heading"
             class="text-lg font-semibold text-gray-900 dark:text-white"
           >
-            👤 Profile
+            👤 {{ $t('settings.profile.title') }}
           </h2>
           <button
             @click="editProfile = !editProfile"
@@ -48,7 +48,7 @@
             :aria-expanded="editProfile"
             aria-controls="profile-edit-form"
           >
-            {{ editProfile ? "Cancel" : "Edit" }}
+            {{ editProfile ? $t('settings.profile.cancel') : $t('settings.profile.edit') }}
           </button>
         </div>
 
@@ -80,12 +80,12 @@
           </div>
           <div class="flex-1 cursor-pointer">
             <h3 class="font-semibold text-gray-900 dark:text-white">
-              {{ userName || "User" }}
+              {{ userName || $t('settings.profile.user') }}
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ userEmail || "Telegram User" }}
+              {{ userEmail || $t('settings.profile.telegramUser') }}
             </p>
-            <p class="text-xs text-blue-500 mt-1">Premium Member</p>
+            <p class="text-xs text-blue-500 mt-1">{{ $t('settings.profile.premiumMember') }}</p>
           </div>
           <i
             class="fas fa-chevron-right text-gray-400 dark:text-gray-500"
@@ -98,14 +98,14 @@
             <label
               for="display-name"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Display Name</label
+              >{{ $t('settings.profile.displayName') }}</label
             >
             <input
               id="display-name"
               v-model="profileForm.displayName"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter display name"
+              :placeholder="$t('settings.profile.displayNamePlaceholder')"
               aria-describedby="display-name-help"
               autocomplete="name"
             />
@@ -117,14 +117,14 @@
             <label
               for="bio"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Bio</label
+              >{{ $t('settings.profile.bio') }}</label
             >
             <textarea
               id="bio"
               v-model="profileForm.bio"
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Tell us about yourself..."
+              :placeholder="$t('settings.profile.bioPlaceholder')"
               aria-describedby="bio-help"
               maxlength="500"
             ></textarea>
@@ -136,7 +136,7 @@
             <label
               for="profile-visibility"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >Profile Visibility</label
+              >{{ $t('settings.profile.profileVisibility') }}</label
             >
             <select
               id="profile-visibility"
@@ -144,9 +144,9 @@
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               aria-describedby="visibility-help"
             >
-              <option value="private">Private</option>
-              <option value="contacts">Contacts Only</option>
-              <option value="public">Public</option>
+              <option value="private">{{ $t('settings.profile.private') }}</option>
+              <option value="contacts">{{ $t('settings.profile.contactsOnly') }}</option>
+              <option value="public">{{ $t('settings.profile.public') }}</option>
             </select>
             <div id="visibility-help" class="sr-only">
               Choose who can see your profile information
@@ -158,7 +158,7 @@
             class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-describedby="save-help"
           >
-            {{ savingProfile ? "Saving..." : "Save Profile" }}
+            {{ savingProfile ? $t('settings.profile.saving') : $t('settings.profile.saveProfile') }}
           </button>
           <div id="save-help" class="sr-only">Save your profile changes</div>
         </div>
@@ -251,7 +251,7 @@
           id="support-heading"
           class="font-semibold text-gray-900 dark:text-white mb-4"
         >
-          ❓ Support & Information
+          {{ $t('settings.support.title') }}
         </h3>
         <div class="space-y-3" role="list">
           <button
@@ -266,7 +266,7 @@
                 aria-hidden="true"
               ></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white"
-                >Help & FAQ</span
+                >{{ $t('settings.support.help') }}</span
               >
             </div>
             <i
@@ -283,7 +283,7 @@
             <div class="flex items-center space-x-3">
               <i class="fas fa-headset text-green-500" aria-hidden="true"></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white"
-                >Contact Support</span
+                >{{ $t('settings.support.contactSupport') }}</span
               >
             </div>
             <i
@@ -301,12 +301,12 @@
                 aria-hidden="true"
               ></i>
               <span class="text-sm font-medium text-gray-900 dark:text-white"
-                >App Version</span
+                >{{ $t('settings.support.appVersion') }}</span
               >
             </div>
             <span
               class="text-sm text-gray-600 dark:text-gray-400"
-              aria-label="Current app version 2.1.4"
+              :aria-label="`${$t('settings.support.appVersion')} 2.1.4`"
               >2.1.4</span
             >
           </div>
@@ -385,7 +385,7 @@ const settingsHistory = ref<UserSettings[]>([]);
 const maxHistorySize = 5; // Reduced for memory efficiency
 
 // Composables
-const { locale, locales, setLocale: i18nSetLocale } = useI18n();
+const { locale, locales, setLocale: i18nSetLocale, t } = useI18n();
 const { $telegram } = useNuxtApp();
 const { settings, fetchSettings, updateSettings } = useSettings();
 const { todos, fetchTodos, createTodo } = useTodos();
@@ -417,51 +417,51 @@ const userPhoto = computed(() => {
 });
 
 // Settings sections
-const settingsSections = ref([
+const settingsSections = computed(() => [
   {
     id: "notifications",
-    title: "🔔 Notifications",
-    description: "Manage alerts and reminders",
+    title: t('settings.sections.notifications'),
+    description: t('settings.sections.notificationsDesc'),
     icon: "fas fa-bell",
     color: "bg-blue-100 dark:bg-blue-900",
     component: "NotificationSettings",
   },
   {
     id: "appearance",
-    title: "🎨 Appearance",
-    description: "Theme, colors, and display options",
+    title: t('settings.sections.appearance'),
+    description: t('settings.sections.appearanceDesc'),
     icon: "fas fa-palette",
     color: "bg-purple-100 dark:bg-purple-900",
     component: "AppearanceSettings",
   },
   {
     id: "behavior",
-    title: "⚙️ App Behavior",
-    description: "Task defaults and app preferences",
+    title: t('settings.sections.behavior'),
+    description: t('settings.sections.behaviorDesc'),
     icon: "fas fa-cogs",
     color: "bg-green-100 dark:bg-green-900",
     component: "BehaviorSettings",
   },
   {
     id: "language",
-    title: "🌐 Language & Region",
-    description: "Language, date, and time formats",
+    title: t('settings.sections.language'),
+    description: t('settings.sections.languageDesc'),
     icon: "fas fa-language",
     color: "bg-indigo-100 dark:bg-indigo-900",
     component: "LanguageSettings",
   },
   {
     id: "data",
-    title: "💾 Data & Sync",
-    description: "Backup, import, and synchronization",
+    title: t('settings.sections.data'),
+    description: t('settings.sections.dataDesc'),
     icon: "fas fa-database",
     color: "bg-orange-100 dark:bg-orange-900",
     component: "DataSettings",
   },
   {
     id: "privacy",
-    title: "🔒 Privacy & Security",
-    description: "Data protection and analytics",
+    title: t('settings.sections.privacy'),
+    description: t('settings.sections.privacyDesc'),
     icon: "fas fa-shield-alt",
     color: "bg-red-100 dark:bg-red-900",
     component: "PrivacySettings",
@@ -510,12 +510,12 @@ const saveProfile = async () => {
     const bio = profileForm.value.bio?.trim();
 
     if (displayName && displayName.length > 50) {
-      toast.value?.showError("Invalid Input", "Display name must be 50 characters or less.");
+      toast.value?.showError(t('settings.profile.invalidInput'), t('settings.profile.displayNameTooLong'));
       return;
     }
 
     if (bio && bio.length > 500) {
-      toast.value?.showError("Invalid Input", "Bio must be 500 characters or less.");
+      toast.value?.showError(t('settings.profile.invalidInput'), t('settings.profile.bioTooLong'));
       return;
     }
 
@@ -527,14 +527,14 @@ const saveProfile = async () => {
       });
       editProfile.value = false;
       toast.value?.showSuccess(
-        "Profile Updated",
-        "Your profile information has been saved."
+        t('settings.profile.profileUpdated'),
+        t('settings.profile.profileUpdatedDesc')
       );
     }
   } catch (error) {
     toast.value?.showError(
-      "Profile Update Failed",
-      "There was an error saving your profile. Please try again."
+      t('settings.profile.profileUpdateFailed'),
+      t('settings.profile.profileUpdateFailedDesc')
     );
     console.error("Profile update failed:", error);
   } finally {
@@ -560,8 +560,8 @@ const handleSettingUpdate = async (updates: any) => {
     await updateSettings(updates);
     // Show success toast with undo option
     toast.value?.showSuccess(
-      "Settings Updated",
-      "Your preferences have been saved successfully.",
+      t('settings.messages.settingsUpdated'),
+      t('settings.messages.settingsUpdatedDesc'),
       8000
     );
 
@@ -571,8 +571,8 @@ const handleSettingUpdate = async (updates: any) => {
     // Show error toast with more specific message
     const errorMessage = error?.data?.message || error?.message || "Unknown error occurred";
     toast.value?.showError(
-      "Update Failed",
-      `There was an error saving your settings: ${errorMessage}. Please try again.`
+      t('settings.messages.updateFailed'),
+      t('settings.messages.updateFailedDesc', { message: errorMessage })
     );
     console.error("Settings update failed:", error);
   }
@@ -594,22 +594,22 @@ const undoLastChange = async () => {
       const previousSettings = settingsHistory.value.shift();
       if (previousSettings && settings.value) {
         await updateSettings(previousSettings);
-        toast.value?.showInfo(
-          "Settings Restored",
-          "Your previous settings have been restored."
-        );
+      toast.value?.showInfo(
+        t('settings.messages.settingsRestored'),
+        t('settings.messages.settingsRestoredDesc')
+      );
       }
     } catch (error) {
       toast.value?.showError(
-        "Undo Failed",
-        "There was an error restoring your settings."
+        t('settings.messages.undoFailed'),
+        t('settings.messages.undoFailedDesc')
       );
       console.error("Undo failed:", error);
     }
   } else {
     toast.value?.showWarning(
-      "Nothing to Undo",
-      "No previous settings found to restore."
+      t('settings.messages.nothingToUndo'),
+      t('settings.messages.nothingToUndoDesc')
     );
   }
 };
@@ -634,14 +634,14 @@ const handleImport = async () => {
 const handleClear = async () => {
   // Show confirmation dialog
   dialogConfig.value = {
-    title: "Clear All Data",
-    message: "Are you sure you want to delete all your tasks, projects, and tags? This action cannot be undone.",
-    confirmText: "Delete Everything",
-    cancelText: "Cancel",
+    title: t('settings.dialogs.clearAllData'),
+    message: t('settings.dialogs.clearAllDataMessage'),
+    confirmText: t('settings.dialogs.deleteEverything'),
+    cancelText: t('common.cancel'),
     icon: "fas fa-trash",
     iconColor: "bg-red-500",
     confirmButtonClass: "bg-red-500 hover:bg-red-600",
-    additionalInfo: "This will permanently remove all your data from the server.",
+    additionalInfo: t('settings.dialogs.clearAllDataInfo'),
   };
   confirmationDialog.value?.show();
 };
@@ -649,14 +649,14 @@ const handleClear = async () => {
 const handleDisconnect = () => {
   // Show confirmation dialog for disconnect
   dialogConfig.value = {
-    title: "Disconnect Account",
-    message: "Are you sure you want to disconnect your Telegram account? You will lose access to your data and need to reconnect through Telegram.",
-    confirmText: "Disconnect",
-    cancelText: "Cancel",
+    title: t('settings.dialogs.disconnectAccount'),
+    message: t('settings.dialogs.disconnectAccountMessage'),
+    confirmText: t('settings.privacy.disconnectAccount'),
+    cancelText: t('common.cancel'),
     icon: "fas fa-sign-out-alt",
     iconColor: "bg-orange-500",
     confirmButtonClass: "bg-orange-500 hover:bg-orange-600",
-    additionalInfo: "Your data will be cleared from this device.",
+    additionalInfo: t('settings.dialogs.disconnectAccountInfo'),
   };
   confirmationDialog.value?.show();
 };
@@ -669,14 +669,14 @@ const handleExportRequest = () => {
 const handleDeletionRequest = () => {
   // Show confirmation dialog and trigger data deletion
   dialogConfig.value = {
-    title: "Delete All Data",
-    message: "Are you sure you want to permanently delete all your data? This action cannot be undone.",
-    confirmText: "Delete Everything",
-    cancelText: "Cancel",
+    title: t('settings.dialogs.deleteAllData'),
+    message: t('settings.dialogs.deleteAllDataMessage'),
+    confirmText: t('settings.dialogs.deleteEverything'),
+    cancelText: t('common.cancel'),
     icon: "fas fa-trash",
     iconColor: "bg-red-500",
     confirmButtonClass: "bg-red-500 hover:bg-red-600",
-    additionalInfo: "This will permanently remove all your tasks, projects, and settings.",
+    additionalInfo: t('settings.dialogs.deleteAllDataInfo'),
   };
   confirmationDialog.value?.show();
 };
@@ -688,9 +688,13 @@ const showConfirmationDialog = (config: typeof dialogConfig.value) => {
 
 const handleDialogConfirm = async () => {
   // Handle confirmation based on current dialog context
-  if (dialogConfig.value.title === "Clear All Data" || dialogConfig.value.title === "Delete All Data") {
+  const clearDataTitle = t('settings.dialogs.clearAllData');
+  const deleteDataTitle = t('settings.dialogs.deleteAllData');
+  const disconnectTitle = t('settings.dialogs.disconnectAccount');
+  
+  if (dialogConfig.value.title === clearDataTitle || dialogConfig.value.title === deleteDataTitle) {
     await clearAllData();
-  } else if (dialogConfig.value.title === "Disconnect Account") {
+  } else if (dialogConfig.value.title === disconnectTitle) {
     await disconnectAccount();
   }
   console.log("Dialog confirmed");
@@ -704,8 +708,8 @@ const handleDialogCancel = () => {
 const exportData = async (format: string = "json") => {
   try {
     toast.value?.showInfo(
-      "Exporting Data",
-      "Preparing your data for download..."
+      t('settings.messages.exportingData'),
+      t('settings.messages.exportingDataDesc')
     );
 
     if (format === "json") {
@@ -741,13 +745,13 @@ const exportData = async (format: string = "json") => {
     }
 
     toast.value?.showSuccess(
-      "Export Complete",
-      "Your data has been downloaded successfully."
+      t('settings.messages.exportComplete'),
+      t('settings.messages.exportCompleteDesc')
     );
   } catch (error) {
     toast.value?.showError(
-      "Export Failed",
-      "There was an error exporting your data. Please try again."
+      t('settings.messages.exportFailed'),
+      t('settings.messages.exportFailedDesc')
     );
     console.error("Export failed:", error);
   }
@@ -759,17 +763,17 @@ const importData = async (event: Event) => {
 
   // File validation
   if (file.size > 10 * 1024 * 1024) { // 10MB limit
-    toast.value?.showError("File Too Large", "Please select a file smaller than 10MB.");
+    toast.value?.showError(t('settings.messages.fileTooLarge'), t('settings.messages.fileTooLargeDesc'));
     return;
   }
 
   if (!file.name.toLowerCase().endsWith('.json')) {
-    toast.value?.showError("Invalid File Type", "Please select a valid JSON file.");
+    toast.value?.showError(t('settings.messages.invalidFileType'), t('settings.messages.invalidFileTypeDesc'));
     return;
   }
 
   try {
-    toast.value?.showInfo("Importing Data", "Processing your backup file...");
+    toast.value?.showInfo(t('settings.messages.importingData'), t('settings.messages.importingDataDesc'));
 
     // Create FormData for file upload
     const formData = new FormData();
@@ -789,7 +793,7 @@ const importData = async (event: Event) => {
     });
 
     if (response.success) {
-      toast.value?.showSuccess("Import Complete", response.message);
+      toast.value?.showSuccess(t('settings.messages.importComplete'), response.message);
 
       // Refresh data
       await Promise.all([fetchTodos(), fetchProjects(), fetchSettings()]);
@@ -798,8 +802,8 @@ const importData = async (event: Event) => {
     }
   } catch (error) {
     toast.value?.showError(
-      "Import Failed",
-      "There was an error importing your data. Please check the file format and try again."
+      t('settings.messages.importFailed'),
+      t('settings.messages.importFailedDesc')
     );
     console.error("Import failed:", error);
   }
@@ -812,7 +816,7 @@ const openHelp = () => {
 
 const clearAllData = async () => {
   try {
-    toast.value?.showInfo("Clearing Data", "Removing all your data...");
+    toast.value?.showInfo(t('settings.messages.clearingData'), t('settings.messages.clearingDataDesc'));
 
     const userId = $telegram?.user?.id?.toString();
     if (!userId) {
@@ -861,17 +865,17 @@ const clearAllData = async () => {
     await Promise.all([fetchTodos(), fetchProjects()]);
 
     const message = errorCount > 0
-      ? `Data cleared with ${errorCount} errors. ${deletedCount} items deleted.`
-      : "All your tasks and projects have been permanently deleted.";
+      ? t('settings.messages.dataClearedWithErrors', { count: errorCount, deletedCount })
+      : t('settings.messages.dataClearedDesc');
 
     toast.value?.showSuccess(
-      "Data Cleared",
+      t('settings.messages.dataCleared'),
       message
     );
   } catch (error) {
     toast.value?.showError(
-      "Clear Failed",
-      "There was an error clearing your data. Please try again."
+      t('settings.messages.clearFailed'),
+      t('settings.messages.clearFailedDesc')
     );
     console.error("Clear data failed:", error);
   }
@@ -879,7 +883,7 @@ const clearAllData = async () => {
 
 const disconnectAccount = async () => {
   try {
-    toast.value?.showInfo("Disconnecting Account", "Clearing your data...");
+    toast.value?.showInfo(t('settings.messages.disconnectingAccount'), t('settings.messages.disconnectingAccountDesc'));
 
     // Clear all data
     await clearAllData();
@@ -908,16 +912,16 @@ const disconnectAccount = async () => {
     }
 
     toast.value?.showSuccess(
-      "Account Disconnected",
-      "Your account has been disconnected and all data cleared. Please refresh the page to reconnect."
+      t('settings.messages.accountDisconnected'),
+      t('settings.messages.accountDisconnectedDesc')
     );
 
     // Optionally redirect to login or refresh
     // window.location.reload();
   } catch (error) {
     toast.value?.showError(
-      "Disconnect Failed",
-      "There was an error disconnecting your account. Please try again."
+      t('settings.messages.disconnectFailed'),
+      t('settings.messages.disconnectFailedDesc')
     );
     console.error("Disconnect failed:", error);
   }

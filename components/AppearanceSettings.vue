@@ -2,7 +2,7 @@
   <div v-if="localSettings" class="space-y-6">
     <!-- Theme Selection -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Theme</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.appearance.theme') }}</h3>
 
       <div class="grid grid-cols-1 gap-3">
         <div
@@ -29,26 +29,26 @@
 
     <!-- Display Options -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Display Options</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.appearance.displayOptions') }}</h3>
 
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Font Size</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('settings.appearance.fontSize') }}</label>
           <select
             v-model="localSettings.fontSize"
             @change="updateSetting('fontSize', localSettings.fontSize)"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large">Large</option>
+            <option value="small">{{ $t('settings.appearance.small') }}</option>
+            <option value="medium">{{ $t('settings.appearance.medium') }}</option>
+            <option value="large">{{ $t('settings.appearance.large') }}</option>
           </select>
         </div>
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Animations</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Enable smooth transitions and animations</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.appearance.animations') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.appearance.animationsDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -60,8 +60,8 @@
 
         <div class="flex items-center justify-between">
           <div>
-            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Compact View</label>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Show more items in less space</p>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $t('settings.appearance.compactView') }}</label>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('settings.appearance.compactViewDesc') }}</p>
           </div>
           <input
             type="checkbox"
@@ -75,7 +75,7 @@
 
     <!-- Accent Color -->
     <div class="space-y-4">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Accent Color</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $t('settings.appearance.accentColor') }}</h3>
 
       <div class="grid grid-cols-6 gap-3">
         <div
@@ -99,6 +99,8 @@
 import { ref, watch } from 'vue'
 import type { UserSettings } from '~/types/todo'
 
+const { t } = useI18n()
+
 interface Props {
   settings: UserSettings | null
 }
@@ -110,23 +112,23 @@ const emit = defineEmits<{
 
 const localSettings = ref<UserSettings | null>(null)
 
-const themes = ref([
+const themes = computed(() => [
   {
     value: 'light',
-    name: 'Light Mode',
-    description: 'Clean and bright interface',
+    name: t('settings.appearance.lightMode'),
+    description: t('settings.appearance.lightModeDesc'),
     icon: 'fas fa-sun text-yellow-500'
   },
   {
     value: 'dark',
-    name: 'Dark Mode',
-    description: 'Easy on the eyes in low light',
+    name: t('settings.appearance.darkMode'),
+    description: t('settings.appearance.darkModeDesc'),
     icon: 'fas fa-moon text-blue-500'
   },
   {
     value: 'auto',
-    name: 'Auto Mode',
-    description: 'Follows system preference',
+    name: t('settings.appearance.autoMode'),
+    description: t('settings.appearance.autoModeDesc'),
     icon: 'fas fa-adjust text-gray-500'
   }
 ])
