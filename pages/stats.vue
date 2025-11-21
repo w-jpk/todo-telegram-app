@@ -20,7 +20,7 @@
         </div>
         <button @click="exportStats"
           class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-green-600 transition-colors">
-          <i class="fas fa-download mr-2"></i>Export
+          <i class="fas fa-download mr-2"></i>{{ $t('stats.export') }}
         </button>
       </div>
 
@@ -28,26 +28,26 @@
       <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCompleted }}</div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Tasks Completed</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('stats.tasksCompleted') }}</div>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-blue-500">{{ completionRate }}%</div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('stats.completionRate') }}</div>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-green-500">{{ averageDaily }}</div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Daily Average</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('stats.dailyAverage') }}</div>
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div class="text-2xl font-bold text-purple-500">{{ currentStreak }}</div>
-          <div class="text-sm text-gray-600 dark:text-gray-400">Current Streak</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('stats.currentStreak') }}</div>
         </div>
       </div>
 
 
       <!-- Category Distribution -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-lg">
-        <h3 class="font-semibold text-gray-900 dark:text-white mb-6 text-lg">Tasks by Category</h3>
+        <h3 class="font-semibold text-gray-900 dark:text-white mb-6 text-lg">{{ $t('stats.tasksByCategory') }}</h3>
         <div class="flex flex-col lg:flex-row items-center justify-between">
           <div class="relative w-40 h-40 mb-6 lg:mb-0">
             <svg viewBox="0 0 160 160" class="w-full h-full drop-shadow-xl" aria-label="Tasks by Category Donut Chart">
@@ -71,7 +71,7 @@
               <text x="80" y="75" text-anchor="middle" class="text-lg font-bold fill-gray-900 dark:fill-white">{{
                 categoryStats.length }}</text>
               <text x="80" y="90" text-anchor="middle"
-                class="text-xs fill-gray-600 dark:fill-gray-400">Categories</text>
+                class="text-xs fill-gray-600 dark:fill-gray-400">{{ $t('stats.categories') }}</text>
             </svg>
           </div>
 
@@ -92,13 +92,13 @@
                     class="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">{{
                     category.name }}</span>
                   <div class="text-xs text-gray-500 dark:text-gray-400">{{Math.round((category.count /
-                    categoryStats.reduce((sum, c) => sum + c.count, 0)) * 100) }}% of total</div>
+                    categoryStats.reduce((sum, c) => sum + c.count, 0)) * 100) }}% {{ $t('common.all').toLowerCase() }}</div>
                 </div>
               </div>
               <div class="flex items-center space-x-3">
                 <div class="text-right">
                   <div class="text-lg font-bold text-gray-900 dark:text-white">{{ category.count }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">tasks</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ $t('stats.tasks') }}</div>
                 </div>
                 <div class="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
                   <div
@@ -114,7 +114,7 @@
 
       <!-- Priority Level Analytics -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm" aria-label="Tasks by Priority Analytics">
-        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Tasks by Priority</h3>
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">{{ $t('stats.tasksByPriority') }}</h3>
         <div class="space-y-4">
           <div v-for="priority in priorityStats" :key="priority.level"
             class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
@@ -130,8 +130,8 @@
                 class="h-4 rounded-full transition-all duration-1000 ease-out shadow-sm"></div>
             </div>
             <div class="flex justify-between text-xs text-gray-600 dark:text-gray-400">
-              <span>{{ priority.completed }} completed</span>
-              <span>{{ priority.total - priority.completed }} pending</span>
+              <span>{{ priority.completed }} {{ $t('stats.completed').toLowerCase() }}</span>
+              <span>{{ priority.total - priority.completed }} {{ $t('stats.pending').toLowerCase() }}</span>
             </div>
           </div>
         </div>
@@ -139,7 +139,7 @@
 
       <!-- Daily Progress Heatmap -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-sm">
-        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Daily Activity</h3>
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">{{ $t('stats.dailyActivity') }}</h3>
         <div class="overflow-x-auto">
           <div :class="`grid gap-2 ${heatmapGridClass}`" aria-label="Daily Activity Heatmap">
             <div v-for="day in heatmapData" :key="day.date" class="text-center group">
@@ -156,7 +156,7 @@
           </div>
         </div>
         <div class="flex justify-center items-center mt-4 space-x-2 text-xs text-gray-600 dark:text-gray-400">
-          <span>Less</span>
+          <span>{{ $t('stats.less') }}</span>
           <div class="flex space-x-1">
             <div class="w-3 h-3 rounded bg-gray-200 dark:bg-gray-700"></div>
             <div class="w-3 h-3 rounded bg-blue-200 dark:bg-blue-900"></div>
@@ -164,45 +164,50 @@
             <div class="w-3 h-3 rounded bg-blue-400 dark:bg-blue-700"></div>
             <div class="w-3 h-3 rounded bg-blue-500 dark:bg-blue-600"></div>
           </div>
-          <span>More</span>
+          <span>{{ $t('stats.more') }}</span>
         </div>
       </div>
 
       <!-- Performance Insights -->
       <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 mb-6 text-white">
-        <h3 class="font-medium mb-3">Performance Insights</h3>
+        <h3 class="font-medium mb-3">{{ $t('stats.performanceInsights') }}</h3>
         <div class="space-y-2">
           <div v-if="productivityPeakDay" class="flex items-start space-x-2">
             <i class="fas fa-lightbulb text-yellow-300 mt-0.5"></i>
-            <p class="text-sm">Your productivity peaks on {{ productivityPeakDay }}. Consider scheduling important tasks
-              during these days.</p>
+            <p class="text-sm">{{ $t('stats.productivityPeak', { day: productivityPeakDay }) }}</p>
           </div>
           <div v-if="currentStreak > 0" class="flex items-start space-x-2">
             <i class="fas fa-trophy text-yellow-300 mt-0.5"></i>
-            <p class="text-sm">Great job! You've maintained a {{ currentStreak }}-day completion streak. Keep up the
-              momentum!</p>
+            <p class="text-sm">{{ $t('stats.streakMessage', { days: currentStreak }) }}</p>
           </div>
           <div v-if="completionTrend !== null" class="flex items-start space-x-2">
             <i :class="completionTrend >= 0 ? 'fas fa-chart-line text-green-300' : 'fas fa-chart-line text-red-300'"
               class="mt-0.5"></i>
-            <p class="text-sm">Your completion rate {{ completionTrend >= 0 ? 'improved' : 'decreased' }} by {{
-              Math.abs(completionTrend) }}% compared to last {{ activePeriod.toLowerCase() }}.</p>
+            <p class="text-sm">{{ completionTrend >= 0 
+              ? $t('stats.trendImproved', { percent: Math.abs(completionTrend), period: activePeriod.toLowerCase() })
+              : $t('stats.trendDecreased', { percent: Math.abs(completionTrend), period: activePeriod.toLowerCase() }) }}</p>
           </div>
           <div v-if="mostProductiveCategory" class="flex items-start space-x-2">
             <i class="fas fa-star text-yellow-300 mt-0.5"></i>
-            <p class="text-sm">Your most productive category is {{ mostProductiveCategory }} with {{ mostProductiveCount
-              }} completed tasks.</p>
+            <p class="text-sm">{{ $t('stats.mostProductive', { category: mostProductiveCategory, count: mostProductiveCount }) }}</p>
           </div>
           <div v-if="parseFloat(averageDaily) > 0" class="flex items-start space-x-2">
             <i class="fas fa-calendar-check text-green-300 mt-0.5"></i>
-            <p class="text-sm">You're completing an average of {{ averageDaily }} tasks per day. {{ parseFloat(averageDaily) >= 3 ? 'Excellent productivity!' : parseFloat(averageDaily) >= 1.5 ? 'Good progress!' : 'Keep building momentum!' }}</p>
+            <p class="text-sm">{{ $t('stats.averageMessage', { 
+              avg: averageDaily, 
+              message: parseFloat(averageDaily) >= 3 
+                ? $t('stats.excellentProductivity') 
+                : parseFloat(averageDaily) >= 1.5 
+                  ? $t('stats.goodProgress') 
+                  : $t('stats.keepBuilding') 
+            }) }}</p>
           </div>
         </div>
       </div>
 
       <!-- Completion Overview Line Chart -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
-        <h3 class="font-medium text-gray-900 dark:text-white mb-4">Completion Overview</h3>
+        <h3 class="font-medium text-gray-900 dark:text-white mb-4">{{ $t('stats.completionOverview') }}</h3>
         <div class="relative h-32">
           <svg viewBox="0 0 300 120" class="w-full h-full" aria-label="Completion Overview Line Chart">
             <defs>
@@ -255,11 +260,11 @@
         <div class="flex justify-center space-x-6 mt-4">
           <span class="flex items-center text-sm">
             <div class="w-4 h-4 bg-blue-500 rounded-full mr-2 shadow-sm"></div>
-            <span class="text-gray-700 dark:text-gray-300 font-medium">Completed</span>
+            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ $t('stats.completed') }}</span>
           </span>
           <span class="flex items-center text-sm">
             <div class="w-4 h-4 bg-red-500 rounded-full mr-2 shadow-sm"></div>
-            <span class="text-gray-700 dark:text-gray-300 font-medium">Pending</span>
+            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ $t('stats.pending') }}</span>
           </span>
         </div>
       </div>
@@ -313,14 +318,18 @@
 
     <!-- Bottom Navigation -->
     <BottomNavigation />
+
+    <!-- Toast Notifications -->
+    <Toast ref="toast" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { Todo } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
 import BottomNavigation from '~/components/BottomNavigation.vue'
+import Toast from '~/components/Toast.vue'
 
 interface CategoryStat {
   name: string
@@ -345,7 +354,12 @@ interface HeatmapDay {
 
 const { todos, activeTodos, completedTodos, fetchTodos } = useTodos()
 const { projects, fetchProjects } = useProjects()
-const { fetchSettings } = useSettings()
+const { settings, fetchSettings } = useSettings()
+const { t } = useI18n()
+
+const { $telegram } = useNuxtApp()
+const userId = computed(() => $telegram?.user?.id || null)
+const toast = ref()
 
 const {
   activePeriod,
@@ -367,7 +381,7 @@ const {
   mostProductiveCategory,
   mostProductiveCount,
   getHeatmapColor
-} = useStats(todos as any, projects as any)
+} = useStats(todos as any, projects as any, settings)
 
 // Productivity trend data (mock data for demonstration)
 const productivityTrendData = computed(() => {
@@ -386,46 +400,147 @@ const productivityTrendPoints = computed(() => {
 })
 
 
-const exportStats = () => {
-  const stats = {
-    period: activePeriod.value,
-    totalCompleted: totalCompleted.value,
-    completionRate: completionRate.value,
-    averageDaily: averageDaily.value,
-    currentStreak: currentStreak.value,
-    categoryStats: categoryStats.value,
-    priorityStats: priorityStats.value,
-    heatmapData: heatmapData.value,
-    chartData: chartData.value,
-    productivityPeakDay: productivityPeakDay.value,
-    completionTrend: completionTrend.value,
-    mostProductiveCategory: mostProductiveCategory.value,
-    mostProductiveCount: mostProductiveCount.value,
-    exportedAt: new Date().toISOString()
+const exportStats = async () => {
+  try {
+    const stats = {
+      period: activePeriod.value,
+      totalCompleted: totalCompleted.value,
+      completionRate: completionRate.value,
+      averageDaily: averageDaily.value,
+      currentStreak: currentStreak.value,
+      categoryStats: categoryStats.value,
+      priorityStats: priorityStats.value,
+      heatmapData: heatmapData.value,
+      chartData: chartData.value,
+      productivityPeakDay: productivityPeakDay.value,
+      completionTrend: completionTrend.value,
+      mostProductiveCategory: mostProductiveCategory.value,
+      mostProductiveCount: mostProductiveCount.value,
+      exportedAt: new Date().toISOString()
+    }
+
+    const dataStr = JSON.stringify(stats, null, 2)
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
+    const exportFileDefaultName = `stats-${activePeriod.value.toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`
+
+    const linkElement = document.createElement('a')
+    linkElement.setAttribute('href', dataUri)
+    linkElement.setAttribute('download', exportFileDefaultName)
+    linkElement.click()
+    
+    toast.value?.showSuccess(t('stats.exportSuccess'))
+  } catch (error) {
+    console.error('Error exporting stats:', error)
+    toast.value?.showError(
+      t('stats.exportError'),
+      error instanceof Error ? error.message : ''
+    )
   }
-
-  const dataStr = JSON.stringify(stats, null, 2)
-  const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
-
-  const exportFileDefaultName = `stats-${activePeriod.value.toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`
-
-  const linkElement = document.createElement('a')
-  linkElement.setAttribute('href', dataUri)
-  linkElement.setAttribute('download', exportFileDefaultName)
-  linkElement.click()
 }
-
-onMounted(async () => {
-  await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
-})
 
 // Add loading state
 const isLoading = ref(true)
 
 onMounted(async () => {
-  try {
-    await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
-  } finally {
+  const { $telegram } = useNuxtApp()
+
+  const waitForTelegram = (): Promise<void> => {
+    return new Promise((resolve) => {
+      // If already ready with user, resolve immediately
+      if ($telegram?.isReady && $telegram?.user) {
+        resolve()
+        return
+      }
+
+      // If we have user from plugin (including test user in dev), resolve
+      if ($telegram?.user) {
+        resolve()
+        return
+      }
+
+      // Otherwise, wait for Telegram WebApp to load
+      const checkInterval = setInterval(() => {
+        if ((window as any).Telegram?.WebApp) {
+          const tg = (window as any).Telegram.WebApp
+          if (tg.initDataUnsafe?.user) {
+            if ($telegram) {
+              $telegram.user = tg.initDataUnsafe.user
+              $telegram.initData = tg.initData || ''
+              $telegram.initDataUnsafe = tg.initDataUnsafe || {}
+              $telegram.isReady = true
+            }
+            clearInterval(checkInterval)
+            resolve()
+            return
+          }
+        }
+        
+        // Check if plugin has set user data
+        if ($telegram?.user) {
+          clearInterval(checkInterval)
+          resolve()
+          return
+        }
+      }, 100)
+
+      // Resolve after timeout (even if Telegram not loaded, plugin may have test user)
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        resolve()
+      }, 3000)
+    })
+  }
+
+  await waitForTelegram()
+
+  // Authenticate user if we have user data
+  if ($telegram?.user) {
+    try {
+      await $fetch('/api/auth/telegram', {
+        method: 'POST',
+        body: {
+          user: $telegram.user,
+          initData: $telegram.initData
+        }
+      })
+    } catch (error) {
+      console.error('Error authenticating user:', error)
+      toast.value?.showError(
+        t('warnings.warning'),
+        t('warnings.telegramRequired')
+      )
+      isLoading.value = false
+      return
+    }
+  } else {
+    console.warn('[Stats] No Telegram user data available')
+    toast.value?.showWarning(
+      t('warnings.warning'),
+      t('warnings.telegramRequired')
+    )
+    isLoading.value = false
+    return
+  }
+
+  // Wait a bit to ensure state is updated
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // Only fetch data if user is authenticated
+  if (userId.value) {
+    try {
+      await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
+    } catch (error) {
+      console.error('Error loading data:', error)
+      toast.value?.showError(
+        t('stats.loadingError'),
+        error instanceof Error ? error.message : ''
+      )
+    } finally {
+      isLoading.value = false
+    }
+  } else {
+    console.warn('[Stats] User ID not available after authentication, skipping data fetch')
     isLoading.value = false
   }
 })

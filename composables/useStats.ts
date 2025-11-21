@@ -22,18 +22,18 @@ interface HeatmapDay {
   intensity: number
 }
 
-export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any[]>) => {
-  const activePeriod = ref('Weekly')
-  const timePeriods = ref(['Daily', 'Weekly', 'Monthly'])
+export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any[]>, settings?: Ref<any>) => {
+  const { t } = useI18n()
+  const activePeriod = ref(t('stats.weekly'))
+  const timePeriods = computed(() => [t('stats.daily'), t('stats.weekly'), t('stats.monthly')])
 
   const periodStart = computed(() => {
     const now = new Date()
-    switch (activePeriod.value) {
-      case 'Daily': return new Date(now.getTime() - 24 * 60 * 60 * 1000)
-      case 'Weekly': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      case 'Monthly': return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      default: return new Date(0)
-    }
+    const period = activePeriod.value
+    if (period === t('stats.daily')) return new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    if (period === t('stats.weekly')) return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    if (period === t('stats.monthly')) return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    return new Date(0)
   })
 
   const periodFilteredTodos = computed(() => {
@@ -65,7 +65,8 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
   })
 
   const averageDaily = computed(() => {
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
     const recentCompleted = periodFilteredTodos.value.filter(t => t.completed).length
     return (recentCompleted / periodDays).toFixed(1)
   })
@@ -75,7 +76,8 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
 
     for (let i = 0; i < periodDays; i++) {
       const checkDate = new Date(today)
@@ -100,19 +102,20 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const categoryStats = computed(() => {
     const stats: Record<string, number> = {}
+    const uncategorizedLabel = t('stats.uncategorized')
 
     periodCompletedTodos.value.forEach(todo => {
-      const category = todo.project?.name || 'Uncategorized'
+      const category = todo.project?.name || uncategorizedLabel
       stats[category] = (stats[category] || 0) + 1
     })
 
     return Object.entries(stats).map(([name, count]) => {
       let color = '#6b7280'
-      if (name !== 'Uncategorized') {
+      if (name !== uncategorizedLabel) {
         const project = projects.value.find(p => p.name === name)
         if (project) {
-          const index = projects.value.indexOf(project)
-          color = hexColors[index % hexColors.length]
+          // Use project color if available, otherwise fallback to index-based color
+          color = project.color || hexColors[projects.value.indexOf(project) % hexColors.length]
         }
       }
       return { name, count, color }
@@ -160,26 +163,30 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
   const pieSlices = computed(() => generatePieSlices(categoryStats.value))
 
   const priorityStats = computed(() => {
+    const highLabel = t('stats.high')
+    const mediumLabel = t('stats.medium')
+    const lowLabel = t('stats.low')
+    
     const stats: Record<string, { total: number; completed: number }> = {
-      'High': { total: 0, completed: 0 },
-      'Medium': { total: 0, completed: 0 },
-      'Low': { total: 0, completed: 0 }
+      [highLabel]: { total: 0, completed: 0 },
+      [mediumLabel]: { total: 0, completed: 0 },
+      [lowLabel]: { total: 0, completed: 0 }
     }
 
     periodFilteredTodos.value.forEach(todo => {
-      const level = todo.priority === 'high' ? 'High' : todo.priority === 'medium' ? 'Medium' : 'Low'
+      const level = todo.priority === 'high' ? highLabel : todo.priority === 'medium' ? mediumLabel : lowLabel
       stats[level].total++
     })
 
     periodCompletedTodos.value.forEach(todo => {
-      const level = todo.priority === 'high' ? 'High' : todo.priority === 'medium' ? 'Medium' : 'Low'
+      const level = todo.priority === 'high' ? highLabel : todo.priority === 'medium' ? mediumLabel : lowLabel
       stats[level].completed++
     })
 
     const colorMap: Record<string, string> = {
-      'High': '#dc2626',
-      'Medium': '#d97706',
-      'Low': '#16a34a'
+      [highLabel]: '#dc2626',
+      [mediumLabel]: '#d97706',
+      [lowLabel]: '#16a34a'
     }
 
     return Object.entries(stats).map(([level, data]) => ({
@@ -193,8 +200,10 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const heatmapData = computed(() => {
     const days: HeatmapDay[] = []
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
     const today = new Date()
+    const locale = settings?.value?.language || 'en'
 
     for (let i = periodDays - 1; i >= 0; i--) {
       const date = new Date(today)
@@ -212,7 +221,7 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
       days.push({
         date: getLocalDateString(date),
         day: date.getDate(),
-        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayName: date.toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'short' }),
         intensity
       })
     }
@@ -222,7 +231,8 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const chartData = computed(() => {
     const days = []
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
 
     for (let i = periodDays - 1; i >= 0; i--) {
       const date = new Date()
@@ -273,7 +283,8 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
   })
 
   const heatmapGridClass = computed(() => {
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
     if (periodDays <= 7) return 'grid-cols-7'
     if (periodDays <= 14) return 'grid-cols-7'
     return 'grid-cols-10'
@@ -281,9 +292,10 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
 
   const productivityPeakDay = computed(() => {
     const dayStats: Record<string, number> = {}
+    const locale = settings?.value?.language || 'en'
     periodCompletedTodos.value.forEach(todo => {
       if (todo.updatedAt) {
-        const day = new Date(todo.updatedAt).toLocaleDateString('en-US', { weekday: 'long' })
+        const day = new Date(todo.updatedAt).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'long' })
         dayStats[day] = (dayStats[day] || 0) + 1
       }
     })
@@ -299,7 +311,8 @@ export const useStats = (todos: Ref<readonly Todo[]>, projects: Ref<readonly any
     const currentTotal = periodFilteredTodos.value.length
     const currentRate = currentTotal > 0 ? (currentCompleted / currentTotal) * 100 : 0
 
-    const periodDays = activePeriod.value === 'Weekly' ? 7 : activePeriod.value === 'Monthly' ? 30 : 1
+    const period = activePeriod.value
+    const periodDays = period === t('stats.weekly') ? 7 : period === t('stats.monthly') ? 30 : 1
     const prevPeriodStart = new Date(periodStart.value)
     prevPeriodStart.setDate(prevPeriodStart.getDate() - periodDays)
 
