@@ -102,7 +102,22 @@
     "pending": "В ожидании",
     "tasksForDate": "Задачи на {date}",
     "noTasksForDate": "Нет задач на эту дату",
-    "all": "Все"
+    "all": "Все",
+    "active": "Активные",
+    "highPriority": "Высокий приоритет",
+    "mediumPriority": "Средний приоритет",
+    "lowPriority": "Низкий приоритет",
+    "searchPlaceholder": "Поиск задач...",
+    "searchHelp": "Поиск по названию или описанию задач",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "taskToggleSuccess": "Задача обновлена",
+    "taskToggleError": "Ошибка обновления задачи",
+    "taskSaveSuccess": "Задача сохранена",
+    "taskSaveError": "Ошибка сохранения задачи",
+    "taskDeleteSuccess": "Задача удалена",
+    "taskDeleteError": "Ошибка удаления задачи",
+    "loadingError": "Ошибка загрузки данных"
   },
   "settings": {
     "title": "Настройки",

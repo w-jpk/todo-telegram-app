@@ -102,7 +102,22 @@
     "pending": "Pending",
     "tasksForDate": "Tasks for {date}",
     "noTasksForDate": "No tasks for this date",
-    "all": "All"
+    "all": "All",
+    "active": "Active",
+    "highPriority": "High Priority",
+    "mediumPriority": "Medium Priority",
+    "lowPriority": "Low Priority",
+    "searchPlaceholder": "Search tasks...",
+    "searchHelp": "Search tasks by title or description",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "taskToggleSuccess": "Task updated",
+    "taskToggleError": "Failed to update task",
+    "taskSaveSuccess": "Task saved",
+    "taskSaveError": "Failed to save task",
+    "taskDeleteSuccess": "Task deleted",
+    "taskDeleteError": "Failed to delete task",
+    "loadingError": "Failed to load data"
   },
   "settings": {
     "title": "Settings",

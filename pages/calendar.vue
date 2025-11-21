@@ -9,13 +9,13 @@
       <div class="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 mb-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
-            <button @click="previousMonth" class="p-2 cursor-pointer" aria-label="Previous month">
+            <button @click="previousMonth" class="p-2 cursor-pointer" :aria-label="$t('calendar.previousMonth')">
               <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
             </button>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white" aria-live="polite">
               {{ currentMonthYear }}
             </h2>
-            <button @click="nextMonth" class="p-2 cursor-pointer" aria-label="Next month">
+            <button @click="nextMonth" class="p-2 cursor-pointer" :aria-label="$t('calendar.nextMonth')">
               <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
             </button>
           </div>
@@ -41,16 +41,16 @@
       <!-- Search and Filter Bar -->
       <div class="px-4 mb-4 space-y-3">
         <!-- Search Input -->
-        <div role="search" aria-label="Search tasks in calendar">
-          <label for="calendar-search" class="sr-only">Search tasks</label>
+        <div role="search" aria-label="Task search">
+          <label for="calendar-search" class="sr-only">{{ $t('calendar.searchPlaceholder') }}</label>
           <div class="relative">
             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
               aria-hidden="true"></i>
-            <input id="calendar-search" v-model="searchQuery" type="text" placeholder="Search tasks..."
+            <input id="calendar-search" v-model="searchQuery" type="text" :placeholder="$t('calendar.searchPlaceholder')"
               class="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500"
               aria-describedby="calendar-search-help" autocomplete="off" @keydown.escape="searchQuery = ''" />
           </div>
-          <div id="calendar-search-help" class="sr-only">Search through your calendar tasks by title or description
+          <div id="calendar-search-help" class="sr-only">{{ $t('calendar.searchHelp') }}
           </div>
         </div>
 
@@ -114,19 +114,19 @@
       <!-- Month Overview Stats -->
       <div class="px-4 mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-          <h3 class="font-medium text-gray-900 dark:text-white mb-3">Month Overview</h3>
+          <h3 class="font-medium text-gray-900 dark:text-white mb-3">{{ $t('calendar.monthOverview') }}</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="text-center">
               <div class="text-2xl font-bold text-blue-500 dark:text-blue-400">{{ monthStats.total }}</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400">Total Tasks</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('calendar.totalTasks') }}</div>
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-green-500 dark:text-green-400">{{ monthStats.completed }}</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('calendar.completed') }}</div>
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-orange-500 dark:text-orange-400">{{ monthStats.pending }}</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">{{ $t('calendar.pending') }}</div>
             </div>
           </div>
         </div>
@@ -141,14 +141,14 @@
           <div class="p-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Tasks for {{ formatSelectedDate }}
+                {{ $t('calendar.tasksForDate', { date: formatSelectedDate }) }}
               </h3>
               <div class="flex items-center space-x-2">
                 <button @click="createTaskForDate"
                   class="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors">
                   <i class="fas fa-plus mr-1"></i>{{ t('common.create') }}
                 </button>
-                <button @click="closeTaskModal" class="p-2 cursor-pointer">
+                <button @click="closeTaskModal" class="p-2 cursor-pointer" :aria-label="$t('common.close')">
                   <i class="fas fa-times text-gray-600 dark:text-gray-400"></i>
                 </button>
               </div>
@@ -157,7 +157,7 @@
           <div class="p-4">
             <div v-if="selectedDateTasks.length === 0" class="text-center py-8">
               <i class="fas fa-calendar-check text-gray-300 dark:text-gray-600 text-4xl mb-3"></i>
-              <p class="text-gray-500 dark:text-gray-400">No tasks for this date</p>
+              <p class="text-gray-500 dark:text-gray-400">{{ $t('calendar.noTasksForDate') }}</p>
             </div>
             <div v-else class="space-y-3">
               <div v-for="task in selectedDateTasks" :key="task.id" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-3">
@@ -181,8 +181,9 @@
                     </p>
                     <div class="flex items-center space-x-3">
                       <div :class="getPriorityColor(task.priority)" class="w-2 h-2 rounded-full"></div>
-                      <span v-if="task.project" :class="getCategoryColor(task.project.name)"
-                        class="px-2 py-1 rounded-full text-xs font-medium">
+                      <span v-if="task.project" 
+                        class="px-2 py-1 rounded-full text-xs font-medium text-white"
+                        :style="{ backgroundColor: task.project.color || '#6366f1' }">
                         {{ task.project.name }}
                       </span>
                     </div>
@@ -201,7 +202,10 @@
     <!-- Todo Modal -->
     <TodoModal :is-open="showTodoModal" :todo="selectedTodo" :projects="projects"
       :initial-due-date="selectedDate ? new Date(selectedDate.fullDate) : undefined" @close="closeTodoModal"
-      @save="saveTodo" @project-created="handleProjectCreated" />
+      @save="saveTodo" @delete="handleDeleteTodo" @project-created="handleProjectCreated" />
+
+    <!-- Toast Notifications -->
+    <Toast ref="toast" />
   </div>
 </template>
 
@@ -211,6 +215,7 @@ import type { Todo, Project, CreateTodoDto, UpdateTodoDto } from '~/types/todo'
 import AppHeader from '~/components/AppHeader.vue'
 import TodoModal from '~/components/TodoModal.vue'
 import BottomNavigation from '~/components/BottomNavigation.vue'
+import Toast from '~/components/Toast.vue'
 import { formatDateISO, formatMonthYear, formatFullDate } from '~/utils/date'
 
 interface CalendarDate {
@@ -237,14 +242,18 @@ const { projects, fetchProjects } = useProjects()
 const { settings, fetchSettings } = useSettings()
 const { t } = useI18n()
 
+const { $telegram } = useNuxtApp()
+const userId = computed(() => $telegram?.user?.id || null)
+
 const currentDate = ref(new Date())
 const showTaskModal = ref(false)
 const selectedDate = ref<CalendarDate | null>(null)
-const activeFilter = ref('All')
+const activeFilter = ref('')
 const showTodoModal = ref(false)
 const selectedTodo = ref<Todo | null>(null)
 const searchQuery = ref('')
 const calendarView = ref<'month' | 'week'>('month')
+const toast = ref()
 
 const weekDays = computed(() => {
   const locale = settings.value?.language || 'en'
@@ -259,12 +268,12 @@ const badgeColors = ['bg-blue-100 text-blue-800', 'bg-green-100 text-green-800',
 
 const filterCategories = computed(() => {
   const cats = [
-    { name: 'All', icon: 'fas fa-list' },
-    { name: 'Active', icon: 'fas fa-play' },
-    { name: 'Completed', icon: 'fas fa-check' },
-    { name: 'High Priority', icon: 'fas fa-exclamation-triangle' },
-    { name: 'Medium Priority', icon: 'fas fa-exclamation-circle' },
-    { name: 'Low Priority', icon: 'fas fa-info-circle' }
+    { name: t('calendar.all'), icon: 'fas fa-list' },
+    { name: t('calendar.active'), icon: 'fas fa-play' },
+    { name: t('common.completed'), icon: 'fas fa-check' },
+    { name: t('calendar.highPriority'), icon: 'fas fa-exclamation-triangle' },
+    { name: t('calendar.mediumPriority'), icon: 'fas fa-exclamation-circle' },
+    { name: t('calendar.lowPriority'), icon: 'fas fa-info-circle' }
   ]
   projects.value.forEach(project => {
     cats.push({ name: project.name, icon: 'fas fa-folder' })
@@ -309,17 +318,17 @@ const calendarDays = computed(() => {
 const filteredTodos = computed(() => {
   let filtered = todos.value
 
-  if (activeFilter.value === 'Active') {
+  if (activeFilter.value === t('calendar.active')) {
     filtered = filtered.filter(todo => !todo.completed)
-  } else if (activeFilter.value === 'Completed') {
+  } else if (activeFilter.value === t('common.completed')) {
     filtered = filtered.filter(todo => todo.completed)
-  } else if (activeFilter.value === 'High Priority') {
+  } else if (activeFilter.value === t('calendar.highPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'high')
-  } else if (activeFilter.value === 'Medium Priority') {
+  } else if (activeFilter.value === t('calendar.mediumPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'medium')
-  } else if (activeFilter.value === 'Low Priority') {
+  } else if (activeFilter.value === t('calendar.lowPriority')) {
     filtered = filtered.filter(todo => todo.priority === 'low')
-  } else if (activeFilter.value !== 'All') {
+  } else if (activeFilter.value !== t('calendar.all')) {
     // Filter by project name
     filtered = filtered.filter(todo => {
       if (!todo.project) return false
@@ -393,6 +402,20 @@ const getPriorityColor = (priority: string) => {
 const getCategoryColor = (category: string) => {
   const project = projects.value.find(p => p.name === category)
   if (!project) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+  
+  // Use project color directly if available
+  if (project.color) {
+    // Convert hex to RGB for better contrast
+    const hex = project.color.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000
+    const textColor = brightness > 128 ? 'text-gray-900' : 'text-white'
+    return `text-white` // Use white text on colored background for better readability
+  }
+  
+  // Fallback to index-based colors
   const index = projects.value.indexOf(project)
   const baseColor = badgeColors[index % badgeColors.length]
   // Add dark mode variants
@@ -432,10 +455,17 @@ const toggleTask = async (id: string) => {
     const task = todos.value.find(t => t.id === id)
     if (task && updateTodo) {
       await updateTodo(id, { completed: !task.completed })
+      toast.value?.showSuccess(
+        t('calendar.taskToggleSuccess'),
+        task.completed ? t('common.completed') : t('common.pending')
+      )
     }
   } catch (error) {
     console.error('Error toggling task:', error)
-    // TODO: Show toast notification
+    toast.value?.showError(
+      t('calendar.taskToggleError'),
+      error instanceof Error ? error.message : t('calendar.loadingError')
+    )
   }
 }
 
@@ -453,12 +483,33 @@ const saveTodo = async (data: CreateTodoDto | UpdateTodoDto) => {
   try {
     if (selectedTodo.value) {
       await updateTodo(selectedTodo.value.id, data as UpdateTodoDto)
+      toast.value?.showSuccess(t('calendar.taskSaveSuccess'))
     } else {
       await createTodo(data as CreateTodoDto)
+      toast.value?.showSuccess(t('calendar.taskSaveSuccess'))
     }
     closeTodoModal()
   } catch (error) {
     console.error('Error saving todo:', error)
+    toast.value?.showError(
+      t('calendar.taskSaveError'),
+      error instanceof Error ? error.message : t('calendar.loadingError')
+    )
+  }
+}
+
+const handleDeleteTodo = async (id: string) => {
+  try {
+    const { deleteTodo } = useTodos()
+    await deleteTodo(id)
+    toast.value?.showSuccess(t('calendar.taskDeleteSuccess'))
+    closeTodoModal()
+  } catch (error) {
+    console.error('Error deleting todo:', error)
+    toast.value?.showError(
+      t('calendar.taskDeleteError'),
+      error instanceof Error ? error.message : t('calendar.loadingError')
+    )
   }
 }
 
@@ -467,11 +518,102 @@ const handleProjectCreated = (project: Project) => {
 }
 
 onMounted(async () => {
-  try {
-    await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
-  } catch (error) {
-    console.error('Error loading data:', error)
-    // TODO: Show error message to user
+  const { $telegram } = useNuxtApp()
+
+  const waitForTelegram = (): Promise<void> => {
+    return new Promise((resolve) => {
+      // If already ready with user, resolve immediately
+      if ($telegram?.isReady && $telegram?.user) {
+        resolve()
+        return
+      }
+
+      // If we have user from plugin (including test user in dev), resolve
+      if ($telegram?.user) {
+        resolve()
+        return
+      }
+
+      // Otherwise, wait for Telegram WebApp to load
+      const checkInterval = setInterval(() => {
+        if ((window as any).Telegram?.WebApp) {
+          const tg = (window as any).Telegram.WebApp
+          if (tg.initDataUnsafe?.user) {
+            if ($telegram) {
+              $telegram.user = tg.initDataUnsafe.user
+              $telegram.initData = tg.initData || ''
+              $telegram.initDataUnsafe = tg.initDataUnsafe || {}
+              $telegram.isReady = true
+            }
+            clearInterval(checkInterval)
+            resolve()
+            return
+          }
+        }
+        
+        // Check if plugin has set user data
+        if ($telegram?.user) {
+          clearInterval(checkInterval)
+          resolve()
+          return
+        }
+      }, 100)
+
+      // Resolve after timeout (even if Telegram not loaded, plugin may have test user)
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        resolve()
+      }, 3000)
+    })
+  }
+
+  await waitForTelegram()
+
+  // Authenticate user if we have user data
+  if ($telegram?.user) {
+    try {
+      await $fetch('/api/auth/telegram', {
+        method: 'POST',
+        body: {
+          user: $telegram.user,
+          initData: $telegram.initData
+        }
+      })
+    } catch (error) {
+      console.error('Error authenticating user:', error)
+      toast.value?.showError(
+        t('warnings.warning'),
+        t('warnings.telegramRequired')
+      )
+      return
+    }
+  } else {
+    console.warn('[Calendar] No Telegram user data available')
+    toast.value?.showWarning(
+      t('warnings.warning'),
+      t('warnings.telegramRequired')
+    )
+    return
+  }
+
+  // Wait a bit to ensure state is updated
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // Only fetch data if user is authenticated
+  if (userId.value) {
+    try {
+      await Promise.all([fetchProjects(), fetchTodos(), fetchSettings()])
+      // Initialize active filter after settings are loaded
+      activeFilter.value = t('calendar.all')
+    } catch (error) {
+      console.error('Error loading data:', error)
+      toast.value?.showError(
+        t('calendar.loadingError'),
+        error instanceof Error ? error.message : ''
+      )
+    }
+  } else {
+    console.warn('[Calendar] User ID not available after authentication, skipping data fetch')
   }
 })
 </script>
