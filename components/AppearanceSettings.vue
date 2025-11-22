@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { UserSettings } from '~/types/todo'
 
 const { t } = useI18n()
