@@ -140,39 +140,6 @@
     "taskDeleteError": "Ошибка удаления задачи",
     "loadingError": "Ошибка загрузки данных"
   },
-  "settings": {
-    "title": "Настройки",
-    "profile": "Профиль",
-    "user": "Пользователь",
-    "telegramUser": "Пользователь Telegram",
-    "notificationPreferences": "Настройки уведомлений",
-    "pushNotifications": "Push-уведомления",
-    "pushNotificationsDesc": "Получать напоминания и обновления о задачах",
-    "emailAlerts": "Email-уведомления",
-    "emailAlertsDesc": "Ежедневная сводка и важные обновления",
-    "taskReminders": "Напоминания о задачах",
-    "taskRemindersDesc": "Получать уведомления перед сроками",
-    "themeCustomization": "Настройка темы",
-    "lightMode": "Светлая тема",
-    "lightModeDesc": "Чистый и яркий интерфейс",
-    "darkMode": "Темная тема",
-    "darkModeDesc": "Удобно для глаз при слабом освещении",
-    "autoMode": "Автоматический режим",
-    "autoModeDesc": "Следует системным настройкам",
-    "dataManagement": "Управление данными",
-    "exportData": "Экспорт данных",
-    "exportDataDesc": "Скачать ваши задачи и настройки",
-    "importData": "Импорт данных",
-    "importDataDesc": "Восстановить из резервной копии",
-    "syncSettings": "Настройки синхронизации",
-    "syncSettingsDesc": "Управление облачной синхронизацией",
-    "support": "Поддержка и информация",
-    "help": "Помощь и FAQ",
-    "contactSupport": "Связаться с поддержкой",
-    "appVersion": "Версия приложения",
-    "language": "Язык",
-    "selectLanguage": "Выберите язык"
-  },
   "dateSelector": {
     "today": "Сегодня",
     "tomorrow": "Завтра",
@@ -182,6 +149,16 @@
   "warnings": {
     "telegramRequired": "Для работы приложения необходимо открыть его через Telegram Mini App.",
     "warning": "Предупреждение"
+  },
+  "home": {
+    "searchPlaceholder": "Поиск задач...",
+    "searchHelp": "Поиск по названию или описанию задач",
+    "addTaskPlaceholder": "Добавить задачу...",
+    "loadingTasks": "Загрузка задач...",
+    "loadMore": "Загрузить еще",
+    "allTasks": "Все задачи",
+    "addFirstTask": "Добавьте первую задачу выше",
+    "changeFilter": "Измените фильтр, чтобы увидеть другие задачи"
   },
   "settings": {
     "title": "Настройки",

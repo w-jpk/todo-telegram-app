@@ -140,39 +140,6 @@
     "taskDeleteError": "Failed to delete task",
     "loadingError": "Failed to load data"
   },
-  "settings": {
-    "title": "Settings",
-    "profile": "Profile",
-    "user": "User",
-    "telegramUser": "Telegram User",
-    "notificationPreferences": "Notification Preferences",
-    "pushNotifications": "Push Notifications",
-    "pushNotificationsDesc": "Receive task reminders and updates",
-    "emailAlerts": "Email Alerts",
-    "emailAlertsDesc": "Daily summary and important updates",
-    "taskReminders": "Task Reminders",
-    "taskRemindersDesc": "Get notified before due dates",
-    "themeCustomization": "Theme Customization",
-    "lightMode": "Light Mode",
-    "lightModeDesc": "Clean and bright interface",
-    "darkMode": "Dark Mode",
-    "darkModeDesc": "Easy on the eyes in low light",
-    "autoMode": "Auto Mode",
-    "autoModeDesc": "Follows system preference",
-    "dataManagement": "Data Management",
-    "exportData": "Export Data",
-    "exportDataDesc": "Download your tasks and settings",
-    "importData": "Import Data",
-    "importDataDesc": "Restore from backup file",
-    "syncSettings": "Sync Settings",
-    "syncSettingsDesc": "Manage cloud synchronization",
-    "support": "Support & Information",
-    "help": "Help & FAQ",
-    "contactSupport": "Contact Support",
-    "appVersion": "App Version",
-    "language": "Language",
-    "selectLanguage": "Select Language"
-  },
   "dateSelector": {
     "today": "Today",
     "tomorrow": "Tomorrow",
@@ -182,6 +149,16 @@
   "warnings": {
     "telegramRequired": "To use the application, you need to open it through Telegram Mini App.",
     "warning": "Warning"
+  },
+  "home": {
+    "searchPlaceholder": "Search tasks...",
+    "searchHelp": "Search tasks by title or description",
+    "addTaskPlaceholder": "Add task...",
+    "loadingTasks": "Loading tasks...",
+    "loadMore": "Load more",
+    "allTasks": "All tasks",
+    "addFirstTask": "Add your first task above",
+    "changeFilter": "Change filter to see other tasks"
   },
   "settings": {
     "title": "Settings",
