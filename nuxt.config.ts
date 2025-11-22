@@ -23,13 +23,17 @@ export default defineNuxtConfig({
     defaultLocale: 'ru',
     strategy: 'no_prefix',
     langDir: 'locales',
+    lazy: true,
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',
       redirectOn: 'root',
       alwaysRedirect: false
     },
-    vueI18n: './i18n.config.ts'
+    vueI18n: './i18n.config.ts',
+    compilation: {
+      strictMessage: false
+    }
   },
 
   postcss: {
