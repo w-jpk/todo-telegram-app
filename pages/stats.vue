@@ -3,10 +3,10 @@
     <!-- Header -->
     <!-- <AppHeader title="Stats" /> -->
     <!-- Content Area -->
-    <div v-if="isLoading" class="pb-20 px-4 flex justify-center items-center min-h-screen">
+    <div v-if="isLoading" class="pt-4 pb-20 px-4 flex justify-center items-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
     </div>
-    <div v-else class="pb-20 px-4">
+    <div v-else class="pt-4 pb-20 px-4">
       <!-- Time Period Selector and Export -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex space-x-2 overflow-x-auto scrollbar-hide">
@@ -18,10 +18,10 @@
             {{ period.label }}
           </button>
         </div>
-        <button @click="exportStats"
+        <!-- <button @click="exportStats"
           class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-green-600 transition-colors">
           <i class="fas fa-download mr-2"></i>{{ $t('stats.export') }}
-        </button>
+        </button> -->
       </div>
 
       <!-- Overview Cards -->
