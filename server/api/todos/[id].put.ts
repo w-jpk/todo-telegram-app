@@ -1,5 +1,6 @@
 import { getDbPool, validateUserId, validateUUID } from '~/server/utils/db'
 import type { Todo, UpdateTodoDto } from '~/types/todo'
+import { canCreateSubtask, canCreateRecurringTask } from '~/server/utils/premium'
 
 export default defineEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
@@ -10,9 +11,9 @@ export default defineEventHandler(async (event) => {
   try {
     const pool = getDbPool()
     
-    // Get old todo to check if it was completed before update
+    // Get old todo to check if it was completed before update and if it had parent/recurrence
     const oldTodoResult = await pool.query(
-      'SELECT completed FROM todos WHERE user_id = $1 AND id = $2',
+      'SELECT completed, parent_id, is_recurring FROM todos WHERE user_id = $1 AND id = $2',
       [userId, id]
     )
     
@@ -24,6 +25,30 @@ export default defineEventHandler(async (event) => {
     }
     
     const wasCompletedBefore = oldTodoResult.rows[0].completed
+    const hadParentBefore = oldTodoResult.rows[0].parent_id !== null
+    const wasRecurringBefore = oldTodoResult.rows[0].is_recurring === true
+    
+    // Check premium limits for new parent_id (subtask)
+    if (body.parentId !== undefined && body.parentId !== null && !hadParentBefore) {
+      const subtaskCheck = await canCreateSubtask(userId, body.parentId)
+      if (!subtaskCheck.allowed) {
+        throw createError({
+          statusCode: 403,
+          message: subtaskCheck.reason || 'Subtask depth limit reached'
+        })
+      }
+    }
+    
+    // Check premium limits for new recurrence rule
+    if (body.recurrenceRule !== undefined && body.recurrenceRule !== null && !wasRecurringBefore) {
+      const recurringCheck = await canCreateRecurringTask(userId)
+      if (!recurringCheck.allowed) {
+        throw createError({
+          statusCode: 403,
+          message: recurringCheck.reason || 'Recurring task limit reached'
+        })
+      }
+    }
     
     // Build update query dynamically
     const updates: string[] = []

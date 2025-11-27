@@ -190,6 +190,7 @@ const {
 } = useTodos()
 
 const { projects, fetchProjects } = useProjects()
+const { fetchPremiumStatus } = usePremium()
 const { settings, fetchSettings } = useSettings()
 const { t } = useI18n()
 
@@ -737,6 +738,9 @@ onMounted(async () => {
       await Promise.all([
         fetchProjects(),
         fetchTodos(1, false),
+        fetchPremiumStatus().catch(err => {
+          console.warn('Failed to fetch premium status:', err)
+        }),
         fetchSettings()
       ])
       

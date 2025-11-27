@@ -376,6 +376,16 @@
       "contactSupport": "Связаться с поддержкой",
       "appVersion": "Версия приложения"
     },
+    "premium": {
+      "limitReached": "Достигнут лимит",
+      "todosLimitMessage": "Вы достигли лимита задач",
+      "projectsLimitMessage": "Вы достигли лимита проектов",
+      "tagsLimitMessage": "Вы достигли лимита тегов",
+      "recurringLimitReached": "Достигнут лимит повторяющихся задач",
+      "recurringLimitMessage": "Вы достигли лимита повторяющихся задач",
+      "upgradeMessage": "Получите Premium для неограниченного использования.",
+      "learnMore": "Узнать больше о Premium"
+    },
     "error": {
       "somethingWentWrong": "Что-то пошло не так"
     }

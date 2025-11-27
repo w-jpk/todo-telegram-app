@@ -314,6 +314,16 @@
       "contactSupport": "Contact Support",
       "appVersion": "App Version"
     },
+    "premium": {
+      "limitReached": "Limit Reached",
+      "todosLimitMessage": "You have reached the task limit",
+      "projectsLimitMessage": "You have reached the project limit",
+      "tagsLimitMessage": "You have reached the tag limit",
+      "recurringLimitReached": "Recurring Task Limit Reached",
+      "recurringLimitMessage": "You have reached the recurring task limit",
+      "upgradeMessage": "Get Premium for unlimited usage.",
+      "learnMore": "Learn more about Premium"
+    },
     "messages": {
       "settingsUpdated": "Settings Updated",
       "settingsUpdatedDesc": "Your preferences have been saved successfully.",

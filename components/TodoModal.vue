@@ -26,6 +26,20 @@
 
           <!-- Content -->
           <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-hide">
+            <!-- Premium Limit Warnings -->
+            <PremiumLimitWarning
+              v-if="!todo && isTodosLimitReached"
+              :show="!todo && isTodosLimitReached"
+              :title="$t('premium.limitReached') || 'Достигнут лимит задач'"
+              :message="`${$t('premium.todosLimitMessage') || 'Вы достигли лимита бесплатного аккаунта'} (${limits.maxTodos}). ${$t('premium.upgradeMessage') || 'Получите Premium для неограниченного использования.'}`"
+            />
+            <PremiumLimitWarning
+              v-if="formData.recurrenceRule && isRecurringTasksLimitReached"
+              :show="!!formData.recurrenceRule && isRecurringTasksLimitReached"
+              :title="$t('premium.recurringLimitReached') || 'Достигнут лимит повторяющихся задач'"
+              :message="`${$t('premium.recurringLimitMessage') || 'Вы достигли лимита повторяющихся задач'} (${limits.maxRecurringTasks}). ${$t('premium.upgradeMessage') || 'Получите Premium для неограниченного использования.'}`"
+            />
+            
             <!-- Title Input -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -233,8 +247,10 @@ import PrioritySelector from './PrioritySelector.vue'
 import ProjectSelector from './ProjectSelector.vue'
 import DateSelector from './DateSelector.vue'
 import RecurrenceSelector from './RecurrenceSelector.vue'
+import PremiumLimitWarning from './PremiumLimitWarning.vue'
 import type { RecurrenceRule } from '~/types/todo'
 import { useSettings } from '~/composables/useSettings'
+import { usePremium } from '~/composables/usePremium'
 
 interface Props {
   isOpen: boolean
@@ -259,6 +275,14 @@ const subtasks = ref<Array<{ text: string }>>([])
 
 // Settings
 const { settings } = useSettings()
+
+// Premium
+const {
+  isTodosLimitReached,
+  isRecurringTasksLimitReached,
+  limits,
+  fetchPremiumStatus
+} = usePremium()
 
 // Tags
 const availableTags = ref<Tag[]>([])
@@ -287,6 +311,11 @@ const formData = ref<{
 watch(() => props.isOpen, async (newVal) => {
   if (newVal) {
     try {
+      // Fetch premium status to check limits
+      fetchPremiumStatus().catch(err => {
+        console.warn('Failed to fetch premium status:', err)
+      })
+      
       // Load available tags (non-blocking, don't fail if tags can't load)
       loadTags().catch(err => {
         console.warn('Failed to load tags, continuing without them:', err)

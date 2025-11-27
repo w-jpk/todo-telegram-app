@@ -1,5 +1,6 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { CreateTagDto } from '~/types/todo'
+import { canCreateTag } from '~/server/utils/premium'
 
 export default defineEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
@@ -13,6 +14,15 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    // Check premium limits
+    const tagCheck = await canCreateTag(userId)
+    if (!tagCheck.allowed) {
+      throw createError({
+        statusCode: 403,
+        message: tagCheck.reason || 'Tag limit reached'
+      })
+    }
+    
     const pool = getDbPool()
 
     const result = await pool.query(

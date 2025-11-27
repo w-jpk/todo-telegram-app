@@ -153,6 +153,11 @@ export interface UserSettings {
   crashReportingEnabled: boolean
   dataEncryptionEnabled: boolean
 
+  // Profile
+  displayName?: string
+  bio?: string
+  profileVisibility?: 'public' | 'private' | 'contacts'
+
   createdAt: Date
   updatedAt: Date
 }
@@ -202,5 +207,30 @@ export interface UpdateUserSettingsDto {
   analyticsEnabled?: boolean
   crashReportingEnabled?: boolean
   dataEncryptionEnabled?: boolean
+
+  // Profile
+  displayName?: string
+  bio?: string
+  profileVisibility?: 'public' | 'private' | 'contacts'
+}
+
+// Premium types
+export interface PremiumLimits {
+  maxTodos: number
+  maxProjects: number
+  maxTags: number
+  maxSubtaskLevels: number
+  maxRecurringTasks: number
+}
+
+export interface PremiumStatus {
+  isPremium: boolean
+  limits: PremiumLimits
+  currentUsage: {
+    todos: number
+    projects: number
+    tags: number
+    recurringTasks: number
+  }
 }
 

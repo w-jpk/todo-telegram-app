@@ -1,5 +1,6 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Project, CreateProjectDto } from '~/types/todo'
+import { canCreateProject } from '~/server/utils/premium'
 
 export default defineEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
@@ -14,6 +15,15 @@ export default defineEventHandler(async (event) => {
   }
   
   try {
+    // Check premium limits
+    const projectCheck = await canCreateProject(userId)
+    if (!projectCheck.allowed) {
+      throw createError({
+        statusCode: 403,
+        message: projectCheck.reason || 'Project limit reached'
+      })
+    }
+    
     const pool = getDbPool()
     
     // Check if project with same name already exists

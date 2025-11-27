@@ -86,7 +86,8 @@
             <p class="text-sm text-gray-600 dark:text-gray-400">
               {{ userEmail || $t("settings.profile.telegramUser") }}
             </p>
-            <p class="text-xs text-blue-500 mt-1">
+            <p v-if="isPremium" class="text-xs text-blue-500 mt-1 flex items-center gap-1">
+              <i class="fas fa-crown" aria-hidden="true"></i>
               {{ $t("settings.profile.premiumMember") }}
             </p>
           </div>
@@ -297,6 +298,7 @@ import { ref, computed } from "vue";
 import type { UserSettings } from "~/types/todo";
 import Toast from "~/components/Toast.vue";
 import BottomNavigation from "~/components/BottomNavigation.vue";
+import { usePremium } from "~/composables/usePremium";
 
 // Reactive data
 const searchQuery = ref("");
@@ -313,6 +315,7 @@ const toast = ref();
 const { t } = useI18n();
 const { $telegram } = useNuxtApp();
 const { settings, fetchSettings, updateSettings } = useSettings();
+const { isPremium, fetchPremiumStatus } = usePremium();
 
 // Computed properties
 const userName = computed(() => {
@@ -513,7 +516,10 @@ onMounted(async () => {
 
   if ($telegram?.user?.id) {
     try {
-      await fetchSettings();
+      await Promise.all([
+        fetchSettings(),
+        fetchPremiumStatus()
+      ]);
 
       if (settings.value) {
         profileForm.value = {

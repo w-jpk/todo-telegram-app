@@ -26,6 +26,14 @@
 
           <!-- Content -->
           <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-hide">
+            <!-- Premium Limit Warning -->
+            <PremiumLimitWarning
+              v-if="!project && isProjectsLimitReached"
+              :show="!project && isProjectsLimitReached"
+              :title="$t('premium.limitReached') || 'Достигнут лимит проектов'"
+              :message="`${$t('premium.projectsLimitMessage') || 'Вы достигли лимита бесплатного аккаунта'} (${limits.maxProjects}). ${$t('premium.upgradeMessage') || 'Получите Premium для неограниченного использования.'}`"
+            />
+            
             <!-- Name Input -->
             <div>
               <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -93,6 +101,8 @@
 import { ref, watch, nextTick } from 'vue'
 import { X } from 'lucide-vue-next'
 import type { Project, CreateProjectDto, UpdateProjectDto } from '~/types/todo'
+import PremiumLimitWarning from './PremiumLimitWarning.vue'
+import { usePremium } from '~/composables/usePremium'
 
 interface Props {
   isOpen: boolean
@@ -108,6 +118,13 @@ const emit = defineEmits<{
 
 const nameInput = ref<HTMLInputElement | null>(null)
 const saving = ref(false)
+
+// Premium
+const {
+  isProjectsLimitReached,
+  limits,
+  fetchPremiumStatus
+} = usePremium()
 
 const projectColors = [
   '#2481cc', // Blue
@@ -128,8 +145,13 @@ const formData = ref<{
   color: projectColors[0]
 })
 
-watch(() => props.isOpen, (newVal) => {
+watch(() => props.isOpen, async (newVal) => {
   if (newVal) {
+    // Fetch premium status to check limits
+    fetchPremiumStatus().catch(err => {
+      console.warn('Failed to fetch premium status:', err)
+    })
+    
     if (props.project) {
       formData.value = {
         name: props.project.name,

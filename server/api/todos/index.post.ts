@@ -1,5 +1,6 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
 import type { Todo, CreateTodoDto } from '~/types/todo'
+import { canCreateTodo, canCreateRecurringTask, canCreateSubtask } from '~/server/utils/premium'
 
 export default defineEventHandler(async (event) => {
   const userId = validateUserId(getHeader(event, 'x-telegram-user-id'))
@@ -14,6 +15,37 @@ export default defineEventHandler(async (event) => {
   }
   
   try {
+    // Check premium limits
+    const todoCheck = await canCreateTodo(userId)
+    if (!todoCheck.allowed) {
+      throw createError({
+        statusCode: 403,
+        message: todoCheck.reason || 'Task limit reached'
+      })
+    }
+    
+    // Check recurring task limit if this is a recurring task
+    if (body.recurrenceRule) {
+      const recurringCheck = await canCreateRecurringTask(userId)
+      if (!recurringCheck.allowed) {
+        throw createError({
+          statusCode: 403,
+          message: recurringCheck.reason || 'Recurring task limit reached'
+        })
+      }
+    }
+    
+    // Check subtask depth limit if this is a subtask
+    if (body.parentId) {
+      const subtaskCheck = await canCreateSubtask(userId, body.parentId)
+      if (!subtaskCheck.allowed) {
+        throw createError({
+          statusCode: 403,
+          message: subtaskCheck.reason || 'Subtask depth limit reached'
+        })
+      }
+    }
+    
     const pool = getDbPool()
     
     // Get user data from header if provided
