@@ -1,7 +1,116 @@
 import cron from 'node-cron'
 import { getDbPool } from '~/server/utils/db'
 
-export default defineNitroPlugin((nitroApp) => {
+interface UserSettingsRow {
+  user_id: string
+  notifications_enabled: boolean
+  daily_notifications: boolean
+  daily_notification_time: string | null
+  timezone: string | null
+  reminder_days_before: number[] | null
+  notify_on_overdue: boolean
+  quiet_hours_start: string | null
+  quiet_hours_end: string | null
+}
+
+const DEFAULT_DAILY_TIME = '09:00'
+
+const normalizeTimeString = (value?: string | null, fallback: string = DEFAULT_DAILY_TIME) => {
+  if (!value) return fallback
+  const segments = value.split(':')
+  const hour = segments[0]?.padStart(2, '0') ?? '00'
+  const minute = segments[1]?.padStart(2, '0') ?? '00'
+  return `${hour}:${minute}`
+}
+
+const resolveTimezone = (timezone?: string | null) => {
+  const zone = timezone || 'UTC'
+  try {
+    new Intl.DateTimeFormat('en-GB', { timeZone: zone })
+    return zone
+  } catch {
+    return 'UTC'
+  }
+}
+
+const getUserTimeInfo = (timezone?: string | null) => {
+  const zone = resolveTimezone(timezone)
+  const now = new Date()
+
+  const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: zone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: zone,
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+  const parts = timeFormatter.formatToParts(now)
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '00'
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '00'
+
+  return {
+    isoDate: dateFormatter.format(now), // YYYY-MM-DD
+    time: `${hour}:${minute}`,
+    minutesOfDay: parseInt(hour, 10) * 60 + parseInt(minute, 10),
+    timezone: zone
+  }
+}
+
+const timeStringToMinutes = (value?: string | null) => {
+  if (!value) return null
+  const [hour, minute] = value.split(':').map((segment) => parseInt(segment, 10))
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return null
+  return hour * 60 + minute
+}
+
+const isWithinQuietHours = (currentMinutes: number, quietStart?: string | null, quietEnd?: string | null) => {
+  const start = timeStringToMinutes(quietStart)
+  const end = timeStringToMinutes(quietEnd)
+
+  if (start === null || end === null) {
+    return false
+  }
+
+  if (start === end) {
+    return false
+  }
+
+  if (start < end) {
+    return currentMinutes >= start && currentMinutes < end
+  }
+
+  return currentMinutes >= start || currentMinutes < end
+}
+
+const parseNumberArray = (value: any, fallback: number[] = [1]) => {
+  if (Array.isArray(value) && value.length > 0) {
+    return value.map((num) => Number(num)).filter((num) => !Number.isNaN(num))
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .replace(/[{}]/g, '')
+      .split(',')
+      .filter(Boolean)
+      .map((num) => Number(num))
+      .filter((num) => !Number.isNaN(num))
+  }
+
+  return fallback
+}
+
+const dailyNotificationTracker = new Map<number, string>()
+const reminderNotificationTracker = new Map<number, string>()
+const overdueNotificationTracker = new Map<number, string>()
+
+export default defineNitroPlugin(() => {
   // Only run in production or if explicitly enabled
   if (process.env.NODE_ENV === 'development' && !process.env.ENABLE_SCHEDULER) {
     console.log('Scheduler disabled in development mode. Set ENABLE_SCHEDULER=true to enable.')
@@ -34,10 +143,34 @@ export default defineNitroPlugin((nitroApp) => {
     }
   }
 
-  // Daily notifications - runs every day at 9:00 AM
-  cron.schedule('0 9 * * *', async () => {
-    console.log('Running daily notifications scheduler...')
-    
+  const fetchUserSettings = async (pool: ReturnType<typeof getDbPool>) => {
+    const result = await pool.query<UserSettingsRow>(`
+      SELECT
+        u.id as user_id,
+        COALESCE(s.notifications_enabled, TRUE) AS notifications_enabled,
+        COALESCE(s.daily_notifications, TRUE) AS daily_notifications,
+        COALESCE(s.daily_notification_time, '09:00:00') AS daily_notification_time,
+        COALESCE(s.timezone, 'UTC') AS timezone,
+        s.reminder_days_before,
+        COALESCE(s.notify_on_overdue, TRUE) AS notify_on_overdue,
+        s.quiet_hours_start,
+        s.quiet_hours_end
+      FROM users u
+      LEFT JOIN user_settings s ON u.id = s.user_id
+    `)
+
+    return result.rows
+  }
+
+  const logSchedulerStatus = () => {
+    console.log('✅ Notification scheduler initialized (per-minute checks)')
+    console.log('   - Daily notifications respect user-defined time & timezone')
+    console.log('   - Reminders follow user timezone and reminder_days_before')
+    console.log('   - Overdue notifications respect user timezone')
+  }
+
+  // Daily notifications - check every minute and send at user-defined time
+  cron.schedule('* * * * *', async () => {
     try {
       const pool = getDbPool()
       const today = new Date()
@@ -45,55 +178,57 @@ export default defineNitroPlugin((nitroApp) => {
       const tomorrow = new Date(today)
       tomorrow.setDate(tomorrow.getDate() + 1)
 
-      const result = await pool.query(
-        `SELECT t.*, u.id as user_id, s.notifications_enabled, s.daily_notifications, s.daily_notification_time, s.timezone
-         FROM todos t
-         JOIN users u ON t.user_id = u.id
-         LEFT JOIN user_settings s ON u.id = s.user_id
-         WHERE t.completed = false 
-         AND t.due_date IS NOT NULL
-         AND t.due_date >= $1
-         AND t.due_date < $2
-         AND (s.notifications_enabled IS NULL OR s.notifications_enabled = TRUE)
-         AND (s.daily_notifications IS NULL OR s.daily_notifications = TRUE)
-         ORDER BY t.due_date ASC`,
-        [today, tomorrow]
-      )
+      const userSettings = await fetchUserSettings(pool)
 
-      const todosByUser = new Map<number, any[]>()
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+        if (!row.notifications_enabled || !row.daily_notifications) continue
 
-      for (const row of result.rows) {
-        const userId = parseInt(row.user_id)
-        if (!todosByUser.has(userId)) {
-          todosByUser.set(userId, [])
+        const userTimeInfo = getUserTimeInfo(row.timezone)
+        const targetTime = normalizeTimeString(row.daily_notification_time, DEFAULT_DAILY_TIME)
+
+        if (userTimeInfo.time !== targetTime) {
+          continue
         }
-        todosByUser.get(userId)!.push(row)
-      }
 
-      let successCount = 0
-      let failCount = 0
+        if (isWithinQuietHours(userTimeInfo.minutesOfDay, row.quiet_hours_start, row.quiet_hours_end)) {
+          continue
+        }
 
-      for (const [userId, todos] of todosByUser.entries()) {
-        if (todos.length === 0) continue
+        if (dailyNotificationTracker.get(userId) === userTimeInfo.isoDate) {
+          continue
+        }
 
-        const todoList = todos
+        const todosResult = await pool.query(
+          `SELECT t.*
+           FROM todos t
+           WHERE t.user_id = $1
+             AND t.completed = false 
+             AND t.due_date IS NOT NULL
+             AND t.due_date >= $2
+             AND t.due_date < $3
+           ORDER BY t.due_date ASC`,
+          [userId, today, tomorrow]
+        )
+
+        if (todosResult.rows.length === 0) {
+          dailyNotificationTracker.set(userId, userTimeInfo.isoDate)
+          continue
+        }
+
+        const todoList = todosResult.rows
           .map((todo, index) => {
             const priorityEmoji = todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : todo.priority === 'low' ? '🔵' : ''
             return `${index + 1}. ${priorityEmoji} ${todo.text}`
           })
           .join('\n')
 
-        const message = `📋 <b>Задачи на сегодня:</b>\n\n${todoList}\n\n<i>Всего задач: ${todos.length}</i>`
+        const message = `📋 <b>Задачи на сегодня:</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>`
 
-        const success = await sendNotification(userId, message)
-        if (success) {
-          successCount++
-        } else {
-          failCount++
-        }
+        await sendNotification(userId, message)
+        dailyNotificationTracker.set(userId, userTimeInfo.isoDate)
       }
-
-      console.log(`Daily notifications sent: ${successCount} successful, ${failCount} failed`)
     } catch (error: any) {
       console.error('Error in daily notifications scheduler:', error)
     }
@@ -101,66 +236,87 @@ export default defineNitroPlugin((nitroApp) => {
     timezone: 'UTC'
   })
 
-  // Reminders - runs every day at 7:00 AM UTC (10:00 MSK)
-  cron.schedule('0 7 * * *', async () => {
-    console.log('Running reminders scheduler...')
-    
+  // Reminders - check every minute, respect user timezone (time from daily settings)
+  cron.schedule('* * * * *', async () => {
     try {
       const pool = getDbPool()
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      const usersResult = await pool.query(
-        `SELECT DISTINCT u.id as user_id, s.reminder_days_before, s.notifications_enabled, s.notify_on_overdue
-         FROM users u
-         LEFT JOIN user_settings s ON u.id = s.user_id
-         WHERE (s.notifications_enabled IS NULL OR s.notifications_enabled = TRUE)`
-      )
+      const userSettings = await fetchUserSettings(pool)
 
-      let totalSent = 0
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+        if (!row.notifications_enabled) continue
 
-      for (const userRow of usersResult.rows) {
-        const userId = parseInt(userRow.user_id)
-        const reminderDays = userRow.reminder_days_before || [1]
+        const reminderDays = parseNumberArray(row.reminder_days_before, [1])
+        if (reminderDays.length === 0) continue
+
+        const userTimeInfo = getUserTimeInfo(row.timezone)
+        const reminderTime = normalizeTimeString(row.daily_notification_time, DEFAULT_DAILY_TIME)
+
+        if (userTimeInfo.time !== reminderTime) {
+          continue
+        }
+
+        if (isWithinQuietHours(userTimeInfo.minutesOfDay, row.quiet_hours_start, row.quiet_hours_end)) {
+          continue
+        }
+
+        if (reminderNotificationTracker.get(userId) === userTimeInfo.isoDate) {
+          continue
+        }
+
+        let notificationsSent = 0
 
         for (const daysBefore of reminderDays) {
-          const reminderDate = new Date(today)
-          reminderDate.setDate(reminderDate.getDate() + daysBefore)
-          reminderDate.setHours(23, 59, 59, 999)
+          if (Number.isNaN(daysBefore)) continue
 
-          const reminderDateStart = new Date(reminderDate)
+          const reminderDateStart = new Date(today)
+          reminderDateStart.setDate(reminderDateStart.getDate() + daysBefore)
           reminderDateStart.setHours(0, 0, 0, 0)
+
+          const reminderDateEnd = new Date(reminderDateStart)
+          reminderDateEnd.setHours(23, 59, 59, 999)
 
           const todosResult = await pool.query(
             `SELECT t.*
              FROM todos t
              WHERE t.user_id = $1
-             AND t.completed = false
-             AND t.due_date IS NOT NULL
-             AND t.due_date >= $2
-             AND t.due_date <= $3
+               AND t.completed = false
+               AND t.due_date IS NOT NULL
+               AND t.due_date >= $2
+               AND t.due_date <= $3
              ORDER BY t.due_date ASC`,
-            [userId, reminderDateStart, reminderDate]
+            [userId, reminderDateStart, reminderDateEnd]
           )
 
-          if (todosResult.rows.length > 0) {
-            const todoList = todosResult.rows
-              .map((todo, index) => {
-                const priorityEmoji = todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : todo.priority === 'low' ? '🔵' : ''
-                const dueDate = new Date(todo.due_date).toLocaleDateString('ru-RU')
-                return `${index + 1}. ${priorityEmoji} ${todo.text} (${dueDate})`
-              })
-              .join('\n')
-
-            const message = `🌅 <b>Доброе утро! Напоминаем о задачах на завтра:</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>\n\nУспехов в выполнении! 🚀`
-
-            await sendNotification(userId, message)
-            totalSent++
+          if (todosResult.rows.length === 0) {
+            continue
           }
+
+          const todoList = todosResult.rows
+            .map((todo, index) => {
+              const priorityEmoji = todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : todo.priority === 'low' ? '🔵' : ''
+              const dueDate = new Date(todo.due_date).toLocaleDateString('ru-RU')
+              return `${index + 1}. ${priorityEmoji} ${todo.text} (${dueDate})`
+            })
+            .join('\n')
+
+          const message = `🌅 <b>Напоминание о задачах на ${daysBefore === 1 ? 'завтра' : `+${daysBefore} дней`}:</b>\n\n${todoList}\n\n<i>Всего задач: ${todosResult.rows.length}</i>`
+
+          await sendNotification(userId, message)
+          notificationsSent++
+        }
+
+        if (notificationsSent > 0) {
+          reminderNotificationTracker.set(userId, userTimeInfo.isoDate)
+        } else {
+          // Даже если задач нет, считаем день обработанным для уменьшения нагрузки
+          reminderNotificationTracker.set(userId, userTimeInfo.isoDate)
         }
       }
-
-      console.log(`Reminders sent: ${totalSent} notifications`)
     } catch (error: any) {
       console.error('Error in reminders scheduler:', error)
     }
@@ -168,45 +324,52 @@ export default defineNitroPlugin((nitroApp) => {
     timezone: 'UTC'
   })
 
-  // Overdue notifications - runs every day at 9:00 AM
-  cron.schedule('0 9 * * *', async () => {
-    console.log('Running overdue notifications scheduler...')
-    
+  // Overdue notifications - check every minute, respect timezone
+  cron.schedule('* * * * *', async () => {
     try {
       const pool = getDbPool()
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      const result = await pool.query(
-        `SELECT t.*, u.id as user_id, s.notify_on_overdue, s.notifications_enabled
-         FROM todos t
-         JOIN users u ON t.user_id = u.id
-         LEFT JOIN user_settings s ON u.id = s.user_id
-         WHERE t.completed = false
-         AND t.due_date IS NOT NULL
-         AND t.due_date < $1
-         AND (s.notifications_enabled IS NULL OR s.notifications_enabled = TRUE)
-         AND (s.notify_on_overdue IS NULL OR s.notify_on_overdue = TRUE)
-         ORDER BY t.due_date ASC`,
-        [today]
-      )
+      const userSettings = await fetchUserSettings(pool)
 
-      const todosByUser = new Map<number, any[]>()
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+        if (!row.notifications_enabled || !row.notify_on_overdue) continue
 
-      for (const row of result.rows) {
-        const userId = parseInt(row.user_id)
-        if (!todosByUser.has(userId)) {
-          todosByUser.set(userId, [])
+        const userTimeInfo = getUserTimeInfo(row.timezone)
+        const overdueTime = normalizeTimeString(row.daily_notification_time, DEFAULT_DAILY_TIME)
+
+        if (userTimeInfo.time !== overdueTime) {
+          continue
         }
-        todosByUser.get(userId)!.push(row)
-      }
 
-      let successCount = 0
+        if (isWithinQuietHours(userTimeInfo.minutesOfDay, row.quiet_hours_start, row.quiet_hours_end)) {
+          continue
+        }
 
-      for (const [userId, todos] of todosByUser.entries()) {
-        if (todos.length === 0) continue
+        if (overdueNotificationTracker.get(userId) === userTimeInfo.isoDate) {
+          continue
+        }
 
-        const todoList = todos
+        const result = await pool.query(
+          `SELECT t.*
+           FROM todos t
+           WHERE t.user_id = $1
+             AND t.completed = false
+             AND t.due_date IS NOT NULL
+             AND t.due_date < $2
+           ORDER BY t.due_date ASC`,
+          [userId, today]
+        )
+
+        if (result.rows.length === 0) {
+          overdueNotificationTracker.set(userId, userTimeInfo.isoDate)
+          continue
+        }
+
+        const todoList = result.rows
           .map((todo, index) => {
             const priorityEmoji = todo.priority === 'high' ? '🔴' : todo.priority === 'medium' ? '🟡' : todo.priority === 'low' ? '🔵' : ''
             const dueDate = new Date(todo.due_date).toLocaleDateString('ru-RU')
@@ -215,15 +378,11 @@ export default defineNitroPlugin((nitroApp) => {
           })
           .join('\n\n')
 
-        const message = `⚠️ <b>Просроченные задачи:</b>\n\n${todoList}\n\n<i>Всего просрочено: ${todos.length}</i>`
+        const message = `⚠️ <b>Просроченные задачи:</b>\n\n${todoList}\n\n<i>Всего просрочено: ${result.rows.length}</i>`
 
-        const success = await sendNotification(userId, message)
-        if (success) {
-          successCount++
-        }
+        await sendNotification(userId, message)
+        overdueNotificationTracker.set(userId, userTimeInfo.isoDate)
       }
-
-      console.log(`Overdue notifications sent: ${successCount} users notified`)
     } catch (error: any) {
       console.error('Error in overdue notifications scheduler:', error)
     }
@@ -231,9 +390,6 @@ export default defineNitroPlugin((nitroApp) => {
     timezone: 'UTC'
   })
 
-  console.log('✅ Notification scheduler initialized')
-  console.log('   - Daily notifications: every day at 9:00 AM UTC')
-  console.log('   - Reminders: every day at 7:00 AM UTC (10:00 MSK)')
-  console.log('   - Overdue notifications: every day at 9:00 AM UTC')
+  logSchedulerStatus()
 })
 
