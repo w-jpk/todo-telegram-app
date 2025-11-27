@@ -23,13 +23,13 @@ export default defineEventHandler(async (event) => {
           auto_archive_completed, archive_after_days, show_completed_tasks, confirm_delete_task,
           font_size, animations_enabled, compact_view, date_format, time_format,
           auto_sync, sync_frequency, backup_frequency, data_retention_days,
-          analytics_enabled, crash_reporting_enabled, data_encryption_enabled, profile_visibility,
+          analytics_enabled, crash_reporting_enabled, data_encryption_enabled,
           accent_color
         ) VALUES (
           $1, TRUE, TRUE, '09:00:00', ARRAY[1, 3], TRUE,
           'UTC', 'light', 'en', TRUE, 'medium', 'dueDate',
           FALSE, 30, TRUE, TRUE, 'medium', TRUE, FALSE, 'DD/MM/YYYY', '24h',
-          TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE, 'private',
+          TRUE, 'daily', 'weekly', 365, TRUE, TRUE, TRUE,
           '#3B82F6'
         ) RETURNING *`,
         [userId]
@@ -80,10 +80,6 @@ export default defineEventHandler(async (event) => {
         analyticsEnabled: row.analytics_enabled ?? true,
         crashReportingEnabled: row.crash_reporting_enabled ?? true,
         dataEncryptionEnabled: row.data_encryption_enabled ?? true,
-        // Profile
-        displayName: row.display_name,
-        bio: row.bio,
-        profileVisibility: row.profile_visibility || 'private',
         // Data & Sync
         lastBackupDate: row.last_backup_date,
         createdAt: row.created_at,
@@ -135,10 +131,6 @@ export default defineEventHandler(async (event) => {
       analyticsEnabled: row.analytics_enabled ?? true,
       crashReportingEnabled: row.crash_reporting_enabled ?? true,
       dataEncryptionEnabled: row.data_encryption_enabled ?? true,
-      // Profile
-      displayName: row.display_name,
-      bio: row.bio,
-      profileVisibility: row.profile_visibility || 'private',
       // Data & Sync
       lastBackupDate: row.last_backup_date,
       createdAt: row.created_at,

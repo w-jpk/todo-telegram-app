@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import type { Todo, CreateTodoDto, UpdateTodoDto, Project, TodoPriority, Tag } from '~/types/todo'
 import PrioritySelector from './PrioritySelector.vue'
@@ -234,6 +234,7 @@ import ProjectSelector from './ProjectSelector.vue'
 import DateSelector from './DateSelector.vue'
 import RecurrenceSelector from './RecurrenceSelector.vue'
 import type { RecurrenceRule } from '~/types/todo'
+import { useSettings } from '~/composables/useSettings'
 
 interface Props {
   isOpen: boolean
@@ -255,6 +256,9 @@ const titleInput = ref<HTMLInputElement | null>(null)
 const saving = ref(false)
 const deleting = ref(false)
 const subtasks = ref<Array<{ text: string }>>([])
+
+// Settings
+const { settings } = useSettings()
 
 // Tags
 const availableTags = ref<Tag[]>([])
@@ -303,7 +307,7 @@ watch(() => props.isOpen, async (newVal) => {
         formData.value = {
           text: '',
           description: '',
-          priority: 'none',
+          priority: settings.value?.defaultPriority || 'none',
           projectId: undefined,
           dueDate: props.initialDueDate || undefined,
           tagIds: []
@@ -333,13 +337,14 @@ const handleClose = () => {
 
 const handleDelete = async () => {
   if (!props.todo || deleting.value) return
-  
-  if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
+
+  const shouldConfirm = settings.value?.confirmDeleteTask ?? true
+  if (shouldConfirm && !confirm('Вы уверены, что хотите удалить эту задачу?')) {
     return
   }
-  
+
   deleting.value = true
-  
+
   try {
     emit('delete', props.todo.id)
     handleClose()

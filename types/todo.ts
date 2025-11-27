@@ -153,11 +153,6 @@ export interface UserSettings {
   crashReportingEnabled: boolean
   dataEncryptionEnabled: boolean
 
-  // Profile
-  displayName?: string
-  bio?: string
-  profileVisibility: 'public' | 'private' | 'contacts'
-
   createdAt: Date
   updatedAt: Date
 }
@@ -207,10 +202,5 @@ export interface UpdateUserSettingsDto {
   analyticsEnabled?: boolean
   crashReportingEnabled?: boolean
   dataEncryptionEnabled?: boolean
-
-  // Profile
-  displayName?: string
-  bio?: string
-  profileVisibility?: 'public' | 'private' | 'contacts'
 }
 

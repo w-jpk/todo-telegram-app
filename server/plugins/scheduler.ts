@@ -11,6 +11,11 @@ interface UserSettingsRow {
   notify_on_overdue: boolean
   quiet_hours_start: string | null
   quiet_hours_end: string | null
+  auto_archive_completed: boolean
+  archive_after_days: number | null
+  backup_frequency: string | null
+  last_backup_date: Date | null
+  data_retention_days: number | null
 }
 
 const DEFAULT_DAILY_TIME = '09:00'
@@ -154,7 +159,12 @@ export default defineNitroPlugin(() => {
         s.reminder_days_before,
         COALESCE(s.notify_on_overdue, TRUE) AS notify_on_overdue,
         s.quiet_hours_start,
-        s.quiet_hours_end
+        s.quiet_hours_end,
+        COALESCE(s.auto_archive_completed, FALSE) AS auto_archive_completed,
+        COALESCE(s.archive_after_days, 30) AS archive_after_days,
+        COALESCE(s.backup_frequency, 'weekly') AS backup_frequency,
+        s.last_backup_date,
+        COALESCE(s.data_retention_days, 365) AS data_retention_days
       FROM users u
       LEFT JOIN user_settings s ON u.id = s.user_id
     `)
@@ -319,6 +329,138 @@ export default defineNitroPlugin(() => {
       }
     } catch (error: any) {
       console.error('Error in reminders scheduler:', error)
+    }
+  }, {
+    timezone: 'UTC'
+  })
+
+  // Auto-backup data - check daily at 2 AM UTC
+  cron.schedule('0 2 * * *', async () => {
+    try {
+      const pool = getDbPool()
+      const userSettings = await fetchUserSettings(pool)
+
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+
+        // Check if backup is needed based on backup_frequency
+        const lastBackup = row.last_backup_date ? new Date(row.last_backup_date) : null
+        const now = new Date()
+        let shouldBackup = false
+
+        if (!lastBackup) {
+          shouldBackup = true
+        } else {
+          const daysSinceLastBackup = Math.floor((now.getTime() - lastBackup.getTime()) / (1000 * 60 * 60 * 24))
+          switch (row.backup_frequency) {
+            case 'daily':
+              shouldBackup = daysSinceLastBackup >= 1
+              break
+            case 'weekly':
+              shouldBackup = daysSinceLastBackup >= 7
+              break
+            case 'monthly':
+              shouldBackup = daysSinceLastBackup >= 30
+              break
+          }
+        }
+
+        if (shouldBackup) {
+          // Perform backup by calling export API internally
+          try {
+            const exportUrl = `http://localhost:${process.env.PORT || 3000}/api/export/json`
+            const response = await fetch(exportUrl, {
+              headers: {
+                'x-telegram-user-id': userId.toString()
+              }
+            })
+
+            if (response.ok) {
+              console.log(`Auto-backup completed for user ${userId}`)
+            } else {
+              console.error(`Auto-backup failed for user ${userId}: ${response.status}`)
+            }
+          } catch (error) {
+            console.error(`Auto-backup error for user ${userId}:`, error)
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Error in auto-backup scheduler:', error)
+    }
+  }, {
+    timezone: 'UTC'
+  })
+
+  // Data cleanup - check daily at 3 AM UTC
+  cron.schedule('0 3 * * *', async () => {
+    try {
+      const pool = getDbPool()
+      const userSettings = await fetchUserSettings(pool)
+
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+
+        // Get data retention days setting
+        const dataRetentionDays = row.data_retention_days || 365
+        const retentionDate = new Date()
+        retentionDate.setDate(retentionDate.getDate() - dataRetentionDays)
+
+        // Delete old completed todos beyond retention period
+        const result = await pool.query(
+          `DELETE FROM todos
+           WHERE user_id = $1
+             AND completed = true
+             AND updated_at < $2`,
+          [userId, retentionDate]
+        )
+
+        if (result.rowCount && result.rowCount > 0) {
+          console.log(`Data cleanup: deleted ${result.rowCount} old completed todos for user ${userId}`)
+        }
+      }
+    } catch (error: any) {
+      console.error('Error in data cleanup scheduler:', error)
+    }
+  }, {
+    timezone: 'UTC'
+  })
+
+  // Auto-archive completed tasks - check daily at midnight UTC
+  cron.schedule('0 0 * * *', async () => {
+    try {
+      const pool = getDbPool()
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      const userSettings = await fetchUserSettings(pool)
+
+      for (const row of userSettings) {
+        const userId = Number(row.user_id)
+        if (!userId) continue
+        if (!row.auto_archive_completed) continue
+
+        const archiveAfterDays = row.archive_after_days || 30
+        const archiveDate = new Date(today)
+        archiveDate.setDate(archiveDate.getDate() - archiveAfterDays)
+
+        // Delete completed tasks older than archive_after_days
+        const result = await pool.query(
+          `DELETE FROM todos
+           WHERE user_id = $1
+             AND completed = true
+             AND updated_at < $2`,
+          [userId, archiveDate]
+        )
+
+        if (result.rowCount && result.rowCount > 0) {
+          console.log(`Auto-archived ${result.rowCount} completed tasks for user ${userId}`)
+        }
+      }
+    } catch (error: any) {
+      console.error('Error in auto-archive scheduler:', error)
     }
   }, {
     timezone: 'UTC'

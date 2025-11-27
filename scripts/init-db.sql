@@ -67,16 +67,44 @@ CREATE TABLE IF NOT EXISTS todo_tags (
 -- Create user_settings table
 CREATE TABLE IF NOT EXISTS user_settings (
   user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  -- Basic notifications
   notifications_enabled BOOLEAN DEFAULT TRUE,
   daily_notifications BOOLEAN DEFAULT TRUE,
   daily_notification_time TIME DEFAULT '09:00:00',
   reminder_days_before INTEGER[] DEFAULT ARRAY[1, 3],
-  notify_on_create BOOLEAN DEFAULT FALSE,
-  notify_on_update BOOLEAN DEFAULT FALSE,
   notify_on_overdue BOOLEAN DEFAULT TRUE,
+  -- Advanced notifications
+  quiet_hours_start TIME,
+  quiet_hours_end TIME,
+  vibration_enabled BOOLEAN DEFAULT TRUE,
+  -- App behavior
+  default_priority VARCHAR(10) DEFAULT 'medium',
+  default_sort_by VARCHAR(20) DEFAULT 'dueDate',
+  auto_archive_completed BOOLEAN DEFAULT FALSE,
+  archive_after_days INTEGER DEFAULT 30,
+  show_completed_tasks BOOLEAN DEFAULT TRUE,
+  confirm_delete_task BOOLEAN DEFAULT TRUE,
+  -- Appearance
   timezone VARCHAR(50) DEFAULT 'UTC',
   theme VARCHAR(10) DEFAULT 'light' CHECK (theme IN ('light', 'dark', 'auto')),
+  accent_color VARCHAR(7) DEFAULT '#3B82F6',
+  font_size VARCHAR(10) DEFAULT 'medium',
+  animations_enabled BOOLEAN DEFAULT TRUE,
+  compact_view BOOLEAN DEFAULT FALSE,
+  -- Language & Region
   language VARCHAR(10) DEFAULT 'en',
+  date_format VARCHAR(20) DEFAULT 'DD/MM/YYYY',
+  time_format VARCHAR(5) DEFAULT '24h',
+  -- Data & Sync
+  auto_sync BOOLEAN DEFAULT TRUE,
+  sync_frequency VARCHAR(20) DEFAULT 'daily',
+  backup_frequency VARCHAR(20) DEFAULT 'weekly',
+  data_retention_days INTEGER DEFAULT 365,
+  last_backup_date TIMESTAMP,
+  -- Privacy & Security
+  analytics_enabled BOOLEAN DEFAULT TRUE,
+  crash_reporting_enabled BOOLEAN DEFAULT TRUE,
+  data_encryption_enabled BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -105,8 +133,20 @@ WHERE NOT EXISTS (
 );
 
 -- Create default settings for existing users
-INSERT INTO user_settings (user_id, notifications_enabled, daily_notifications, daily_notification_time, reminder_days_before, notify_on_create, notify_on_update, notify_on_overdue, theme, language)
-SELECT id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], FALSE, FALSE, TRUE, 'light', 'en'
+INSERT INTO user_settings (
+  user_id, notifications_enabled, daily_notifications, daily_notification_time,
+  reminder_days_before, notify_on_overdue, vibration_enabled, default_priority,
+  default_sort_by, auto_archive_completed, archive_after_days, show_completed_tasks,
+  confirm_delete_task, timezone, theme, accent_color, font_size, animations_enabled,
+  compact_view, language, date_format, time_format, auto_sync, sync_frequency,
+  backup_frequency, data_retention_days, analytics_enabled, crash_reporting_enabled,
+  data_encryption_enabled
+)
+SELECT
+  id, TRUE, TRUE, '09:00:00', ARRAY[1, 3], TRUE, TRUE, 'medium',
+  'dueDate', FALSE, 30, TRUE, TRUE, 'UTC', 'light', '#3B82F6', 'medium', TRUE,
+  FALSE, 'en', 'DD/MM/YYYY', '24h', TRUE, 'daily', 'weekly', 365, TRUE, TRUE,
+  TRUE
 FROM users
 WHERE NOT EXISTS (
   SELECT 1 FROM user_settings WHERE user_settings.user_id = users.id

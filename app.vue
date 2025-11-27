@@ -15,9 +15,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { versionAtLeast, safeCallTelegramMethod } from '~/utils/telegram'
+import { useAppearance } from '~/composables/useAppearance'
 
 const { $telegram } = useNuxtApp()
 const { applyTheme } = useTheme()
+const { applyAppearanceSettings } = useAppearance()
 
 const handleViewportChange = () => {
   if (process.client) {
@@ -58,6 +60,9 @@ onMounted(() => {
     
     // Apply theme (will use saved preference or Telegram theme)
     applyTheme()
+
+    // Apply appearance settings
+    applyAppearanceSettings()
     
     // Handle viewport resize
     window.addEventListener('resize', handleResize)

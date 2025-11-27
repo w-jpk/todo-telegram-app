@@ -143,11 +143,86 @@ body::-webkit-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
+  }
+
+  /* Appearance settings */
+  .no-animations * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+
+  .compact-view .p-4 {
+    padding: 0.75rem !important;
+  }
+
+  .compact-view .p-6 {
+    padding: 1rem !important;
+  }
+
+  .compact-view .space-y-3 > * + * {
+    margin-top: 0.5rem !important;
+  }
+
+  .compact-view .space-y-4 > * + * {
+    margin-top: 0.75rem !important;
+  }
+
+  .compact-view .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  /* Accent color support */
+  .accent-blue {
+    --accent-color: #3b82f6;
+  }
+
+  .accent-red {
+    --accent-color: #ef4444;
+  }
+
+  .accent-green {
+    --accent-color: #10b981;
+  }
+
+  .accent-yellow {
+    --accent-color: #f59e0b;
+  }
+
+  .accent-purple {
+    --accent-color: #8b5cf6;
+  }
+
+  .accent-pink {
+    --accent-color: #ec4899;
+  }
+
+  .accent-gray {
+    --accent-color: #6b7280;
+  }
+
+  .accent-orange {
+    --accent-color: #f97316;
+  }
+
+  .accent-cyan {
+    --accent-color: #06b6d4;
+  }
+
+  .accent-lime {
+    --accent-color: #84cc16;
+  }
+
+  .accent-indigo {
+    --accent-color: #6366f1;
+  }
+
+  .accent-teal {
+    --accent-color: #14b8a6;
   }
 }
 

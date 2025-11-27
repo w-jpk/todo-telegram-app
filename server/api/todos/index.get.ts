@@ -1,5 +1,5 @@
 import { getDbPool, validateUserId } from '~/server/utils/db'
-import type { Todo } from '~/types/todo'
+import type { Todo, SortOption } from '~/types/todo'
 
 export default defineEventHandler(async (event) => {
   // Get userId header - check both lowercase and original case
@@ -25,12 +25,61 @@ export default defineEventHandler(async (event) => {
   try {
     const pool = getDbPool()
 
-    // Get total count for pagination
-    const countResult = await pool.query(
-      'SELECT COUNT(*) as total FROM todos WHERE user_id = $1',
+    // Get user settings
+    const settingsResult = await pool.query(
+      'SELECT default_sort_by, show_completed_tasks FROM user_settings WHERE user_id = $1',
       [userId]
     )
+    const settings = settingsResult.rows[0] || {}
+    const defaultSortBy: SortOption = settings.default_sort_by || 'dueDate'
+    const showCompletedTasks = settings.show_completed_tasks ?? true
+
+    // Get total count for pagination (respecting show_completed_tasks setting)
+    const countQuery = showCompletedTasks
+      ? 'SELECT COUNT(*) as total FROM todos WHERE user_id = $1 AND parent_id IS NULL'
+      : 'SELECT COUNT(*) as total FROM todos WHERE user_id = $1 AND parent_id IS NULL AND completed = false'
+    const countResult = await pool.query(countQuery, [userId])
     const total = parseInt(countResult.rows[0].total)
+
+    // Build WHERE clause based on show_completed_tasks setting
+    const whereClause = showCompletedTasks
+      ? 'WHERE t.user_id = $1 AND t.parent_id IS NULL'
+      : 'WHERE t.user_id = $1 AND t.parent_id IS NULL AND t.completed = false'
+
+    // Build ORDER BY clause based on default_sort_by setting
+    let orderByClause = ''
+    switch (defaultSortBy) {
+      case 'priority':
+        orderByClause = `ORDER BY
+          CASE t.priority
+            WHEN 'high' THEN 1
+            WHEN 'medium' THEN 2
+            WHEN 'low' THEN 3
+            ELSE 4
+          END,
+          t.due_date NULLS LAST,
+          t.created_at DESC`
+        break
+      case 'dueDate':
+        orderByClause = 'ORDER BY t.due_date NULLS LAST, t.created_at DESC'
+        break
+      case 'createdAt':
+        orderByClause = 'ORDER BY t.created_at DESC'
+        break
+      case 'text':
+        orderByClause = 'ORDER BY t.text ASC'
+        break
+      default:
+        orderByClause = `ORDER BY
+          CASE t.priority
+            WHEN 'high' THEN 1
+            WHEN 'medium' THEN 2
+            WHEN 'low' THEN 3
+            ELSE 4
+          END,
+          t.due_date NULLS LAST,
+          t.created_at DESC`
+    }
 
     // Get paginated todos with selective fields
     const result = await pool.query(
@@ -53,18 +102,9 @@ export default defineEventHandler(async (event) => {
        LEFT JOIN projects p ON t.project_id = p.id
        LEFT JOIN todo_tags tg ON t.id = tg.todo_id
        LEFT JOIN tags tag ON tg.tag_id = tag.id
-       WHERE t.user_id = $1 AND t.parent_id IS NULL
+       ${whereClause}
        GROUP BY t.id, p.id, p.name, p.color, p.created_at, p.updated_at
-       ORDER BY
-         CASE t.priority
-           WHEN 'high' THEN 1
-           WHEN 'medium' THEN 2
-           WHEN 'low' THEN 3
-           ELSE 4
-         END,
-         t.due_date NULLS LAST,
-         t.created_at DESC
-       -- Sort: priority first, then due_date, then newest first
+       ${orderByClause}
        LIMIT $2 OFFSET $3`,
       [userId, limit, offset]
     )
